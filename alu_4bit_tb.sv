@@ -1,41 +1,5 @@
 `timescale 1ns/1ps
 
-enum logic [O_SIZE -1 : 0] { 
-    ADD =       3'b000,
-    SUB =       3'b001,
-    AND =       3'b010,
-    OR  =       3'b011,
-    XOR =       3'b100,
-    NOT_A =     3'b101,
-    PASS_A =    3'b110,
-    PASS_B =    3'b111
-} op_e;
-
-task assert_w(
-    input op_e  operand,
-    input int   a,
-    input int   b
-);
-    logic [I_SIZE -1 : 0] expected_Y;
-    logic expected_carry;
-    string op_str;
-    
-    case (operand)
-        ADD:     begin  expected_Y = a + b;     expected_carry = (a + b) >> I_SIZE;     op_str = "ADD";     end
-        SUB:     begin  expected_Y = a - b;     expected_carry = (a - b) >> I_SIZE;     op_str = "SUB";     end
-        AND:     begin  expected_Y = a & b;     expected_carry = 0;                     op_str = "AND";     end
-        OR:      begin  expected_Y = a | b;     expected_carry = 0;                     op_str = "OR";      end
-        XOR:     begin  expected_Y = a ^ b;     expected_carry = 0;                     op_str = "XOR";     end
-        NOT_A:   begin  expected_Y = ~a;        expected_carry = 0;                     op_str = "NOT_A";   end
-        PASS_A:  begin  expected_Y = a;         expected_carry = 0;                     op_str = "PASS_A";  end
-        PASS_B:  begin  expected_Y = b;         expected_carry = 0;                     op_str = "PASS_B";  end
-        default: begin  expected_Y = 0;         expected_carry = 0;                     op_str = "INVALID"; end // invalid
-    endcase
-
-    assert (Y == expected_Y && carry == expected_carry)
-        else $error("%s failed for A=%0d, B=%0d: Y=%0d, carry=%b", op_str, A, B, Y, carry);  
-endtask
-
 module alu_4bit_tb;
 
     localparam int I_SIZE = 4;
@@ -52,6 +16,42 @@ module alu_4bit_tb;
         .result(Y),
         .carry_out(carry)
     );
+
+    enum logic [O_SIZE -1 : 0] { 
+        ADD =       3'b000,
+        SUB =       3'b001,
+        AND =       3'b010,
+        OR  =       3'b011,
+        XOR =       3'b100,
+        NOT_A =     3'b101,
+        PASS_A =    3'b110,
+        PASS_B =    3'b111
+    } op_e;
+
+    task assert_w(
+        input op_e  operand,
+        input int   a,
+        input int   b
+    );
+        logic [I_SIZE -1 : 0] expected_Y;
+        logic expected_carry;
+        string op_str;
+        
+        case (operand)
+            ADD:     begin  expected_Y = a + b;     expected_carry = (a + b) >> I_SIZE;     op_str = "ADD";     end
+            SUB:     begin  expected_Y = a - b;     expected_carry = (a - b) >> I_SIZE;     op_str = "SUB";     end
+            AND:     begin  expected_Y = a & b;     expected_carry = 0;                     op_str = "AND";     end
+            OR:      begin  expected_Y = a | b;     expected_carry = 0;                     op_str = "OR";      end
+            XOR:     begin  expected_Y = a ^ b;     expected_carry = 0;                     op_str = "XOR";     end
+            NOT_A:   begin  expected_Y = ~a;        expected_carry = 0;                     op_str = "NOT_A";   end
+            PASS_A:  begin  expected_Y = a;         expected_carry = 0;                     op_str = "PASS_A";  end
+            PASS_B:  begin  expected_Y = b;         expected_carry = 0;                     op_str = "PASS_B";  end
+            default: begin  expected_Y = 0;         expected_carry = 0;                     op_str = "INVALID"; end // invalid
+        endcase
+
+        assert (Y == expected_Y && carry == expected_carry)
+            else $error("%s failed for A=%0d, B=%0d: Y=%0d, carry=%b", op_str, A, B, Y, carry);  
+    endtask
 
     task test_op(
         input op_e operand
