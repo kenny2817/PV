@@ -17,7 +17,7 @@ module alu_4bit_tb;
         .carry_out(carry)
     );
 
-    enum logic [O_SIZE -1 : 0] { 
+    typedef enum logic [O_SIZE -1 : 0] { 
         ADD =       3'b000,
         SUB =       3'b001,
         AND =       3'b010,
@@ -57,8 +57,8 @@ module alu_4bit_tb;
         input op_e operand
     );
         op = operand;
-        for (int a = 0; a < I_SIZE; a++) begin
-            for (int b = 0; b < I_SIZE; b++) begin
+        for (int a = 0; a < (1 << I_SIZE); a++) begin
+            for (int b = 0; b < (1 << I_SIZE); b++) begin
                 A = a;
                 B = b;
                 #1;
@@ -68,15 +68,15 @@ module alu_4bit_tb;
     endtask
 
     initial begin
-        #10; test_op(ADD);       // T_000
-        #10; test_op(SUB);       // T_001
-        #10; test_op(AND);       // T_002
-        #10; test_op(OR);        // T_003
-        #10; test_op(XOR);       // T_004
-        #10; test_op(NOT_A);     // T_005
-        #10; test_op(PASS_A);    // T_006
-        #10; test_op(PASS_B);    // T_007
-        #10; test_op(3'bxxx);    // T_008
+        #10; test_op(ADD);          // T_000
+        #10; test_op(SUB);          // T_001
+        #10; test_op(AND);          // T_002
+        #10; test_op(OR);           // T_003
+        #10; test_op(XOR);          // T_004
+        #10; test_op(NOT_A);        // T_005
+        #10; test_op(PASS_A);       // T_006
+        #10; test_op(PASS_B);       // T_007
+        #10; test_op(op_e'('bxxx)); // T_008
     end
 
 endmodule
