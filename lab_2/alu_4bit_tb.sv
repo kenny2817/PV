@@ -1,5 +1,9 @@
 `timescale 1ns/1ps
 
+`ifndef DUT_NAME
+    `define DUT_NAME alu_4bit_v0
+`endif
+
 module alu_4bit_tb;
 
     localparam int I_SIZE = 4;
@@ -9,12 +13,12 @@ module alu_4bit_tb;
     logic [O_SIZE -1 : 0]   op;
     logic                   carry;
 
-    alu_4bit dut (
+    `DUT_NAME dut (
         .A(A),
         .B(B),
-        .sel(op),
-        .result(Y),
-        .carry_out(carry)
+        .op(op),
+        .Y(Y),
+        .carry(carry)
     );
 
     typedef enum logic [O_SIZE -1 : 0] { 
@@ -28,7 +32,7 @@ module alu_4bit_tb;
         PASS_B =    3'b111
     } op_e;
 
-    task assert_w(
+    task assert_golden_model(
         input op_e  operand,
         input int   a,
         input int   b
@@ -62,7 +66,7 @@ module alu_4bit_tb;
                 A = a;
                 B = b;
                 #1;
-                assert_w(operand, a, b);
+                assert_golden_model(operand, a, b);
             end
         end 
     endtask
@@ -77,6 +81,11 @@ module alu_4bit_tb;
         #10; test_op(PASS_A);       // T_006
         #10; test_op(PASS_B);       // T_007
         #10; test_op(op_e'('bxxx)); // T_008
+    end
+
+    initial begin
+        $dumpfile("waves%s.vcd", `DUT_NAME); 
+        $dumpvars(0, alu_4bit_tb);  
     end
 
 endmodule

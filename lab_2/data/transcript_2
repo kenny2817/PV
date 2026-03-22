@@ -1,0 +1,278 @@
+# //  Questa Intel FPGA Edition-64
+# //  Version 2024.3 linux_x86_64 Sep 10 2024
+# //
+# // Unpublished work. Copyright 2024 Siemens
+# //
+# // This material contains trade secrets or otherwise confidential information
+# // owned by Siemens Industry Software Inc. or its affiliates (collectively,
+# // "SISW"), or its licensors. Access to and use of this information is strictly
+# // limited as set forth in the Customer's applicable agreements with SISW.
+# //
+# // This material may not be copied, distributed, or otherwise disclosed outside
+# // of the Customer's facilities without the express written permission of SISW,
+# // and may not be used in any way not expressly authorized by SISW.
+# //
+# do run.do
+# Questa Intel FPGA Edition-64 vlog 2024.3 Compiler 2024.09 Sep 10 2024
+# Start time: 23:28:15 on Mar 19,2026
+# vlog -reportprogress 300 "+acc" alu_4bit_tb.sv 
+# -- Compiling module alu_4bit_tb
+# 
+# Top level modules:
+# 	alu_4bit_tb
+# End time: 23:28:15 on Mar 19,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim work.alu_4bit_tb 
+# Start time: 23:28:15 on Mar 19,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Warning: (vopt-10908) Some optimizations are turned off because the +acc switch is in effect.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading sv_std.std
+# Loading work.alu_4bit_tb(fast)
+# Loading work.alu_4bit_v2(fast)
+# ** Note: (vsim-12125) Error and warning message counts have been reset to '0' because of 'restart'.
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading work.alu_4bit_tb(fast)
+# Loading work.alu_4bit_v2(fast)
+# ** Error: SUB failed for A=0, B=1: Y=15, carry=0
+#    Time: 278 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=2: Y=14, carry=0
+#    Time: 279 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=3: Y=13, carry=0
+#    Time: 280 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=4: Y=12, carry=0
+#    Time: 281 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=5: Y=11, carry=0
+#    Time: 282 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=6: Y=10, carry=0
+#    Time: 283 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=7: Y=9, carry=0
+#    Time: 284 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=8: Y=8, carry=0
+#    Time: 285 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=9: Y=7, carry=0
+#    Time: 286 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=10: Y=6, carry=0
+#    Time: 287 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=11: Y=5, carry=0
+#    Time: 288 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=12: Y=4, carry=0
+#    Time: 289 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=13: Y=3, carry=0
+#    Time: 290 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=14: Y=2, carry=0
+#    Time: 291 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=0, B=15: Y=1, carry=0
+#    Time: 292 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=2: Y=15, carry=0
+#    Time: 295 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=3: Y=14, carry=0
+#    Time: 296 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=4: Y=13, carry=0
+#    Time: 297 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=5: Y=12, carry=0
+#    Time: 298 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=6: Y=11, carry=0
+#    Time: 299 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=7: Y=10, carry=0
+#    Time: 300 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=8: Y=9, carry=0
+#    Time: 301 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=9: Y=8, carry=0
+#    Time: 302 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=10: Y=7, carry=0
+#    Time: 303 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=11: Y=6, carry=0
+#    Time: 304 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=12: Y=5, carry=0
+#    Time: 305 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=13: Y=4, carry=0
+#    Time: 306 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=14: Y=3, carry=0
+#    Time: 307 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=1, B=15: Y=2, carry=0
+#    Time: 308 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=3: Y=15, carry=0
+#    Time: 312 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=4: Y=14, carry=0
+#    Time: 313 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=5: Y=13, carry=0
+#    Time: 314 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=6: Y=12, carry=0
+#    Time: 315 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=7: Y=11, carry=0
+#    Time: 316 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=8: Y=10, carry=0
+#    Time: 317 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=9: Y=9, carry=0
+#    Time: 318 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=10: Y=8, carry=0
+#    Time: 319 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=11: Y=7, carry=0
+#    Time: 320 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=12: Y=6, carry=0
+#    Time: 321 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=13: Y=5, carry=0
+#    Time: 322 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=14: Y=4, carry=0
+#    Time: 323 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=2, B=15: Y=3, carry=0
+#    Time: 324 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=4: Y=15, carry=0
+#    Time: 329 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=5: Y=14, carry=0
+#    Time: 330 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=6: Y=13, carry=0
+#    Time: 331 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=7: Y=12, carry=0
+#    Time: 332 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=8: Y=11, carry=0
+#    Time: 333 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=9: Y=10, carry=0
+#    Time: 334 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=10: Y=9, carry=0
+#    Time: 335 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=11: Y=8, carry=0
+#    Time: 336 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=12: Y=7, carry=0
+#    Time: 337 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=13: Y=6, carry=0
+#    Time: 338 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=14: Y=5, carry=0
+#    Time: 339 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=3, B=15: Y=4, carry=0
+#    Time: 340 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=5: Y=15, carry=0
+#    Time: 346 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=6: Y=14, carry=0
+#    Time: 347 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=7: Y=13, carry=0
+#    Time: 348 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=8: Y=12, carry=0
+#    Time: 349 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=9: Y=11, carry=0
+#    Time: 350 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=10: Y=10, carry=0
+#    Time: 351 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=11: Y=9, carry=0
+#    Time: 352 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=12: Y=8, carry=0
+#    Time: 353 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=13: Y=7, carry=0
+#    Time: 354 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=14: Y=6, carry=0
+#    Time: 355 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=4, B=15: Y=5, carry=0
+#    Time: 356 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=6: Y=15, carry=0
+#    Time: 363 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=7: Y=14, carry=0
+#    Time: 364 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=8: Y=13, carry=0
+#    Time: 365 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=9: Y=12, carry=0
+#    Time: 366 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=10: Y=11, carry=0
+#    Time: 367 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=11: Y=10, carry=0
+#    Time: 368 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=12: Y=9, carry=0
+#    Time: 369 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=13: Y=8, carry=0
+#    Time: 370 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=14: Y=7, carry=0
+#    Time: 371 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=5, B=15: Y=6, carry=0
+#    Time: 372 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=6, B=7: Y=15, carry=0
+#    Time: 380 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=6, B=8: Y=14, carry=0
+#    Time: 381 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=6, B=9: Y=13, carry=0
+#    Time: 382 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=6, B=10: Y=12, carry=0
+#    Time: 383 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=6, B=11: Y=11, carry=0
+#    Time: 384 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=6, B=12: Y=10, carry=0
+#    Time: 385 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=6, B=13: Y=9, carry=0
+#    Time: 386 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=6, B=14: Y=8, carry=0
+#    Time: 387 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=6, B=15: Y=7, carry=0
+#    Time: 388 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=7, B=8: Y=15, carry=0
+#    Time: 397 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=7, B=9: Y=14, carry=0
+#    Time: 398 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=7, B=10: Y=13, carry=0
+#    Time: 399 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=7, B=11: Y=12, carry=0
+#    Time: 400 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=7, B=12: Y=11, carry=0
+#    Time: 401 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=7, B=13: Y=10, carry=0
+#    Time: 402 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=7, B=14: Y=9, carry=0
+#    Time: 403 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=7, B=15: Y=8, carry=0
+#    Time: 404 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=8, B=9: Y=15, carry=0
+#    Time: 414 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=8, B=10: Y=14, carry=0
+#    Time: 415 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=8, B=11: Y=13, carry=0
+#    Time: 416 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=8, B=12: Y=12, carry=0
+#    Time: 417 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=8, B=13: Y=11, carry=0
+#    Time: 418 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=8, B=14: Y=10, carry=0
+#    Time: 419 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=8, B=15: Y=9, carry=0
+#    Time: 420 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=9, B=10: Y=15, carry=0
+#    Time: 431 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=9, B=11: Y=14, carry=0
+#    Time: 432 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=9, B=12: Y=13, carry=0
+#    Time: 433 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=9, B=13: Y=12, carry=0
+#    Time: 434 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=9, B=14: Y=11, carry=0
+#    Time: 435 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=9, B=15: Y=10, carry=0
+#    Time: 436 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=10, B=11: Y=15, carry=0
+#    Time: 448 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=10, B=12: Y=14, carry=0
+#    Time: 449 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=10, B=13: Y=13, carry=0
+#    Time: 450 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=10, B=14: Y=12, carry=0
+#    Time: 451 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=10, B=15: Y=11, carry=0
+#    Time: 452 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=11, B=12: Y=15, carry=0
+#    Time: 465 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=11, B=13: Y=14, carry=0
+#    Time: 466 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=11, B=14: Y=13, carry=0
+#    Time: 467 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=11, B=15: Y=12, carry=0
+#    Time: 468 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=12, B=13: Y=15, carry=0
+#    Time: 482 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=12, B=14: Y=14, carry=0
+#    Time: 483 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=12, B=15: Y=13, carry=0
+#    Time: 484 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=13, B=14: Y=15, carry=0
+#    Time: 499 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=13, B=15: Y=14, carry=0
+#    Time: 500 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# ** Error: SUB failed for A=14, B=15: Y=15, carry=0
+#    Time: 516 ns  Scope: alu_4bit_tb.assert_w File: alu_4bit_tb.sv Line: 55
+# tot err         120
