@@ -24,13 +24,93 @@ interface regfile_if #(
 
 endinterface
 
-class regfile_driver;
+class regfile_monitor;
 
     virtual interface regfile_if.dut regfile_If;
 
     function new(virtual interface regfile_if.dut regfile_If);
         this.regfile_If = regfile_If;       
     endfunction
+
+    task monitor_signals();
+
+        forever begin
+            @(regfile_If.clk);
+            $display("Time: %6t | rst: %b | en: %b | err: %b | rd_addr1: %0d | rd_addr2: %0d | rd_data1: %0d | rd_data2: %0d |",
+                $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
+        end 
+
+    endtask
+
+endclass
+
+class regfile_mail;
+
+    // INPUTS
+    rand bit        wr_en; 
+    rand bit [4:0]  wr_addr;
+    rand bit [15:0] wr_data;
+    rand bit [4:0]  rd_addr1;
+    rand bit [4:0]  rd_addr2;
+
+    // OUTPUTS
+    bit [15:0] rd_data1;
+    bit [15:0] rd_data2;
+    bit        err;
+
+endclass
+
+class regfile_generator;
+    
+    mailbox gen_drv_mbx;
+    int num_transactions;
+
+    function new(mailbox gen_drv_mbx, int num_transactions = 10, int seed = 0);
+        this.gen_drv_mbx = gen_drv_mbx;
+        this.num_transactions = num_transactions;
+        if (seed != 0) this.srandom(seed);
+    endfunction
+
+    task run();
+
+        regfile_mail mail;
+
+        for (int i = 0; i < num_tx; i++) begin
+            mail = new();
+            
+            if (!mail.randomize()) begin
+                $error("Generator: Randomization failed!");
+            end
+            
+            gen_drv_mbx.put(mail);
+        end
+        
+    endtask
+
+endclass
+
+class regfile_driver;
+
+    virtual interface regfile_if.dut regfile_If;
+    mailbox gen_drv_mbx;
+
+    function new(virtual interface regfile_if.dut regfile_If, mailbox gen_drv_mbx);
+        this.regfile_If = regfile_If;
+        this.gen_drv_mbx = gen_drv_mbx;
+    endfunction
+
+    task run();
+        regfile_mail mail;
+        
+        forever begin
+            gen_drv_mbx.get(mail); 
+            
+            read_reg(mail.addr, mail.addr); 
+            
+            if (mail.wr_en) write_reg(mail.addr, mail.data);
+        end
+
+    endtask
 
     task init();
     
@@ -76,26 +156,6 @@ class regfile_driver;
 
 endclass
 
-class regfile_monitor;
-
-    virtual interface regfile_if.dut regfile_If;
-
-    function new(virtual interface regfile_if.dut regfile_If);
-        this.regfile_If = regfile_If;       
-    endfunction
-
-    task monitor_signals();
-
-        forever begin
-            @(regfile_If.clk);
-            $display("Time: %6t | rst: %b | en: %b | err: %b | rd_addr1: %0d | rd_addr2: %0d | rd_data1: %0d | rd_data2: %0d |",
-                $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
-        end 
-
-    endtask
-
-endclass
-
 module tb_regfile;
 
     logic clk;
@@ -104,6 +164,10 @@ module tb_regfile;
 
     regfile_if regfile_If(clk);
 
+    mailbox #(regfile_mail) gen_drv_mbx;
+    mailbox #(regfile_mail) mon_chk_mbx;
+
+    regfile_generator gen;
     regfile_driver drv;
     regfile_monitor mon;
 
@@ -121,16 +185,27 @@ module tb_regfile;
     );
 
     initial begin
-        drv = new(regfile_If);
+
+        gen_drv_mbx = new(1);
+        mon_chk_mbx = new(); // unbounded
+
+        gen = new(gen_drv_mbx, 10, 1234);
+        drv = new(regfile_If, gen_drv_mbx);
         mon = new(regfile_If);
 
         fork
+            drv.run();
             mon.monitor_signals();
         join_none
 
         drv.init();
+        
+        gen.run();
 
-        repeat(20) @(posedge clk);
+        wait(gen_drv_mbx.num() == 0);
+
+        repeat(5) @(posedge clk);
+
         $finish();
     end
 
