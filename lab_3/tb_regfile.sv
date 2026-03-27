@@ -17,15 +17,9 @@ interface regfile_if #(
     logic [ADDR_WIDTH - 1 : 0] wr_addr, rd_addr1, rd_addr2;
     logic [DATA_WIDTH - 1 : 0] wr_data, rd_data1, rd_data2;
 
-    clocking drv_cb @(posedge clk);
-        default input #0 output #0;
-        output rst_n, wr_en, wr_addr, wr_data; 
-    endclocking
-
     modport tb (
-        clocking drv_cb,           
-        output rd_addr1, rd_addr2,
         input  rd_data1, rd_data2, err
+        output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2,
     );
 
 endinterface
@@ -42,7 +36,7 @@ class regfile_driver;
 
         regfile_If.rst_n = 1'b0;
 
-        @(regfile_If.drv_cb);
+        @(regfile_If.clk);
         
         regfile_If.rst_n = 1'b1;
 
@@ -50,22 +44,22 @@ class regfile_driver;
 
     task write_reg(input int addr, input int data);
 
-        @(regfile_If.drv_cb);
+        @(regfile_If.clk);
 
-        regfile_If.drv_cb.wr_addr <= addr;
-        regfile_If.drv_cb.wr_data <= data;
-        regfile_If.drv_cb.wr_en   <= 1'b1;
+        regfile_If.wr_addr <= addr;
+        regfile_If.wr_data <= data;
+        regfile_If.wr_en   <= 1'b1;
 
-        @(regfile_If.drv_cb);
+        @(regfile_If.clk);
 
-        regfile_If.drv_cb.wr_en   <= 1'b0;
+        regfile_If.wr_en   <= 1'b0;
 
     endtask
 
     task read_reg(input int addr1, input int addr2);
 
-        regfile_If.drv_cb.rd_addr1 <= addr1;
-        regfile_If.drv_cb.rd_addr2 <= addr2;
+        regfile_If.rd_addr1 <= addr1;
+        regfile_If.rd_addr2 <= addr2;
 
     endtask
 
@@ -82,7 +76,7 @@ class regfile_monitor();
     task monitor_signals();
 
         forever begin
-            @(regfile_If.drv_cb);
+            @(regfile_If.clk);
             $display("Time: %0t | rst: %b | en: %b | err: %b | rd_addr1: %0d | rd_addr2: %0d | rd_data1: %0d | rd_data2: %0d |",
                 $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
         end 
@@ -105,8 +99,8 @@ module tb_regfile;
     `DUT_NAME dut (regfile_If.tb);
 
     initial begin
-        drv = regfile_driver.new(regfile_If);
-        mon = regfile_monitor.new(regfile_If);
+        drv = new(regfile_If);
+        mon = new(regfile_If);
 
         fork
             mon.monitor_signals();
