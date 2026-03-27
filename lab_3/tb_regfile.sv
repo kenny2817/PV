@@ -75,7 +75,7 @@ class regfile_generator;
 
         regfile_mail mail;
 
-        for (int i = 0; i < num_tx; i++) begin
+        for (int i = 0; i < num_transactions; i++) begin
             mail = new();
             
             if (!mail.randomize()) begin
