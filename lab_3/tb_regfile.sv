@@ -18,7 +18,7 @@ interface regfile_if #(
     logic [DATA_WIDTH - 1 : 0] wr_data, rd_data1, rd_data2;
 
     modport dut (
-        input  rd_data1, rd_data2, err, clk
+        input  rd_data1, rd_data2, err, clk,
         output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2
     );
 
@@ -31,6 +31,19 @@ class regfile_driver;
     function new(virtual interface regfile_if.dut regfile_If);
         this.regfile_If = regfile_If;       
     endfunction
+
+    task init();
+    
+        regfile_If.rst_n = 1'b1;
+        regfile_If.wr_en = 1'b0;
+        regfile_If.wr_addr <= 0;
+        regfile_If.wr_data <= 0;
+        regfile_If.rd_addr1 <= 0;
+        regfile_If.rd_addr2 <= 0;
+
+        @(regfile_If.clk);
+
+    endtask
 
     task reset();
 
