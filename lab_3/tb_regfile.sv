@@ -17,18 +17,18 @@ interface regfile_if #(
     logic [ADDR_WIDTH - 1 : 0] wr_addr, rd_addr1, rd_addr2;
     logic [DATA_WIDTH - 1 : 0] wr_data, rd_data1, rd_data2;
 
-    modport tb (
-        input  rd_data1, rd_data2, err
-        output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2,
+    modport dut (
+        input  rd_data1, rd_data2, err, clk
+        output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2
     );
 
 endinterface
 
 class regfile_driver;
 
-    virtual interface regfile_if.tb regfile_If;
+    virtual interface regfile_if.dut regfile_If;
 
-    function new(virtual interface regfile_if.tb regfile_If);
+    function new(virtual interface regfile_if.dut regfile_If);
         this.regfile_If = regfile_If;       
     endfunction
 
@@ -65,11 +65,11 @@ class regfile_driver;
 
 endclass
 
-class regfile_monitor();
+class regfile_monitor;
 
-    virtual interface regfile_if.tb regfile_If;
+    virtual interface regfile_if.dut regfile_If;
 
-    function new(virtual interface regfile_if.tb regfile_If);
+    function new(virtual interface regfile_if.dut regfile_If);
         this.regfile_If = regfile_If;       
     endfunction
 
@@ -96,7 +96,18 @@ module tb_regfile;
     regfile_driver drv;
     regfile_monitor mon;
 
-    `DUT_NAME dut (regfile_If.tb);
+    `DUT_NAME dut (
+        .clk      (clk),
+        .rst_n    (regfile_If.rst_n),
+        .wr_en    (regfile_If.wr_en),
+        .wr_addr  (regfile_If.wr_addr),
+        .wr_data  (regfile_If.wr_data),
+        .rd_addr1 (regfile_If.rd_addr1),
+        .rd_data1 (regfile_If.rd_data1),
+        .rd_addr2 (regfile_If.rd_addr2),
+        .rd_data2 (regfile_If.rd_data2),
+        .err      (regfile_If.err)
+    );
 
     initial begin
         drv = new(regfile_If);
