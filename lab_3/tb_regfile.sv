@@ -41,7 +41,7 @@ class regfile_driver;
         regfile_If.rd_addr1 <= 0;
         regfile_If.rd_addr2 <= 0;
 
-        @(regfile_If.clk);
+        this.reset();
 
     endtask
 
@@ -56,8 +56,6 @@ class regfile_driver;
     endtask
 
     task write_reg(input int addr, input int data);
-
-        @(regfile_If.clk);
 
         regfile_If.wr_addr <= addr;
         regfile_If.wr_data <= data;
@@ -90,7 +88,7 @@ class regfile_monitor;
 
         forever begin
             @(regfile_If.clk);
-            $display("Time: %0t | rst: %b | en: %b | err: %b | rd_addr1: %0d | rd_addr2: %0d | rd_data1: %0d | rd_data2: %0d |",
+            $display("Time: %6t | rst: %b | en: %b | err: %b | rd_addr1: %0d | rd_addr2: %0d | rd_data1: %0d | rd_data2: %0d |",
                 $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
         end 
 
@@ -129,6 +127,8 @@ module tb_regfile;
         fork
             mon.monitor_signals();
         join_none
+
+        drv.init();
 
         repeat(20) @(posedge clk);
         $finish();
