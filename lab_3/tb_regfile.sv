@@ -89,6 +89,8 @@ class regfile_monitor();
 
     endtask
 
+endclass
+
 module tb_regfile;
 
     logic clk;
@@ -97,9 +99,19 @@ module tb_regfile;
 
     regfile_if regfile_If(clk);
 
+    regfile_driver drv;
+    regfile_monitor mon;
+
     `DUT_NAME dut (regfile_If.tb);
 
     initial begin
+        drv = regfile_driver.new(regfile_If);
+        mon = regfile_monitor.new(regfile_If);
+
+        fork
+            mon.monitor_signals();
+        join_none
+
         repeat(20) @(posedge clk);
         $finish();
     end
