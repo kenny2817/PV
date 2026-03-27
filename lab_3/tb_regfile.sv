@@ -105,9 +105,9 @@ class regfile_driver;
         forever begin
             gen_drv_mbx.get(mail); 
             
-            read_reg(mail.addr, mail.addr); 
+            read_reg(mail.rd_addr1, mail.rd_addr2);
             
-            if (mail.wr_en) write_reg(mail.addr, mail.data);
+            if (mail.wr_en) write_reg(mail.wr_addr, mail.wr_data);
         end
 
     endtask
