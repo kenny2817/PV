@@ -108,11 +108,12 @@ class regfile_driver;
             read_reg(mail.rd_addr1, mail.rd_addr2);
             
             if (mail.wr_en) write_reg(mail.wr_addr, mail.wr_data);
+            else @(posedge regfile_If.clk);
         end
 
     endtask
 
-    task init();
+    task init_dut();
     
         regfile_If.rst_n = 1'b1;
         regfile_If.wr_en = 1'b0;
@@ -129,7 +130,7 @@ class regfile_driver;
 
         regfile_If.rst_n = 1'b0;
 
-        @(regfile_If.clk);
+        @(posedge regfile_If.clk);
         
         regfile_If.rst_n = 1'b1;
 
@@ -141,7 +142,7 @@ class regfile_driver;
         regfile_If.wr_data <= data;
         regfile_If.wr_en   <= 1'b1;
 
-        @(regfile_If.clk);
+        @(posedge regfile_If.clk);
 
         regfile_If.wr_en   <= 1'b0;
 
@@ -198,15 +199,14 @@ module tb_regfile;
             mon.monitor_signals();
         join_none
 
-        drv.init();
+        drv.init_dut();
         
         gen.run();
 
-        wait(gen_drv_mbx.num() == 0);
-
-        repeat(5) @(posedge clk);
+        repeat(2) @(posedge clk);
 
         $finish();
+        
     end
 
 endmodule
