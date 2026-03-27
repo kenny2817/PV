@@ -36,8 +36,8 @@ class regfile_monitor;
 
         forever begin
             @(regfile_If.clk);
-            $display("Time: %6t | rst: %b | en: %b | err: %b | rd_addr1: %0d | rd_addr2: %0d | rd_data1: %0d | rd_data2: %0d |",
-                $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
+            $display("Time: %6t | rst: %b | en: %b | wr_addr: %d | wr_data: %d | err: %b | rd_addr1: %0d | rd_addr2: %0d | rd_data1: %0d | rd_data2: %0d |",
+                $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.wr_addr, regfile_If.wr_data, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
         end 
 
     endtask
@@ -203,7 +203,7 @@ module tb_regfile;
         
         gen.run();
 
-        repeat(2) @(posedge clk);
+        repeat(5) @(posedge clk);
 
         $finish();
         
