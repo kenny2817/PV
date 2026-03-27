@@ -1,0 +1,79 @@
+m255
+K4
+z2
+!s11f vlog 2025.1_1 2025.02, Feb 13 2025
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+d/home/jsanchez/teaching/pv/labs/lab3_Testbench_Blocks/regfile
+vregfile_v0
+2srcs/regfile_v0.v
+!s110 1774563353
+!s100 W8cZZgZ?0:>MAzlRfAZ]=1
+IdngA6;g[0a5BF^FPm3Yn93
+d.
+Z0 Fnofile
+!i122 0
+L0 1 59
+Z1 VDg1SIo80bB@j0V0VzS_@n1
+Z2 OL;L;2025.1_1;82
+r1
+!s85 0
+31
+!i113 0
+Z3 o-nodebug -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z4 tCvgOpt 0
+vregfile_v1
+2srcs/regfile_v1.v
+Z5 !s110 1774563354
+!s100 N<i6AGNUmXIoibO:Ed:SE0
+ID<P7UGIfl6YH5;;5V]<Jj1
+d.
+R0
+!i122 1
+L0 2 58
+R1
+R2
+r1
+!s85 0
+31
+!i113 0
+R3
+R4
+vregfile_v2
+2srcs/regfile_v2.v
+R5
+!s100 djmbX2c7_iNR5PjTg<0ed0
+IimRJaQKd=]J7B7L_:LI4]3
+d.
+R0
+!i122 2
+L0 2 61
+R1
+R2
+r1
+!s85 0
+31
+!i113 0
+R3
+R4
+vregfile_v3
+2srcs/regfile_v3.v
+R5
+!s100 n6>PCS5=dd]hXWh4X331?2
+Iz40K^h=XE_d_K1S?b]K0D0
+d.
+R0
+!i122 3
+L0 2 59
+R1
+R2
+r1
+!s85 0
+31
+!i113 0
+R3
+R4
