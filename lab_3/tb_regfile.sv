@@ -62,10 +62,10 @@ endclass
 
 class regfile_generator;
     
-    mailbox gen_drv_mbx;
+    mailbox #(regfile_mail) gen_drv_mbx;
     int num_transactions;
 
-    function new(mailbox gen_drv_mbx, int num_transactions = 10, int seed = 0);
+    function new(mailbox #(regfile_mail) gen_drv_mbx, int num_transactions = 10, int seed = 0);
         this.gen_drv_mbx = gen_drv_mbx;
         this.num_transactions = num_transactions;
         if (seed != 0) this.srandom(seed);
@@ -92,9 +92,9 @@ endclass
 class regfile_driver;
 
     virtual interface regfile_if.dut regfile_If;
-    mailbox gen_drv_mbx;
+    mailbox #(regfile_mail) gen_drv_mbx;
 
-    function new(virtual interface regfile_if.dut regfile_If, mailbox gen_drv_mbx);
+    function new(virtual interface regfile_if.dut regfile_If, mailbox #(regfile_mail) gen_drv_mbx);
         this.regfile_If = regfile_If;
         this.gen_drv_mbx = gen_drv_mbx;
     endfunction
