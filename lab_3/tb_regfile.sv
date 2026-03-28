@@ -4,10 +4,10 @@
     `define DUT_NAME regfile_v0
 `endif
 
-package constants
-    int NUM_REG = 32;
-    int DATA_WIDTH = 16;
-    int ADDR_WIDTH = $clog2(NUM_REG);
+package constants;
+    localparam int NUM_REG = 32;
+    localparam int DATA_WIDTH = 16;
+    localparam int ADDR_WIDTH = $clog2(NUM_REG);
 endpackage
 
 import constants::*;
@@ -193,11 +193,11 @@ class regfile_scoreboard;
     logic [DATA_WIDTH - 1 : 0] golden_model_data[NUM_REG];
     int err_count = 0;
 
-    task reset();
+    function void reset();
         for (int i = 0; i < NUM_REG; i++) begin
             golden_model_data[i] <= '0;
         end
-    endtask 
+    endfunction
 
     function new(mailbox #(regfile_mail) mon_scb_mbx);
         this.mon_scb_mbx = mon_scb_mbx;
