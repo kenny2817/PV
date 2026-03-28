@@ -32,7 +32,7 @@ interface regfile_if (input logic clk);
         (err === 1'b1) |-> $past(is_illegal);
     endproperty
 
-    assert property (p_err_check_backward);
+    assert property (p_err_check_backward)
         else $error("FAIL: err");
 
 endinterface
@@ -195,7 +195,7 @@ class regfile_monitor;
             mon_scb_mbx.put(mail);
             mon_chk_mbx.put(mail);
 
-            $display("Time: %6t | rst: %b | en: %b | wr_addr: %2d | wr_data: %0d | err: %b | rd_addr1: %2d | rd_addr2: %2d | rd_data1: %0d | rd_data2: %0d |",
+            $display("Time: %8t | rst: %b | en: %b | wr_addr: %2d | wr_data: %4h | err: %b | rd_addr1: %2d | rd_addr2: %2d | rd_data1: %4h | rd_data2: %4h |",
                 $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.wr_addr, regfile_If.wr_data, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
         end 
 
@@ -336,7 +336,7 @@ module tb_regfile;
         mon_scb_mbx = new(); // unbounded
         mon_chk_mbx = new(); // unbounded
 
-        gen = new(gen_drv_mbx, 10, 1234);
+        gen = new(gen_drv_mbx, 1000, 1234);
         drv = new(regfile_If, gen_drv_mbx);
         mon = new(regfile_If, mon_scb_mbx, mon_chk_mbx);
         scb = new(mon_scb_mbx);
