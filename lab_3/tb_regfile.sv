@@ -4,14 +4,17 @@
     `define DUT_NAME regfile_v0
 `endif
 
-interface regfile_if #(
-    parameter int NUM_REG = 32,
-    parameter int DATA_WIDTH = 16
-) (
+package constants
+    int NUM_REG = 32;
+    int DATA_WIDTH = 16;
+    int ADDR_WIDTH = $clog2(NUM_REG);
+endpackage
+
+import constants::*;
+
+interface regfile_if (
     input logic clk
 );
-
-    localparam int ADDR_WIDTH = $clog2(NUM_REG);
 
     logic                      rst_n, wr_en, err;
     logic [ADDR_WIDTH - 1 : 0] wr_addr, rd_addr1, rd_addr2;
@@ -24,39 +27,19 @@ interface regfile_if #(
 
 endinterface
 
-class regfile_monitor;
-
-    virtual interface regfile_if.dut regfile_If;
-
-    function new(virtual interface regfile_if.dut regfile_If);
-        this.regfile_If = regfile_If;       
-    endfunction
-
-    task monitor_signals();
-
-        forever begin
-            @(regfile_If.clk);
-            $display("Time: %6t | rst: %b | en: %b | wr_addr: %d | wr_data: %d | err: %b | rd_addr1: %0d | rd_addr2: %0d | rd_data1: %0d | rd_data2: %0d |",
-                $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.wr_addr, regfile_If.wr_data, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
-        end 
-
-    endtask
-
-endclass
-
 class regfile_mail;
 
     // INPUTS
-    rand bit        wr_en; 
-    rand bit [4:0]  wr_addr;
-    rand bit [15:0] wr_data;
-    rand bit [4:0]  rd_addr1;
-    rand bit [4:0]  rd_addr2;
+    rand bit                      wr_en; 
+    rand bit [ADDR_WIDTH - 1 : 0] wr_addr;
+    rand bit [DATA_WIDTH - 1 : 0] wr_data;
+    rand bit [ADDR_WIDTH - 1 : 0] rd_addr1;
+    rand bit [ADDR_WIDTH - 1 : 0] rd_addr2;
 
     // OUTPUTS
-    bit [15:0] rd_data1;
-    bit [15:0] rd_data2;
-    bit        err;
+    logic [DATA_WIDTH - 1 : 0]    rd_data1;
+    logic [DATA_WIDTH - 1 : 0]    rd_data2;
+    bit                           err;
 
 endclass
 
@@ -65,7 +48,9 @@ class regfile_generator;
     mailbox #(regfile_mail) gen_drv_mbx;
     int num_transactions;
 
-    function new(mailbox #(regfile_mail) gen_drv_mbx, int num_transactions = 10, int seed = 0);
+    function new(mailbox #(regfile_mail) gen_drv_mbx,
+                 int num_transactions = 10,
+                 int seed = 0);
         this.gen_drv_mbx = gen_drv_mbx;
         this.num_transactions = num_transactions;
         if (seed != 0) this.srandom(seed);
@@ -94,7 +79,8 @@ class regfile_driver;
     virtual interface regfile_if.dut regfile_If;
     mailbox #(regfile_mail) gen_drv_mbx;
 
-    function new(virtual interface regfile_if.dut regfile_If, mailbox #(regfile_mail) gen_drv_mbx);
+    function new(virtual interface regfile_if.dut regfile_If,
+                 mailbox #(regfile_mail) gen_drv_mbx);
         this.regfile_If = regfile_If;
         this.gen_drv_mbx = gen_drv_mbx;
     endfunction
@@ -157,6 +143,69 @@ class regfile_driver;
 
 endclass
 
+class regfile_monitor;
+
+    virtual interface regfile_if.dut regfile_If;
+    mailbox #(regfile_mail) mon_chk_mbx;
+
+    function new(virtual interface regfile_if.dut regfile_If,
+                 mailbox #(regfile_mail) mon_chk_mbx);
+        this.regfile_If = regfile_If;       
+        this.mon_chk_mbx = mon_chk_mbx;
+    endfunction
+
+    task run();
+    
+        regfile_mail mail;
+
+        forever begin
+            @(regfile_If.clk);
+
+            mail.wr_en    = regfile_If.wr_en;
+            mail.wr_addr  = regfile_If.wr_addr;
+            mail.wr_data  = regfile_If.wr_data;
+            mail.rd_addr1 = regfile_If.rd_addr1;
+            mail.rd_addr2 = regfile_If.rd_addr2;
+            mail.rd_data1 = regfile_If.rd_data1;
+            mail.rd_data2 = regfile_If.rd_data2;
+            mail.err      = regfile_If.err;
+            
+            mon_chk_mbx.put(mail);
+
+            $display("Time: %6t | rst: %b | en: %b | wr_addr: %2d | wr_data: %0d | err: %b | rd_addr1: %2d | rd_addr2: %2d | rd_data1: %0d | rd_data2: %0d |",
+                $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.wr_addr, regfile_If.wr_data, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
+        end 
+
+    endtask
+
+endclass
+
+class regfile_scoreboard;
+
+    mailbox #(regfile_mail) mon_scb_mbx;
+    logic []
+
+    function new(mailbox #(regfile_mail) mon_scb_mbx);
+        this.mon_scb_mbx = mon_scb_mbx;
+    endfunction
+
+    task run();
+
+        regfile_mail mail;
+
+        forever begin
+
+            mon_scb_mbx.get(mail);
+
+
+
+            
+        end
+
+    endtask
+
+endclass
+
 module tb_regfile;
 
     logic clk;
@@ -196,7 +245,7 @@ module tb_regfile;
 
         fork
             drv.run();
-            mon.monitor_signals();
+            mon.run();
         join_none
 
         drv.init_dut();
