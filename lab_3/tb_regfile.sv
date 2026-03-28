@@ -295,13 +295,13 @@ class regfile_scoreboard;
         int success_count = success_count_a + success_count_b + success_count_c;
         int err_count     = error_count_a + error_count_b + error_count_c;
 
-        $display("********************************");
-        $display("* success / errors: %d / %d *", success_count, err_count);
-        $display("********************************");
-        $display("*  illegal read: %d / %d *", success_count_a, error_count_a);
-        $display("* legal read 1: %d / %d *", success_count_b, error_count_b);
-        $display("* legal read 2: %d / %d *", success_count_c, error_count_c);
-        $display("********************************");
+        $display("*********************************");
+        $display("* success / errors: %4d / %4d *", success_count, err_count);
+        $display("*********************************");
+        $display("* illegal read:     %4d / %4d *", success_count_a, error_count_a);
+        $display("* legal read 1:     %4d / %4d *", success_count_b, error_count_b);
+        $display("* legal read 2:     %4d / %4d *", success_count_c, error_count_c);
+        $display("*********************************");
 
     endfunction
 
