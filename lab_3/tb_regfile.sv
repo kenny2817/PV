@@ -23,6 +23,24 @@ interface regfile_if (input logic clk);
         output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2
     );
 
+    bit is_illegal;
+    assign is_illegal = rd_addr1 == rd_addr2 || (wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2));
+
+    property p_err_high;
+        @(posedge clk) disable iff (!rst_n)
+        is_illegal |=> (err == 1'b1);
+    endproperty
+
+    property p_err_low;
+        @(posedge clk) disable iff (!rst_n)
+        !is_illegal |=> (err == 1'b0);
+    endproperty
+
+    assert property (p_err_high)
+        else $error("FAIL: err not high");
+    assert property (p_err_low)
+        else $error("HW FAIL: err not low");
+
 endinterface
 
 class regfile_mail;
@@ -41,6 +59,9 @@ class regfile_mail;
     logic [DATA_WIDTH - 1 : 0]    rd_data1;
     logic [DATA_WIDTH - 1 : 0]    rd_data2;
     bit                           err;
+
+    // METADATA
+    bit is_illegal;
 
 endclass
 
@@ -166,15 +187,16 @@ class regfile_monitor;
             @(posedge regfile_If.clk);
 
             mail = new();
-            mail.rst_n    = regfile_If.rst_n;
-            mail.wr_en    = regfile_If.wr_en;
-            mail.wr_addr  = regfile_If.wr_addr;
-            mail.wr_data  = regfile_If.wr_data;
-            mail.rd_addr1 = regfile_If.rd_addr1;
-            mail.rd_addr2 = regfile_If.rd_addr2;
-            mail.rd_data1 = regfile_If.rd_data1;
-            mail.rd_data2 = regfile_If.rd_data2;
-            mail.err      = regfile_If.err;
+            mail.rst_n      = regfile_If.rst_n;
+            mail.wr_en      = regfile_If.wr_en;
+            mail.wr_addr    = regfile_If.wr_addr;
+            mail.wr_data    = regfile_If.wr_data;
+            mail.rd_addr1   = regfile_If.rd_addr1;
+            mail.rd_addr2   = regfile_If.rd_addr2;
+            mail.rd_data1   = regfile_If.rd_data1;
+            mail.rd_data2   = regfile_If.rd_data2;
+            mail.err        = regfile_If.err;
+            mail.is_illegal = regfile_If.is_illegal;
             
             mon_scb_mbx.put(mail);
             mon_chk_mbx.put(mail);
@@ -191,7 +213,10 @@ class regfile_scoreboard;
 
     mailbox #(regfile_mail) mon_scb_mbx;
     logic [DATA_WIDTH - 1 : 0] golden_model_data[NUM_REG];
-    int err_count = 0;
+
+    int success_count_a = 0, error_count_a = 0;
+    int success_count_b = 0, error_count_b = 0;
+    int success_count_c = 0, error_count_c = 0;
 
     function void reset();
         for (int i = 0; i < NUM_REG; i++) begin
@@ -207,61 +232,67 @@ class regfile_scoreboard;
     task run();
 
         regfile_mail mail;
-        bit error_condition = 0;
 
         forever begin
 
             mon_scb_mbx.get(mail);
 
-            assert(error_condition == !mail.err)
-                else begin
-                    $error("Error bit failed: got %b, expected %b", mail.err, error_condition);
-                    err_count = err_count + 1;
-                end
+            check_illegal_rd();
+            check_legal_rd();
 
-            error_condition = (mail.addr1 != mail.addr2 || (mail.wr_en && (mail.wr_addr == mail.addr1 || mail.wr_addr == mail.addr2)));
-
-            if (error_condition) begin
-
-                // check err bit
-                assert (mail.rd_data1 == 'x' && mail.rd_data2 == 'x') 
-                    else begin
-                        $error("Read 1-2 failed: %0h != x | %0h != x", mail.rd_data1, mail.rd_data2);
-                        err_count = err_count + 1;
-                    end
-
-            end else begin
-
-                // update golden model
-                golden_model_data[mail.wr_addr] = mail.wr_data;
-
-                // check read data 1
-                assert(golden_model_data[mail.rd_addr1] == mail.rd_data1)
-                    else begin
-                        $error("Read 1 failed: %0h != %0h",
-                                golden_model_data[mail.rd_addr1],
-                                mail.rd_data1);
-                        err_count = err_count + 1;
-                    end
-
-                // check read data 2
-                assert(golden_model_data[mail.rd_addr2] == mail.rd_data2)
-                    else begin
-                        $error("Read 2 failed: %0h != %0h",
-                                golden_model_data[mail.rd_addr2],
-                                mail.rd_data2);
-                        err_count = err_count + 1;
-                    end
-            end
-
+            // update golden model if legal write
+            if (!mail.is_illegal) golden_model_data[mail.wr_addr] = mail.wr_data;
+            
+            // reset scoreboard if reset low
             if (!mail.rst_n) reset();
         end
     endtask
 
+    task check_illigal_rd();
+        // check read data 1 and 2
+        assert (mail.is_illegal && mail.rd_data1 == 'x' && mail.rd_data2 == 'x') begin
+            success_count_a = success_count_a + 1;
+        end else begin
+            $error("Read 1-2 failed: %0h != x | %0h != x", mail.rd_data1, mail.rd_data2);
+            error_count_a = error_count_a + 1;
+        end
+    endtask
 
+    task check_legal_rd();
+        // check read data 1
+        assert(!mail.is_illegal && olden_model_data[mail.rd_addr1] == mail.rd_data1) begin
+            success_count_b = success_count_b + 1;
+        end else begin
+            $error("Read 1 failed: %0h != %0h",
+                    golden_model_data[mail.rd_addr1],
+                    mail.rd_data1);
+            error_count_b = error_count_b + 1;
+        end
+
+        // check read data 2
+        assert(!mail.is_illegal && olden_model_data[mail.rd_addr2] == mail.rd_data2) begin
+            success_count_c = success_count_c + 1;
+        end else begin
+            $error("Read 2 failed: %0h != %0h",
+                    golden_model_data[mail.rd_addr2],
+                    mail.rd_data2);
+            error_count_c = error_count_c + 1;
+        end
+    endtask
 
     function print_error_count();
-        $display("Scoreboard error count: %d", err_count);
+
+        int success_count = success_count_a + success_count_b + success_count_c;
+        int err_count     = error_count_a + error_count_b + error_count_c;
+
+        $display("********************************");
+        $display("* success / errors: %d / %d *", success_count, err_count);
+        $display("********************************");
+        $display("* illegal read: %d / %d *", success_count_a, error_count_a);
+        $display("* legal read 1: %d / %d *", success_count_b, error_count_b);
+        $display("* legal read 2: %d / %d *", success_count_c, error_count_c);
+        $display("********************************");
+
     endfunction
 
 endclass
