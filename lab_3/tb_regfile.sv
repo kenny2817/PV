@@ -195,7 +195,7 @@ class regfile_scoreboard;
 
     function void reset();
         for (int i = 0; i < NUM_REG; i++) begin
-            golden_model_data[i] <= '0;
+            golden_model_data[i] = '0;
         end
     endfunction
 
@@ -207,12 +207,33 @@ class regfile_scoreboard;
     task run();
 
         regfile_mail mail;
+        bit error_condition = 0;
 
         forever begin
 
             mon_scb_mbx.get(mail);
 
-            if (!mail.err) begin
+            assert(error_condition == !mail.err)
+                else begin
+                    $error("Error bit failed: got %b, expected %b", mail.err, error_condition);
+                    err_count = err_count + 1;
+                end
+
+            error_condition = (mail.addr1 != mail.addr2 || (mail.wr_en && (mail.wr_addr == mail.addr1 || mail.wr_addr == mail.addr2)));
+
+            if (error_condition) begin
+
+                // check err bit
+                assert (mail.rd_data1 == 'x' && mail.rd_data2 == 'x') 
+                    else begin
+                        $error("Read 1-2 failed: %0h != x | %0h != x", mail.rd_data1, mail.rd_data2);
+                        err_count = err_count + 1;
+                    end
+
+            end else begin
+
+                // update golden model
+                golden_model_data[mail.wr_addr] = mail.wr_data;
 
                 // check read data 1
                 assert(golden_model_data[mail.rd_addr1] == mail.rd_data1)
@@ -220,7 +241,7 @@ class regfile_scoreboard;
                         $error("Read 1 failed: %0h != %0h",
                                 golden_model_data[mail.rd_addr1],
                                 mail.rd_data1);
-                        err_count <= err_count + 1;
+                        err_count = err_count + 1;
                     end
 
                 // check read data 2
@@ -229,17 +250,15 @@ class regfile_scoreboard;
                         $error("Read 2 failed: %0h != %0h",
                                 golden_model_data[mail.rd_addr2],
                                 mail.rd_data2);
-                        err_count <= err_count + 1;
+                        err_count = err_count + 1;
                     end
-
-                // update golden model
-                golden_model_data[mail.wr_addr] <= mail.wr_data;
             end
 
             if (!mail.rst_n) reset();
         end
-
     endtask
+
+
 
     function print_error_count();
         $display("Scoreboard error count: %d", err_count);
