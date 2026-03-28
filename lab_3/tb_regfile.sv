@@ -235,7 +235,7 @@ class regfile_scoreboard;
     task check_illegal_rd();
 
             // check read data 1 and 2
-            assert (mail.rd_data1 === 'x && mail.rd_data2 == 16'bx) begin
+            assert (mail.rd_data1 === 16'bx && mail.rd_data2 === 16'bx) begin
                 success_count_a = success_count_a + 1;
             end else begin
                 $error("Read 1-2 failed: %0h != x | %0h != x", mail.rd_data1, mail.rd_data2);
