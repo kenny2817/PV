@@ -18,12 +18,13 @@ interface regfile_if (input logic clk);
     logic [ADDR_WIDTH - 1 : 0] wr_addr, rd_addr1, rd_addr2;
     logic [DATA_WIDTH - 1 : 0] wr_data, rd_data1, rd_data2;
 
+    logic is_illegal;
+
     modport dut (
         input  rd_data1, rd_data2, err, clk,
-        output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2
+        output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2, is_illegal
     );
 
-    bit is_illegal;
     assign is_illegal = rd_addr1 == rd_addr2 || (wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2));
 
     property p_err_high;
@@ -231,7 +232,7 @@ class regfile_scoreboard;
         this.reset();
     endfunction
 
-    task check_ilegal_rd();
+    task check_illegal_rd();
         // check read data 1 and 2
         assert (mail.is_illegal && mail.rd_data1 == 'x && mail.rd_data2 == 'x) begin
             success_count_a = success_count_a + 1;
@@ -269,7 +270,7 @@ class regfile_scoreboard;
 
             mon_scb_mbx.get(mail);
 
-            check_ilegal_rd();
+            check_illegal_rd();
             check_legal_rd();
 
             // update golden model if legal write
@@ -280,7 +281,7 @@ class regfile_scoreboard;
         end
     endtask
 
-    function print_error_count();
+    function void print_error_count();
 
         int success_count = success_count_a + success_count_b + success_count_c;
         int err_count     = error_count_a + error_count_b + error_count_c;
@@ -288,7 +289,7 @@ class regfile_scoreboard;
         $display("********************************");
         $display("* success / errors: %d / %d *", success_count, err_count);
         $display("********************************");
-        $display("*  ilegal read: %d / %d *", success_count_a, error_count_a);
+        $display("*  illegal read: %d / %d *", success_count_a, error_count_a);
         $display("* legal read 1: %d / %d *", success_count_b, error_count_b);
         $display("* legal read 2: %d / %d *", success_count_c, error_count_c);
         $display("********************************");
