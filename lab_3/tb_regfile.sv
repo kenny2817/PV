@@ -212,6 +212,8 @@ endclass
 class regfile_scoreboard;
 
     mailbox #(regfile_mail) mon_scb_mbx;
+    regfile_mail mail;
+
     logic [DATA_WIDTH - 1 : 0] golden_model_data[NUM_REG];
 
     int success_count_a = 0, error_count_a = 0;
@@ -229,28 +231,9 @@ class regfile_scoreboard;
         this.reset();
     endfunction
 
-    task run();
-
-        regfile_mail mail;
-
-        forever begin
-
-            mon_scb_mbx.get(mail);
-
-            check_illegal_rd();
-            check_legal_rd();
-
-            // update golden model if legal write
-            if (!mail.is_illegal) golden_model_data[mail.wr_addr] = mail.wr_data;
-            
-            // reset scoreboard if reset low
-            if (!mail.rst_n) reset();
-        end
-    endtask
-
-    task check_illigal_rd();
+    task check_ilegal_rd();
         // check read data 1 and 2
-        assert (mail.is_illegal && mail.rd_data1 == 'x' && mail.rd_data2 == 'x') begin
+        assert (mail.is_illegal && mail.rd_data1 == 'x && mail.rd_data2 == 'x) begin
             success_count_a = success_count_a + 1;
         end else begin
             $error("Read 1-2 failed: %0h != x | %0h != x", mail.rd_data1, mail.rd_data2);
@@ -260,7 +243,7 @@ class regfile_scoreboard;
 
     task check_legal_rd();
         // check read data 1
-        assert(!mail.is_illegal && olden_model_data[mail.rd_addr1] == mail.rd_data1) begin
+        assert(!mail.is_illegal && golden_model_data[mail.rd_addr1] == mail.rd_data1) begin
             success_count_b = success_count_b + 1;
         end else begin
             $error("Read 1 failed: %0h != %0h",
@@ -270,13 +253,30 @@ class regfile_scoreboard;
         end
 
         // check read data 2
-        assert(!mail.is_illegal && olden_model_data[mail.rd_addr2] == mail.rd_data2) begin
+        assert(!mail.is_illegal && golden_model_data[mail.rd_addr2] == mail.rd_data2) begin
             success_count_c = success_count_c + 1;
         end else begin
             $error("Read 2 failed: %0h != %0h",
                     golden_model_data[mail.rd_addr2],
                     mail.rd_data2);
             error_count_c = error_count_c + 1;
+        end
+    endtask
+
+    task run();
+
+        forever begin
+
+            mon_scb_mbx.get(mail);
+
+            check_ilegal_rd();
+            check_legal_rd();
+
+            // update golden model if legal write
+            if (!mail.is_illegal) golden_model_data[mail.wr_addr] = mail.wr_data;
+            
+            // reset scoreboard if reset low
+            if (!mail.rst_n) reset();
         end
     endtask
 
@@ -288,7 +288,7 @@ class regfile_scoreboard;
         $display("********************************");
         $display("* success / errors: %d / %d *", success_count, err_count);
         $display("********************************");
-        $display("* illegal read: %d / %d *", success_count_a, error_count_a);
+        $display("*  ilegal read: %d / %d *", success_count_a, error_count_a);
         $display("* legal read 1: %d / %d *", success_count_b, error_count_b);
         $display("* legal read 2: %d / %d *", success_count_c, error_count_c);
         $display("********************************");
