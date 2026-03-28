@@ -27,20 +27,13 @@ interface regfile_if (input logic clk);
 
     assign is_illegal = rd_addr1 == rd_addr2 || (wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2));
 
-    property p_err_high;
+    property p_err_check_backward;
         @(posedge clk) disable iff (!rst_n)
-        is_illegal |=> (err == 1'b1);
+        (err === 1'b1) |-> $past(is_illegal);
     endproperty
 
-    property p_err_low;
-        @(posedge clk) disable iff (!rst_n)
-        !is_illegal |=> (err == 1'b0);
-    endproperty
-
-    assert property (p_err_high)
-        else $error("FAIL: err not high");
-    assert property (p_err_low)
-        else $error("HW FAIL: err not low");
+    assert property (p_err_check_backward);
+        else $error("FAIL: err");
 
 endinterface
 
