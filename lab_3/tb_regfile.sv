@@ -152,8 +152,11 @@ class regfile_driver;
 
     task read_reg(input int addr1, input int addr2);
 
+
         regfile_If.rd_addr1 <= addr1;
         regfile_If.rd_addr2 <= addr2;
+
+        @(posedge regfile_If.clk);
 
     endtask
 
@@ -302,6 +305,13 @@ endclass
 
 module tb_regfile;
 
+    int success_count_0 = 0, error_count_0 = 0;
+    int success_count_1 = 0, error_count_1 = 0;
+    int success_count_2 = 0, error_count_2 = 0;
+    int success_count_3 = 0, error_count_3 = 0;
+    int success_count_4 = 0, error_count_4 = 0;
+    int success_count_5 = 0, error_count_5 = 0;
+
     logic clk;
     initial clk = 0;
     always #5 clk = ~clk;
@@ -330,6 +340,134 @@ module tb_regfile;
         .err      (regfile_If.err)
     );
 
+    task T_000();
+        // reset
+        for (int i = 0; i < 10; i++) begin
+            drv.write_reg(i, i + 16'h1000);
+            drv.read_reg(i, i);
+        end
+        
+        drv.reset();
+        
+        for (int i = 0; i < 10; i++) begin
+            drv.read_reg(i, i);
+
+            assert(regfile_If.rd_data1 == 16'h0000) success_count_0 = success_count_0 + 1;
+            else begin
+                $error("T_000 | Reset failed: rd_data1[%0d] = %0h != %0h", 
+                        i, regfile_If.rd_data1, 16'b0000);
+                error_count_0 = error_count_0 + 1;
+            end
+        end
+
+    endtask
+
+    task T_001();
+        // err reset
+        fork
+            drv.read_reg(1, 1); // err
+            drv.reset();
+        join
+
+        assert(regfile_If.err == 1'b0) success_count_1 = success_count_1 + 1;
+        else begin 
+            $error("T_001 | Reset failed: err = %b != 0", 
+                    regfile_If.err);
+            error_count_1 = error_count_1 + 1;
+        end
+
+    endtask
+
+    task T_002();
+        // W -> R
+        drv.write_reg(2, 16'hC1A0);
+        drv.write_reg(3, 16'hC1A1);
+        drv.read_reg(2, 3);
+
+        assert(regfile_If.rd_data1 == 16'hC1A0 && regfile_If.rd_data2 == 16'hC1A1) success_count_2 = success_count_2 + 1;
+        else begin
+            $error("T_002 | Write -> Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h",
+                    regfile_If.rd_data1, 16'hC1A0, regfile_If.rd_data2, 16'hC1A1);
+            error_count_2 = error_count_2 + 1;
+        end
+
+    endtask
+
+    task T_003();
+        // illegal R + R
+        drv.read_reg(4, 4);
+
+        assert(regfile_If.err == 1'b1) success_count_3 = success_count_3 + 1;
+        else begin
+            $error("T_003 | Illegal Read + Read failed: err = %b != 1", 
+                    regfile_If.err);
+            error_count_3 = error_count_3 + 1;
+        end
+
+    endtask
+
+    task T_004();
+        // illegal W + R
+        fork
+            drv.write_reg(4, 16'hAAAA);
+            drv.read_reg(4, 5);
+        join
+
+        assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx && regfile_If.err == 1'b1) success_count_4 = success_count_4 + 1;
+        else begin
+            $error("T_004 | Illegal Write + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h | err = %b != 1",
+                    regfile_If.rd_data1, 16'hx', regfile_If.rd_data2, 16'hx', regfile_If.err, 1'b1);
+            error_count_4 = error_count_4 + 1;
+        end
+
+    endtask
+
+    task T_005();
+        // illegal W + R + R
+        fork
+            drv.write_reg(5, 16'hAAAA);
+            drv.read_reg(5, 5);
+        join
+
+        assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx && regfile_If.err == 1'b1) success_count_5 = success_count_5 + 1;
+        else begin
+            $error("T_005 | Illegal Write + Read + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h | err = %b != 1",
+                    regfile_If.rd_data1, 16'hx', regfile_If.rd_data2, 16'hx', regfile_If.err, 1'b1);
+            error_count_5 = error_count_5 + 1;
+        end
+
+    endtask
+
+    function void print_error_count();
+
+        int success_count = success_count_0 + success_count_1 + success_count_2 + success_count_3 + success_count_4 + success_count_5;
+        int err_count     = error_count_0 +   error_count_1 +   error_count_2 +   error_count_3 +   error_count_4 +   error_count_5;
+
+        $display("*********************************");
+        $display("* success / errors: %4d / %4d *", success_count, err_count);
+        $display("*********************************");
+        $display("* T_000:     %4d / %4d *", success_count_0, error_count_0);
+        $display("* T_001:     %4d / %4d *", success_count_1, error_count_1);
+        $display("* T_002:     %4d / %4d *", success_count_2, error_count_2);
+        $display("* T_003:     %4d / %4d *", success_count_3, error_count_3);
+        $display("* T_004:     %4d / %4d *", success_count_4, error_count_4);
+        $display("* T_005:     %4d / %4d *", success_count_5, error_count_5);
+        $display("*********************************");
+
+    endfunction
+
+    function void print_count();
+    
+        $display("*********************************");
+        $display("* Directed tests:              *");
+        print_error_count();
+        $display("*********************************");
+        $display("* Randomized tests:            *");
+        scb.print_error_count();
+        $display("*********************************");
+
+    endfunction
+
     initial begin
 
         gen_drv_mbx = new(1);
@@ -344,16 +482,28 @@ module tb_regfile;
         drv.init_dut();
 
         fork
-            drv.run();
             mon.run();
             scb.run();
         join_none
-        
+
+        // directed tests
+        T_000();
+        T_001();
+        T_002();
+        T_003();
+        T_004();
+        T_005();
+
+        // randomized tests
+        fork
+            drv.run();
+        join_none
+
         gen.run();
 
         repeat(5) @(posedge clk);
 
-        scb.print_error_count();
+        print_count();
         $finish();
     end
 
