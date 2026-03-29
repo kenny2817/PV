@@ -286,7 +286,7 @@ class regfile_scoreboard;
         end
     endtask
 
-    function void print_error_count();
+    function automatic void print_error_count();
 
         int success_count = success_count_a + success_count_b + success_count_c;
         int err_count     = error_count_a + error_count_b + error_count_c;
@@ -320,7 +320,6 @@ module tb_regfile;
 
     mailbox #(regfile_mail) gen_drv_mbx;
     mailbox #(regfile_mail) mon_scb_mbx;
-    mailbox #(regfile_mail) mon_chk_mbx;
 
     regfile_generator   gen;
     regfile_driver      drv;
@@ -344,13 +343,13 @@ module tb_regfile;
         // reset
         for (int i = 0; i < 10; i++) begin
             drv.write_reg(i, i + 16'h1000);
-            drv.read_reg(i, i);
+            drv.read_reg(i, i + 1);
         end
         
         drv.reset();
         
         for (int i = 0; i < 10; i++) begin
-            drv.read_reg(i, i);
+            drv.read_reg(i, i + 1);
 
             assert(regfile_If.rd_data1 == 16'h0000) success_count_0 = success_count_0 + 1;
             else begin
@@ -416,7 +415,7 @@ module tb_regfile;
         assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx && regfile_If.err == 1'b1) success_count_4 = success_count_4 + 1;
         else begin
             $error("T_004 | Illegal Write + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h | err = %b != 1",
-                    regfile_If.rd_data1, 16'hx', regfile_If.rd_data2, 16'hx', regfile_If.err, 1'b1);
+                    regfile_If.rd_data1, 16'hx, regfile_If.rd_data2, 16'hx, regfile_If.err, 1'b1);
             error_count_4 = error_count_4 + 1;
         end
 
@@ -432,13 +431,13 @@ module tb_regfile;
         assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx && regfile_If.err == 1'b1) success_count_5 = success_count_5 + 1;
         else begin
             $error("T_005 | Illegal Write + Read + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h | err = %b != 1",
-                    regfile_If.rd_data1, 16'hx', regfile_If.rd_data2, 16'hx', regfile_If.err, 1'b1);
+                    regfile_If.rd_data1, 16'hx, regfile_If.rd_data2, 16'hx, regfile_If.err, 1'b1);
             error_count_5 = error_count_5 + 1;
         end
 
     endtask
 
-    function void print_error_count();
+    function automatic void print_error_count();
 
         int success_count = success_count_0 + success_count_1 + success_count_2 + success_count_3 + success_count_4 + success_count_5;
         int err_count     = error_count_0 +   error_count_1 +   error_count_2 +   error_count_3 +   error_count_4 +   error_count_5;
@@ -464,26 +463,28 @@ module tb_regfile;
         $display("*********************************");
         $display("* Randomized tests:            *");
         scb.print_error_count();
-        $display("*********************************");
 
+    endfunction
+
+    function void flush_mbx(mailbox #(regfile_mail) mbx);
+        regfile_mail dummy;
+        while (mbx.try_get(dummy));
     endfunction
 
     initial begin
 
         gen_drv_mbx = new(1);
         mon_scb_mbx = new(); // unbounded
-        mon_chk_mbx = new(); // unbounded
 
-        gen = new(gen_drv_mbx, 1000, 1234);
+        gen = new(gen_drv_mbx, 10, 1234);
         drv = new(regfile_If, gen_drv_mbx);
-        mon = new(regfile_If, mon_scb_mbx, mon_chk_mbx);
+        mon = new(regfile_If, mon_scb_mbx);
         scb = new(mon_scb_mbx);
 
         drv.init_dut();
 
         fork
             mon.run();
-            scb.run();
         join_none
 
         // directed tests
@@ -495,8 +496,11 @@ module tb_regfile;
         T_005();
 
         // randomized tests
+        flush_mbx(mon_scb_mbx);
+        
         fork
             drv.run();
+            scb.run();
         join_none
 
         gen.run();
