@@ -166,14 +166,11 @@ class regfile_monitor;
 
     virtual interface regfile_if.dut regfile_If;
     mailbox #(regfile_mail) mon_scb_mbx;
-    mailbox #(regfile_mail) mon_chk_mbx;
 
     function new(virtual interface regfile_if.dut regfile_If,
-                 mailbox #(regfile_mail) mon_scb_mbx,
-                 mailbox #(regfile_mail) mon_chk_mbx);
+                 mailbox #(regfile_mail) mon_scb_mbx);
         this.regfile_If = regfile_If;
         this.mon_scb_mbx = mon_scb_mbx;
-        this.mon_chk_mbx = mon_chk_mbx;
     endfunction
 
     task run();
@@ -196,7 +193,6 @@ class regfile_monitor;
             mail.is_illegal = regfile_If.is_illegal;
             
             mon_scb_mbx.put(mail);
-            mon_chk_mbx.put(mail);
 
             $display("Time: %8t | rst: %b | en: %b | wr_addr: %2d | wr_data: %4h | err: %b | rd_addr1: %2d | rd_addr2: %2d | rd_data1: %4h | rd_data2: %4h |",
                 $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.wr_addr, regfile_If.wr_data, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
@@ -497,7 +493,7 @@ module tb_regfile;
 
         // randomized tests
         flush_mbx(mon_scb_mbx);
-        
+
         fork
             drv.run();
             scb.run();
