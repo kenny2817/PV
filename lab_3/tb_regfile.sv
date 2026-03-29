@@ -8,6 +8,9 @@ package constants;
     localparam int NUM_REG = 32;
     localparam int DATA_WIDTH = 16;
     localparam int ADDR_WIDTH = $clog2(NUM_REG);
+    localparam int NUM_DIRECTED_TESTS = 8;
+    localparam int NUM_RANDOMIZED_TESTS = 100;
+    localparam int SEED = 1234;
 endpackage
 
 import constants::*;
@@ -301,12 +304,13 @@ endclass
 
 module tb_regfile;
 
-    int success_count_0 = 0, error_count_0 = 0;
-    int success_count_1 = 0, error_count_1 = 0;
-    int success_count_2 = 0, error_count_2 = 0;
-    int success_count_3 = 0, error_count_3 = 0;
-    int success_count_4 = 0, error_count_4 = 0;
-    int success_count_5 = 0, error_count_5 = 0;
+    int success_count[NUM_DIRECTED_TESTS];
+    int error_count[NUM_DIRECTED_TESTS];
+
+    for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
+        success_count[i] = 0;
+        error_count[i] = 0;
+    end
 
     logic clk;
     initial clk = 0;
@@ -347,11 +351,11 @@ module tb_regfile;
         for (int i = 0; i < 10; i++) begin
             drv.read_reg(i, i + 1);
 
-            assert(regfile_If.rd_data1 == 16'h0000) success_count_0 = success_count_0 + 1;
+            assert(regfile_If.rd_data1 == 16'h0000) success_count[0] = success_count[0] + 1;
             else begin
                 $error("T_000 | Reset failed: rd_data1[%0d] = %0h != %0h", 
                         i, regfile_If.rd_data1, 16'b0000);
-                error_count_0 = error_count_0 + 1;
+                error_count[0] = error_count[0] + 1;
             end
         end
 
@@ -364,11 +368,11 @@ module tb_regfile;
             drv.reset();
         join
 
-        assert(regfile_If.err == 1'b0) success_count_1 = success_count_1 + 1;
+        assert(regfile_If.err == 1'b0) success_count[1] = success_count[1] + 1;
         else begin 
             $error("T_001 | Reset failed: err = %b != 0", 
                     regfile_If.err);
-            error_count_1 = error_count_1 + 1;
+            error_count[1] = error_count[1] + 1;
         end
 
     endtask
@@ -380,11 +384,11 @@ module tb_regfile;
         drv.write_reg(3, 16'hC1A1);
         drv.read_reg(2, 3);
 
-        assert(regfile_If.rd_data1 == 16'hC1A0 && regfile_If.rd_data2 == 16'hC1A1) success_count_2 = success_count_2 + 1;
+        assert(regfile_If.rd_data1 == 16'hC1A0 && regfile_If.rd_data2 == 16'hC1A1) success_count[2] = success_count[2] + 1;
         else begin
             $error("T_002 | Write -> Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h",
                     regfile_If.rd_data1, 16'hC1A0, regfile_If.rd_data2, 16'hC1A1);
-            error_count_2 = error_count_2 + 1;
+            error_count[2] = error_count[2] + 1;
         end
 
     endtask
@@ -392,12 +396,13 @@ module tb_regfile;
     task T_003();
         // illegal R + R
         drv.read_reg(4, 4);
+        drv.read_reg(4, 5);
 
-        assert(regfile_If.err == 1'b1) success_count_3 = success_count_3 + 1;
+        assert(regfile_If.err == 1'b1) success_count[3] = success_count[3] + 1;
         else begin
             $error("T_003 | Illegal Read + Read failed: err = %b != 1", 
                     regfile_If.err);
-            error_count_3 = error_count_3 + 1;
+            error_count[3] = error_count[3] + 1;
         end
 
     endtask
@@ -409,11 +414,11 @@ module tb_regfile;
             drv.read_reg(4, 5);
         join
 
-        assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx && regfile_If.err == 1'b1) success_count_4 = success_count_4 + 1;
+        assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx) success_count[4] = success_count[4] + 1;
         else begin
-            $error("T_004 | Illegal Write + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h | err = %b != 1",
-                    regfile_If.rd_data1, 16'hx, regfile_If.rd_data2, 16'hx, regfile_If.err, 1'b1);
-            error_count_4 = error_count_4 + 1;
+            $error("T_004 | Illegal Write + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h",
+                    regfile_If.rd_data1, 16'hx, regfile_If.rd_data2, 16'hx);
+            error_count[4] = error_count[4] + 1;
         end
 
     endtask
@@ -425,29 +430,66 @@ module tb_regfile;
             drv.read_reg(5, 5);
         join
 
-        assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx && regfile_If.err == 1'b1) success_count_5 = success_count_5 + 1;
+        assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx) success_count[5] = success_count[5] + 1;
         else begin
-            $error("T_005 | Illegal Write + Read + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h | err = %b != 1",
-                    regfile_If.rd_data1, 16'hx, regfile_If.rd_data2, 16'hx, regfile_If.err, 1'b1);
-            error_count_5 = error_count_5 + 1;
+            $error("T_005 | Illegal Write + Read + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h",
+                    regfile_If.rd_data1, 16'hx, regfile_If.rd_data2, 16'hx);
+            error_count[5] = error_count[5] + 1;
+        end
+
+    endtask
+
+    task T_006();
+        // illegal W + R
+        fork
+            drv.write_reg(4, 16'hAAAA);
+            drv.read_reg(4, 5);
+        join
+
+        drv.read_reg(4, 5);
+
+        assert(regfile_If.err == 1'b1) success_count[6] = success_count[6] + 1;
+        else begin
+            $error("T_006 | Illegal Write + Read failed: err = %b != 1", 
+                    regfile_If.err);
+            error_count[6] = error_count[6] + 1;
+        end
+
+    endtask
+
+    task T_007();
+        // illegal W + R + R
+        fork
+            drv.write_reg(5, 16'hAAAA);
+            drv.read_reg(5, 5);
+        join
+
+        drv.read_reg(4, 5);
+
+        assert(regfile_If.err == 1'b1) success_count[7] = success_count[7] + 1;
+        else begin
+            $error("T_007 | Illegal Write + Read + Read failed: err = %b != 1", 
+                    regfile_If.err);
+            error_count[7] = error_count[7] + 1;
         end
 
     endtask
 
     function automatic void print_error_count();
+        
+        int success_count = 0, err_count = 0;
 
-        int success_count = success_count_0 + success_count_1 + success_count_2 + success_count_3 + success_count_4 + success_count_5;
-        int err_count     = error_count_0 +   error_count_1 +   error_count_2 +   error_count_3 +   error_count_4 +   error_count_5;
+        for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
+            success_count += success_count[i];
+            error_count   += error_count[i];
+        end
 
         $display("*********************************");
         $display("* success / errors: %4d / %4d *", success_count, err_count);
         $display("*********************************");
-        $display("* T_000:     %4d / %4d *", success_count_0, error_count_0);
-        $display("* T_001:     %4d / %4d *", success_count_1, error_count_1);
-        $display("* T_002:     %4d / %4d *", success_count_2, error_count_2);
-        $display("* T_003:     %4d / %4d *", success_count_3, error_count_3);
-        $display("* T_004:     %4d / %4d *", success_count_4, error_count_4);
-        $display("* T_005:     %4d / %4d *", success_count_5, error_count_5);
+        for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
+            $display("* T_%03d:     %4d / %4d *", i, success_count[i], error_count[i]);
+        end
         $display("*********************************");
 
     endfunction
@@ -455,10 +497,11 @@ module tb_regfile;
     function void print_count();
     
         $display("*********************************");
-        $display("* Directed tests:              *");
+        $display("* Directed tests:        %5d *", NUM_DIRECTED_TESTS);
         print_error_count();
+        
         $display("*********************************");
-        $display("* Randomized tests:            *");
+        $display("* Randomized tests:      %5d *", NUM_RANDOMIZED_TESTS);
         scb.print_error_count();
 
     endfunction
@@ -473,7 +516,7 @@ module tb_regfile;
         gen_drv_mbx = new(1);
         mon_scb_mbx = new(); // unbounded
 
-        gen = new(gen_drv_mbx, 10, 1234);
+        gen = new(gen_drv_mbx, NUM_RANDOMIZED_TESTS, SEED);
         drv = new(regfile_If, gen_drv_mbx);
         mon = new(regfile_If, mon_scb_mbx);
         scb = new(mon_scb_mbx);
@@ -491,6 +534,8 @@ module tb_regfile;
         T_003();
         T_004();
         T_005();
+        T_006();
+        T_007();
 
         // randomized tests
         flush_mbx(mon_scb_mbx);
