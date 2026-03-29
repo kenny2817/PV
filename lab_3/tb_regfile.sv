@@ -307,11 +307,6 @@ module tb_regfile;
     int success_count[NUM_DIRECTED_TESTS];
     int error_count[NUM_DIRECTED_TESTS];
 
-    for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
-        success_count[i] = 0;
-        error_count[i] = 0;
-    end
-
     logic clk;
     initial clk = 0;
     always #5 clk = ~clk;
@@ -475,6 +470,13 @@ module tb_regfile;
 
     endtask
 
+    function reset_error_count();
+        for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
+            success_count[i] = 0;
+            error_count[i] = 0;
+        end
+    endfunction
+
     function automatic void print_error_count();
         
         int success_count = 0, err_count = 0;
@@ -499,7 +501,7 @@ module tb_regfile;
         $display("*********************************");
         $display("* Directed tests:        %5d *", NUM_DIRECTED_TESTS);
         print_error_count();
-        
+
         $display("*********************************");
         $display("* Randomized tests:      %5d *", NUM_RANDOMIZED_TESTS);
         scb.print_error_count();
@@ -528,6 +530,8 @@ module tb_regfile;
         join_none
 
         // directed tests
+        reset_error_count();
+
         T_000();
         T_001();
         T_002();
