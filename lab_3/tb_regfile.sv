@@ -375,6 +375,7 @@ module tb_regfile;
 
     task T_002();
         // W -> R
+        drv.read_reg(0, 1);
         drv.write_reg(2, 16'hC1A0);
         drv.write_reg(3, 16'hC1A1);
         drv.read_reg(2, 3);
