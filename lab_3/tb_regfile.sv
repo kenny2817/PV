@@ -479,15 +479,15 @@ module tb_regfile;
 
     function automatic void print_error_count();
         
-        int success_count = 0, err_count = 0;
+        int success_count_total = 0, error_count_total = 0;
 
         for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
-            success_count += success_count[i];
-            error_count   += error_count[i];
+            success_count_total += success_count[i];
+            error_count_total   += error_count[i];
         end
 
         $display("*********************************");
-        $display("* success / errors: %4d / %4d *", success_count, err_count);
+        $display("* success / errors: %4d / %4d *", success_count_total, error_count_total);
         $display("*********************************");
         for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
             $display("* T_%03d:     %4d / %4d *", i, success_count[i], error_count[i]);
