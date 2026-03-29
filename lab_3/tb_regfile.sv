@@ -92,7 +92,7 @@ class regfile_generator;
         
     endtask
 
-    task apply(
+    task send_mail(
         bit rst_n,
         bit wr_en,
         bit [ADDR_WIDTH - 1 : 0] wr_addr,
@@ -119,14 +119,44 @@ class regfile_generator;
         regfile_mail mail;
 
         for (int i = 0; i < 10; i++) begin
-            this.apply(1'b1, 1'b1, i, i + 16'h1000, 11, 12);
+            this.send_mail(1'b1, 1'b1, i, i + 16'h1000, 11, 12);
         end
 
-        this.apply(1'b0, 1'b0, 0, 0, 0, 0);
+        this.send_mail(1'b0, 1'b0, 0, 0, 0, 0);
         
         for (int i = 0; i < 10; i++) begin
-            this.apply(1'b1, 1'b0, 0, 0, i, 11);
+            this.send_mail(1'b1, 1'b0, 0, 0, i, 11);
         end
+
+    endtask
+
+    task T_001();
+
+        send_mail(1'b0, 1'b0, 0, 0, 0, 0);
+        fork
+            drv.read_reg(1, 1); // err
+            drv.reset();
+        join
+
+        assert(regfile_If.err == 1'b0) success_count[1] = success_count[1] + 1;
+        else begin 
+            $error("T_001 | Reset failed: err = %b != 0", 
+                    regfile_If.err);
+            error_count[1] = error_count[1] + 1;
+        end
+
+    endtask
+
+    task execute_directed_tests();
+
+        T_000();
+        // T_001();
+        // T_002();
+        // T_003();
+        // T_004();
+        // T_005();
+        // T_006();
+        // T_007();
 
     endtask
 
@@ -211,8 +241,6 @@ class regfile_monitor;
 
     mailbox #(regfile_mail) mon_scb_mbx;
 
-    bit preparing_directed_test = 1'b0;
-
     function new(virtual interface regfile_if.dut regfile_If,
                  mailbox #(regfile_mail) mon_scb_mbx);
         this.regfile_If = regfile_If;
@@ -239,7 +267,7 @@ class regfile_monitor;
             mail.err        = regfile_If.err;
             mail.is_illegal = regfile_If.is_illegal;
             
-            if (!preparing_directed_test) mon_scb_mbx.put(mail);
+            mon_scb_mbx.put(mail);
 
             $display("Time: %8t | rst: %b | en: %b | wr_addr: %2d | wr_data: %4h | err: %b | rd_addr1: %2d | rd_addr2: %2d | rd_data1: %4h | rd_data2: %4h |",
                 $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.wr_addr, regfile_If.wr_data, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
@@ -256,9 +284,8 @@ class regfile_scoreboard;
 
     logic [DATA_WIDTH - 1 : 0] golden_model_data [NUM_REG] = '{default : 0};
 
-    int test_id = -1;
-    int success_count    [NUM_DIRECTED_TESTS + SCB_CHECKS] = '{default : 0};
-    int error_count      [NUM_DIRECTED_TESTS + SCB_CHECKS] = '{default : 0};
+    int success_count[SCB_CHECKS] = '{default:0};
+    int error_count[SCB_CHECKS] = '{default:0};
 
     function void reset();
         for (int i = 0; i < NUM_REG; i++) begin
@@ -270,27 +297,11 @@ class regfile_scoreboard;
         this.mon_scb_mbx = mon_scb_mbx;
     endfunction
 
-    function void print_count();
+    function automatic void print_error_count();
     
         int success_count_total = 0, error_count_total = 0;
 
-        for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
-            success_count_total += success_count[i];
-            error_count_total   += error_count[i];
-        end
-
-        $display("*********************************");
-        $display("* Directed tests:        %5d *", NUM_DIRECTED_TESTS);
-        $display("*********************************");
-        $display("* success / errors: %4d / %4d *", success_count_total, error_count_total);
-        $display("*********************************");
-        for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
-            $display("* T_%03d:     %4d / %4d *", i, success_count[i], error_count[i]);
-        end
-
-        success_count_total = 0, error_count_total = 0;
-
-        for (int i = NUM_DIRECTED_TESTS; i < NUM_DIRECTED_TESTS + SCB_CHECKS; i++) begin
+        for (int i = 0; i < SCB_CHECKS; i++) begin
             success_count_total += success_count[i];
             error_count_total   += error_count[i];
         end
@@ -300,41 +311,12 @@ class regfile_scoreboard;
         $display("*********************************");
         $display("* success / errors: %4d / %4d *", success_count_total, error_count_total);
         $display("*********************************");
-        $display("* illegal read:     %4d / %4d *", success_count[NUM_DIRECTED_TESTS + 0], error_count[NUM_DIRECTED_TESTS + 0]);
-        $display("* legal read 1:     %4d / %4d *", success_count[NUM_DIRECTED_TESTS + 1], error_count[NUM_DIRECTED_TESTS + 1]);
-        $display("* legal read 2:     %4d / %4d *", success_count[NUM_DIRECTED_TESTS + 2], error_count[NUM_DIRECTED_TESTS + 2]);
+        $display("* illegal read:     %4d / %4d *", success_count[0], error_count[0]);
+        $display("* legal read 1:     %4d / %4d *", success_count[1], error_count[1]);
+        $display("* legal read 2:     %4d / %4d *", success_count[2], error_count[2]);
         $display("*********************************");
 
     endfunction
-    
-    task check_T_000();
-        
-        assert(regfile_If.rd_data1 == 16'h0000 && regfile_If.rd_data2 == 16'h0000) begin
-            success_count[0] += 1;
-        end else begin
-            $error("T_000 | Reset failed: rd_data1[%0d] = %0h != %0h | rd_data2[%0d] = %0h != %0h", 
-                    i, regfile_If.rd_data1, 16'b0000, i, regfile_If.rd_data2, 16'b0000);
-            error_count[0] += 1;
-        end
-
-    endtask
-
-
-    task check_directed();
-    
-        case (this.test_id)
-            0: check_T_000();
-            1: check_T_001();
-            2: check_T_002();
-            3: check_T_003();
-            4: check_T_004();
-            5: check_T_005();
-            6: check_T_006();
-            7: check_T_007();
-            default: $error("Invalid test ID: %0d", this.test_id);
-        endcase
-
-    endtask
 
     task check_illegal_rd();
 
@@ -372,7 +354,7 @@ class regfile_scoreboard;
 
     endtask
 
-    task check_randomized();
+    task check_rd();
         if (mail.is_illegal)  check_illegal_rd();
         if (!mail.is_illegal) check_legal_rd();
     endtask
@@ -383,8 +365,7 @@ class regfile_scoreboard;
 
             mon_scb_mbx.get(mail);
 
-            if (this.test_id != -1) check_directed();
-            else                    check_randomized();
+            check_rd();
 
             // update golden model if legal write
             if (!mail.is_illegal) golden_model_data[mail.wr_addr] = mail.wr_data;
@@ -426,44 +407,23 @@ module tb_regfile;
     );
 
     task T_000();
-
-        regfile_mail mail;
-
+        // reset
         for (int i = 0; i < 10; i++) begin
-            mail = new();
-
-            mail.rst_n = 1'b1;
-            mail.wr_en = 1'b1;
-            mail.wr_addr = i;
-            mail.wr_data = i + 16'h1000;
-            mail.rd_addr1 = 11;
-            mail.rd_addr2 = 12;
-
-            gen_drv_mbx.put(mail);
+            drv.write_reg(i, i + 16'h1000);
+            drv.read_reg(i, i + 1);
         end
-
-        mail = new();
-
-        mail.rst_n = 1'b0;
-        mail.wr_en = 1'b0;
-        mail.wr_addr = 0;
-        mail.wr_data = 0;
-        mail.rd_addr1 = 0;
-        mail.rd_addr2 = 0;
-
-        gen_drv_mbx.put(mail);
+        
+        drv.reset();
         
         for (int i = 0; i < 10; i++) begin
-            mail = new();
+            drv.read_reg(i, i + 1);
 
-            mail.rst_n = 1'b1;
-            mail.wr_en = 1'b0;
-            mail.wr_addr = 0;
-            mail.wr_data = 0;
-            mail.rd_addr1 = i;
-            mail.rd_addr2 = 11;
-
-            gen_drv_mbx.put(mail);
+            assert(regfile_If.rd_data1 == 16'h0000) success_count[0] = success_count[0] + 1;
+            else begin
+                $error("T_000 | Reset failed: rd_data1[%0d] = %0h != %0h", 
+                        i, regfile_If.rd_data1, 16'b0000);
+                error_count[0] = error_count[0] + 1;
+            end
         end
 
     endtask
