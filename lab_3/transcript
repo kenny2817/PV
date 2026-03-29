@@ -2,7 +2,7 @@
 # 0
 # regfile_v0
 # QuestaSim vlog 2025.1_1 Compiler 2025.02 Feb 13 2025
-# Start time: 17:32:37 on Mar 29,2026
+# Start time: 17:50:54 on Mar 29,2026
 # vlog "+acc" "+define+DUT_NAME=regfile_v0" tb_regfile.sv 
 # -- Compiling package constants
 # -- Compiling package tb_regfile_sv_unit
@@ -12,10 +12,10 @@
 # 
 # Top level modules:
 # 	tb_regfile
-# End time: 17:32:37 on Mar 29,2026, Elapsed time: 0:00:00
+# End time: 17:50:54 on Mar 29,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vsim work.tb_regfile 
-# Start time: 17:32:37 on Mar 29,2026
+# Start time: 17:50:54 on Mar 29,2026
 # ** Note: (vsim-3813) Design is being optimized due to module recompilation...
 # ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility. The +acc switch would be deprecated in a future release.
 # ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
@@ -50,66 +50,44 @@
 # Loading work.regfile_v0(fast)
 # Loading work.regfile_if(fast)
 # Time:    15000 | rst: 1 | en: 1 | wr_addr:  0 | wr_data: 1000 | err: 0 | rd_addr1:  0 | rd_addr2:  0 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:    25000 | rst: 1 | en: 0 | wr_addr:  0 | wr_data: 1000 | err: 1 | rd_addr1:  0 | rd_addr2:  0 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:    35000 | rst: 1 | en: 1 | wr_addr:  1 | wr_data: 1001 | err: 1 | rd_addr1:  0 | rd_addr2:  0 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:    45000 | rst: 1 | en: 0 | wr_addr:  1 | wr_data: 1001 | err: 1 | rd_addr1:  1 | rd_addr2:  1 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:    55000 | rst: 1 | en: 1 | wr_addr:  2 | wr_data: 1002 | err: 1 | rd_addr1:  1 | rd_addr2:  1 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:    65000 | rst: 1 | en: 0 | wr_addr:  2 | wr_data: 1002 | err: 1 | rd_addr1:  2 | rd_addr2:  2 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:    75000 | rst: 1 | en: 1 | wr_addr:  3 | wr_data: 1003 | err: 1 | rd_addr1:  2 | rd_addr2:  2 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:    85000 | rst: 1 | en: 0 | wr_addr:  3 | wr_data: 1003 | err: 1 | rd_addr1:  3 | rd_addr2:  3 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:    95000 | rst: 1 | en: 1 | wr_addr:  4 | wr_data: 1004 | err: 1 | rd_addr1:  3 | rd_addr2:  3 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   105000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: 1004 | err: 1 | rd_addr1:  4 | rd_addr2:  4 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   115000 | rst: 1 | en: 1 | wr_addr:  5 | wr_data: 1005 | err: 1 | rd_addr1:  4 | rd_addr2:  4 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   125000 | rst: 1 | en: 0 | wr_addr:  5 | wr_data: 1005 | err: 1 | rd_addr1:  5 | rd_addr2:  5 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   135000 | rst: 1 | en: 1 | wr_addr:  6 | wr_data: 1006 | err: 1 | rd_addr1:  5 | rd_addr2:  5 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   145000 | rst: 1 | en: 0 | wr_addr:  6 | wr_data: 1006 | err: 1 | rd_addr1:  6 | rd_addr2:  6 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   155000 | rst: 1 | en: 1 | wr_addr:  7 | wr_data: 1007 | err: 1 | rd_addr1:  6 | rd_addr2:  6 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   165000 | rst: 1 | en: 0 | wr_addr:  7 | wr_data: 1007 | err: 1 | rd_addr1:  7 | rd_addr2:  7 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   175000 | rst: 1 | en: 1 | wr_addr:  8 | wr_data: 1008 | err: 1 | rd_addr1:  7 | rd_addr2:  7 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   185000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: 1008 | err: 1 | rd_addr1:  8 | rd_addr2:  8 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   195000 | rst: 1 | en: 1 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  8 | rd_addr2:  8 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   205000 | rst: 0 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  9 | rd_addr2:  9 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   215000 | rst: 0 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  9 | rd_addr2:  9 | rd_data1: xxxx | rd_data2: xxxx |
-# ** Error: T_000 | Reset failed: rd_data1[0] = x != 0
-#    Time: 225 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# Time:   225000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  0 | rd_addr2:  0 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   235000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  1 | rd_addr2:  1 | rd_data1: xxxx | rd_data2: xxxx |
-# ** Error: T_000 | Reset failed: rd_data1[1] = x != 0
-#    Time: 235 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# ** Error: T_000 | Reset failed: rd_data1[2] = x != 0
-#    Time: 245 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# Time:   245000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  2 | rd_addr2:  2 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   255000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  3 | rd_addr2:  3 | rd_data1: xxxx | rd_data2: xxxx |
-# ** Error: T_000 | Reset failed: rd_data1[3] = x != 0
-#    Time: 255 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# ** Error: T_000 | Reset failed: rd_data1[4] = x != 0
-#    Time: 265 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# Time:   265000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  4 | rd_addr2:  4 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   275000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  5 | rd_addr2:  5 | rd_data1: xxxx | rd_data2: xxxx |
-# ** Error: T_000 | Reset failed: rd_data1[5] = x != 0
-#    Time: 275 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# ** Error: T_000 | Reset failed: rd_data1[6] = x != 0
-#    Time: 285 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# Time:   285000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  6 | rd_addr2:  6 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   295000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  7 | rd_addr2:  7 | rd_data1: xxxx | rd_data2: xxxx |
-# ** Error: T_000 | Reset failed: rd_data1[7] = x != 0
-#    Time: 295 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# ** Error: T_000 | Reset failed: rd_data1[8] = x != 0
-#    Time: 305 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# Time:   305000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  8 | rd_addr2:  8 | rd_data1: xxxx | rd_data2: xxxx |
-# Time:   315000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  9 | rd_addr2:  9 | rd_data1: xxxx | rd_data2: xxxx |
-# ** Error: T_000 | Reset failed: rd_data1[9] = x != 0
-#    Time: 315 ns  Scope: tb_regfile.T_000 File: tb_regfile.sv Line: 357
-# ** Error: T_001 | Reset failed: err = 1 != 0
-#    Time: 325 ns  Scope: tb_regfile.T_001 File: tb_regfile.sv Line: 374
-# Time:   325000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  1 | rd_addr2:  1 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:    25000 | rst: 1 | en: 0 | wr_addr:  0 | wr_data: 1000 | err: 1 | rd_addr1:  0 | rd_addr2:  1 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:    35000 | rst: 1 | en: 1 | wr_addr:  1 | wr_data: 1001 | err: 0 | rd_addr1:  0 | rd_addr2:  1 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:    45000 | rst: 1 | en: 0 | wr_addr:  1 | wr_data: 1001 | err: 1 | rd_addr1:  1 | rd_addr2:  2 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:    55000 | rst: 1 | en: 1 | wr_addr:  2 | wr_data: 1002 | err: 0 | rd_addr1:  1 | rd_addr2:  2 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:    65000 | rst: 1 | en: 0 | wr_addr:  2 | wr_data: 1002 | err: 1 | rd_addr1:  2 | rd_addr2:  3 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:    75000 | rst: 1 | en: 1 | wr_addr:  3 | wr_data: 1003 | err: 0 | rd_addr1:  2 | rd_addr2:  3 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:    85000 | rst: 1 | en: 0 | wr_addr:  3 | wr_data: 1003 | err: 1 | rd_addr1:  3 | rd_addr2:  4 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:    95000 | rst: 1 | en: 1 | wr_addr:  4 | wr_data: 1004 | err: 0 | rd_addr1:  3 | rd_addr2:  4 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:   105000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: 1004 | err: 1 | rd_addr1:  4 | rd_addr2:  5 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   115000 | rst: 1 | en: 1 | wr_addr:  5 | wr_data: 1005 | err: 0 | rd_addr1:  4 | rd_addr2:  5 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:   125000 | rst: 1 | en: 0 | wr_addr:  5 | wr_data: 1005 | err: 1 | rd_addr1:  5 | rd_addr2:  6 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   135000 | rst: 1 | en: 1 | wr_addr:  6 | wr_data: 1006 | err: 0 | rd_addr1:  5 | rd_addr2:  6 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:   145000 | rst: 1 | en: 0 | wr_addr:  6 | wr_data: 1006 | err: 1 | rd_addr1:  6 | rd_addr2:  7 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   155000 | rst: 1 | en: 1 | wr_addr:  7 | wr_data: 1007 | err: 0 | rd_addr1:  6 | rd_addr2:  7 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:   165000 | rst: 1 | en: 0 | wr_addr:  7 | wr_data: 1007 | err: 1 | rd_addr1:  7 | rd_addr2:  8 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   175000 | rst: 1 | en: 1 | wr_addr:  8 | wr_data: 1008 | err: 0 | rd_addr1:  7 | rd_addr2:  8 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:   185000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: 1008 | err: 1 | rd_addr1:  8 | rd_addr2:  9 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   195000 | rst: 1 | en: 1 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  8 | rd_addr2:  9 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:   205000 | rst: 0 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 1 | rd_addr1:  9 | rd_addr2: 10 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   215000 | rst: 0 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  9 | rd_addr2: 10 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   225000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  0 | rd_addr2:  1 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   235000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  1 | rd_addr2:  2 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   245000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  2 | rd_addr2:  3 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   255000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  3 | rd_addr2:  4 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   265000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  4 | rd_addr2:  5 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   275000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  5 | rd_addr2:  6 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   285000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  6 | rd_addr2:  7 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   295000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  7 | rd_addr2:  8 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   305000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  8 | rd_addr2:  9 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   315000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  9 | rd_addr2: 10 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   325000 | rst: 1 | en: 0 | wr_addr:  9 | wr_data: 1009 | err: 0 | rd_addr1:  1 | rd_addr2:  1 | rd_data1: xxxx | rd_data2: xxxx |
 # Time:   335000 | rst: 1 | en: 1 | wr_addr:  2 | wr_data: c1a0 | err: 0 | rd_addr1:  1 | rd_addr2:  1 | rd_data1: xxxx | rd_data2: xxxx |
 # Time:   345000 | rst: 1 | en: 1 | wr_addr:  3 | wr_data: c1a1 | err: 1 | rd_addr1:  1 | rd_addr2:  1 | rd_data1: xxxx | rd_data2: xxxx |
 # Time:   355000 | rst: 1 | en: 0 | wr_addr:  3 | wr_data: c1a1 | err: 1 | rd_addr1:  2 | rd_addr2:  3 | rd_data1: 0000 | rd_data2: 0000 |
 # ** Error: T_002 | Write -> Read failed: rd_data1 = 0 != c1a0 | rd_data2 = 0 != c1a1
-#    Time: 355 ns  Scope: tb_regfile.T_002 File: tb_regfile.sv Line: 389
+#    Time: 355 ns  Scope: tb_regfile.T_002 File: tb_regfile.sv Line: 384
 # ** Error: T_003 | Illegal Read + Read failed: err = 0 != 1
-#    Time: 365 ns  Scope: tb_regfile.T_003 File: tb_regfile.sv Line: 402
+#    Time: 365 ns  Scope: tb_regfile.T_003 File: tb_regfile.sv Line: 397
 # Time:   365000 | rst: 1 | en: 0 | wr_addr:  3 | wr_data: c1a1 | err: 0 | rd_addr1:  4 | rd_addr2:  4 | rd_data1: xxxx | rd_data2: xxxx |
 # Time:   375000 | rst: 1 | en: 1 | wr_addr:  4 | wr_data: aaaa | err: 1 | rd_addr1:  4 | rd_addr2:  5 | rd_data1: xxxx | rd_data2: xxxx |
 # Time:   385000 | rst: 1 | en: 1 | wr_addr:  5 | wr_data: aaaa | err: 1 | rd_addr1:  5 | rd_addr2:  5 | rd_data1: xxxx | rd_data2: xxxx |
@@ -121,12 +99,12 @@
 # Time:   445000 | rst: 1 | en: 1 | wr_addr: 31 | wr_data: 3a62 | err: 0 | rd_addr1: 31 | rd_addr2:  4 | rd_data1: xxxx | rd_data2: xxxx |
 # Time:   455000 | rst: 1 | en: 0 | wr_addr: 31 | wr_data: 3a62 | err: 1 | rd_addr1: 31 | rd_addr2:  5 | rd_data1: 0000 | rd_data2: 0000 |
 # ** Error: Read 2 failed: aaaa != 0
-#    Time: 455 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 259
+#    Time: 455 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 255
 # Time:   465000 | rst: 1 | en: 0 | wr_addr: 31 | wr_data: 3a62 | err: 0 | rd_addr1: 31 | rd_addr2:  5 | rd_data1: 0000 | rd_data2: 0000 |
 # ** Error: Read 1 failed: 3a62 != 0
-#    Time: 465 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 249
+#    Time: 465 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
 # ** Error: Read 2 failed: aaaa != 0
-#    Time: 465 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 259
+#    Time: 465 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 255
 # Time:   475000 | rst: 1 | en: 0 | wr_addr: 31 | wr_data: 3a62 | err: 0 | rd_addr1: 13 | rd_addr2:  7 | rd_data1: 0000 | rd_data2: 0000 |
 # Time:   485000 | rst: 1 | en: 1 | wr_addr: 25 | wr_data: 80e4 | err: 0 | rd_addr1: 13 | rd_addr2:  7 | rd_data1: 0000 | rd_data2: 0000 |
 # Time:   495000 | rst: 1 | en: 0 | wr_addr: 25 | wr_data: 80e4 | err: 0 | rd_addr1: 23 | rd_addr2: 27 | rd_data1: 0000 | rd_data2: 0000 |
@@ -139,13 +117,221 @@
 # Time:   565000 | rst: 1 | en: 1 | wr_addr: 24 | wr_data: 621a | err: 0 | rd_addr1: 14 | rd_addr2: 30 | rd_data1: 0000 | rd_data2: 0000 |
 # Time:   575000 | rst: 1 | en: 0 | wr_addr: 24 | wr_data: 621a | err: 0 | rd_addr1: 13 | rd_addr2: 31 | rd_data1: 0000 | rd_data2: 2520 |
 # Time:   585000 | rst: 1 | en: 0 | wr_addr: 24 | wr_data: 621a | err: 0 | rd_addr1: 13 | rd_addr2: 31 | rd_data1: 0000 | rd_data2: 2520 |
+# Time:   595000 | rst: 1 | en: 0 | wr_addr: 24 | wr_data: 621a | err: 0 | rd_addr1: 10 | rd_addr2:  1 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   605000 | rst: 1 | en: 0 | wr_addr: 24 | wr_data: 621a | err: 0 | rd_addr1: 10 | rd_addr2:  1 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   615000 | rst: 1 | en: 0 | wr_addr: 24 | wr_data: 621a | err: 0 | rd_addr1: 18 | rd_addr2: 21 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   625000 | rst: 1 | en: 0 | wr_addr: 24 | wr_data: 621a | err: 0 | rd_addr1: 18 | rd_addr2: 21 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   635000 | rst: 1 | en: 0 | wr_addr: 24 | wr_data: 621a | err: 0 | rd_addr1: 21 | rd_addr2: 13 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   645000 | rst: 1 | en: 1 | wr_addr: 22 | wr_data: 1657 | err: 0 | rd_addr1: 21 | rd_addr2: 13 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   655000 | rst: 1 | en: 0 | wr_addr: 22 | wr_data: 1657 | err: 0 | rd_addr1:  1 | rd_addr2: 31 | rd_data1: 0000 | rd_data2: 2520 |
+# Time:   665000 | rst: 1 | en: 1 | wr_addr: 14 | wr_data: 996e | err: 0 | rd_addr1:  1 | rd_addr2: 31 | rd_data1: 0000 | rd_data2: 2520 |
+# Time:   675000 | rst: 1 | en: 0 | wr_addr: 14 | wr_data: 996e | err: 0 | rd_addr1: 21 | rd_addr2: 17 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   685000 | rst: 1 | en: 0 | wr_addr: 14 | wr_data: 996e | err: 0 | rd_addr1: 21 | rd_addr2: 17 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   695000 | rst: 1 | en: 0 | wr_addr: 14 | wr_data: 996e | err: 0 | rd_addr1:  0 | rd_addr2: 24 | rd_data1: 0000 | rd_data2: 621a |
+# Time:   705000 | rst: 1 | en: 0 | wr_addr: 14 | wr_data: 996e | err: 0 | rd_addr1:  0 | rd_addr2: 24 | rd_data1: 0000 | rd_data2: 621a |
+# Time:   715000 | rst: 1 | en: 0 | wr_addr: 14 | wr_data: 996e | err: 0 | rd_addr1: 28 | rd_addr2:  7 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   725000 | rst: 1 | en: 1 | wr_addr:  7 | wr_data: 001e | err: 0 | rd_addr1: 28 | rd_addr2:  7 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:   735000 | rst: 1 | en: 0 | wr_addr:  7 | wr_data: 001e | err: 1 | rd_addr1:  5 | rd_addr2:  9 | rd_data1: 0000 | rd_data2: 0000 |
+# ** Error: Read 1 failed: aaaa != 0
+#    Time: 735 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:   745000 | rst: 1 | en: 1 | wr_addr: 26 | wr_data: 1acf | err: 0 | rd_addr1:  5 | rd_addr2:  9 | rd_data1: 0000 | rd_data2: 0000 |
+# ** Error: Read 1 failed: aaaa != 0
+#    Time: 745 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:   755000 | rst: 1 | en: 0 | wr_addr: 26 | wr_data: 1acf | err: 0 | rd_addr1: 29 | rd_addr2: 13 | rd_data1: e95c | rd_data2: 0000 |
+# Time:   765000 | rst: 1 | en: 1 | wr_addr: 17 | wr_data: 6212 | err: 0 | rd_addr1: 29 | rd_addr2: 13 | rd_data1: e95c | rd_data2: 0000 |
+# Time:   775000 | rst: 1 | en: 0 | wr_addr: 17 | wr_data: 6212 | err: 0 | rd_addr1: 29 | rd_addr2: 24 | rd_data1: e95c | rd_data2: 621a |
+# Time:   785000 | rst: 1 | en: 1 | wr_addr: 22 | wr_data: cfdd | err: 0 | rd_addr1: 29 | rd_addr2: 24 | rd_data1: e95c | rd_data2: 621a |
+# Time:   795000 | rst: 1 | en: 0 | wr_addr: 22 | wr_data: cfdd | err: 0 | rd_addr1: 28 | rd_addr2: 30 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   805000 | rst: 1 | en: 0 | wr_addr: 22 | wr_data: cfdd | err: 0 | rd_addr1: 28 | rd_addr2: 30 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   815000 | rst: 1 | en: 0 | wr_addr: 22 | wr_data: cfdd | err: 0 | rd_addr1: 29 | rd_addr2: 24 | rd_data1: e95c | rd_data2: 621a |
+# Time:   825000 | rst: 1 | en: 1 | wr_addr: 18 | wr_data: d3ee | err: 0 | rd_addr1: 29 | rd_addr2: 24 | rd_data1: e95c | rd_data2: 621a |
+# Time:   835000 | rst: 1 | en: 0 | wr_addr: 18 | wr_data: d3ee | err: 0 | rd_addr1: 13 | rd_addr2: 23 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   845000 | rst: 1 | en: 1 | wr_addr: 17 | wr_data: f72f | err: 0 | rd_addr1: 13 | rd_addr2: 23 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   855000 | rst: 1 | en: 0 | wr_addr: 17 | wr_data: f72f | err: 0 | rd_addr1:  4 | rd_addr2: 27 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   865000 | rst: 1 | en: 0 | wr_addr: 17 | wr_data: f72f | err: 0 | rd_addr1:  4 | rd_addr2: 27 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   875000 | rst: 1 | en: 0 | wr_addr: 17 | wr_data: f72f | err: 0 | rd_addr1: 16 | rd_addr2:  9 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   885000 | rst: 1 | en: 0 | wr_addr: 17 | wr_data: f72f | err: 0 | rd_addr1: 16 | rd_addr2:  9 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   895000 | rst: 1 | en: 0 | wr_addr: 17 | wr_data: f72f | err: 0 | rd_addr1:  3 | rd_addr2: 22 | rd_data1: 0000 | rd_data2: cfdd |
+# Time:   905000 | rst: 1 | en: 1 | wr_addr: 15 | wr_data: f081 | err: 0 | rd_addr1:  3 | rd_addr2: 22 | rd_data1: 0000 | rd_data2: cfdd |
+# Time:   915000 | rst: 1 | en: 0 | wr_addr: 15 | wr_data: f081 | err: 0 | rd_addr1: 30 | rd_addr2: 22 | rd_data1: 0000 | rd_data2: cfdd |
+# Time:   925000 | rst: 1 | en: 0 | wr_addr: 15 | wr_data: f081 | err: 0 | rd_addr1: 30 | rd_addr2: 22 | rd_data1: 0000 | rd_data2: cfdd |
+# Time:   935000 | rst: 1 | en: 0 | wr_addr: 15 | wr_data: f081 | err: 0 | rd_addr1: 10 | rd_addr2: 28 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   945000 | rst: 1 | en: 1 | wr_addr:  8 | wr_data: f5b3 | err: 0 | rd_addr1: 10 | rd_addr2: 28 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   955000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: f5b3 | err: 0 | rd_addr1: 18 | rd_addr2:  2 | rd_data1: d3ee | rd_data2: 0000 |
+# Time:   965000 | rst: 1 | en: 1 | wr_addr:  7 | wr_data: a819 | err: 0 | rd_addr1: 18 | rd_addr2:  2 | rd_data1: d3ee | rd_data2: 0000 |
+# Time:   975000 | rst: 1 | en: 0 | wr_addr:  7 | wr_data: a819 | err: 0 | rd_addr1: 13 | rd_addr2: 30 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   985000 | rst: 1 | en: 1 | wr_addr: 20 | wr_data: 7eca | err: 0 | rd_addr1: 13 | rd_addr2: 30 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:   995000 | rst: 1 | en: 0 | wr_addr: 20 | wr_data: 7eca | err: 0 | rd_addr1: 25 | rd_addr2: 24 | rd_data1: 80e4 | rd_data2: 621a |
+# Time:  1005000 | rst: 1 | en: 0 | wr_addr: 20 | wr_data: 7eca | err: 0 | rd_addr1: 25 | rd_addr2: 24 | rd_data1: 80e4 | rd_data2: 621a |
+# Time:  1015000 | rst: 1 | en: 0 | wr_addr: 20 | wr_data: 7eca | err: 0 | rd_addr1:  3 | rd_addr2: 19 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:  1025000 | rst: 1 | en: 0 | wr_addr: 20 | wr_data: 7eca | err: 0 | rd_addr1:  3 | rd_addr2: 19 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:  1035000 | rst: 1 | en: 0 | wr_addr: 20 | wr_data: 7eca | err: 0 | rd_addr1: 12 | rd_addr2: 21 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:  1045000 | rst: 1 | en: 1 | wr_addr: 19 | wr_data: 245c | err: 0 | rd_addr1: 12 | rd_addr2: 21 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:  1055000 | rst: 1 | en: 0 | wr_addr: 19 | wr_data: 245c | err: 0 | rd_addr1: 10 | rd_addr2: 20 | rd_data1: 0000 | rd_data2: 7eca |
+# Time:  1065000 | rst: 1 | en: 0 | wr_addr: 19 | wr_data: 245c | err: 0 | rd_addr1: 10 | rd_addr2: 20 | rd_data1: 0000 | rd_data2: 7eca |
+# Time:  1075000 | rst: 1 | en: 0 | wr_addr: 19 | wr_data: 245c | err: 0 | rd_addr1:  4 | rd_addr2: 29 | rd_data1: 0000 | rd_data2: e95c |
+# Time:  1085000 | rst: 1 | en: 1 | wr_addr: 15 | wr_data: fa0b | err: 0 | rd_addr1:  4 | rd_addr2: 29 | rd_data1: 0000 | rd_data2: e95c |
+# Time:  1095000 | rst: 1 | en: 0 | wr_addr: 15 | wr_data: fa0b | err: 0 | rd_addr1: 29 | rd_addr2: 15 | rd_data1: e95c | rd_data2: fa0b |
+# Time:  1105000 | rst: 1 | en: 1 | wr_addr: 10 | wr_data: 1dcf | err: 0 | rd_addr1: 29 | rd_addr2: 15 | rd_data1: e95c | rd_data2: fa0b |
+# Time:  1115000 | rst: 1 | en: 0 | wr_addr: 10 | wr_data: 1dcf | err: 0 | rd_addr1:  6 | rd_addr2:  6 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:  1125000 | rst: 1 | en: 1 | wr_addr: 16 | wr_data: 76f5 | err: 1 | rd_addr1:  6 | rd_addr2:  6 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:  1135000 | rst: 1 | en: 0 | wr_addr: 16 | wr_data: 76f5 | err: 1 | rd_addr1: 30 | rd_addr2: 24 | rd_data1: 0000 | rd_data2: 621a |
+# Time:  1145000 | rst: 1 | en: 1 | wr_addr: 27 | wr_data: 19fa | err: 0 | rd_addr1: 30 | rd_addr2: 24 | rd_data1: 0000 | rd_data2: 621a |
+# Time:  1155000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 19fa | err: 0 | rd_addr1: 18 | rd_addr2:  5 | rd_data1: d3ee | rd_data2: 0000 |
+# ** Error: Read 2 failed: aaaa != 0
+#    Time: 1155 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 255
+# Time:  1165000 | rst: 1 | en: 1 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1: 18 | rd_addr2:  5 | rd_data1: d3ee | rd_data2: 0000 |
+# ** Error: Read 2 failed: aaaa != 0
+#    Time: 1165 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 255
+# Time:  1175000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1: 23 | rd_addr2:  7 | rd_data1: 0000 | rd_data2: a819 |
+# Time:  1185000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1: 23 | rd_addr2:  7 | rd_data1: 0000 | rd_data2: a819 |
+# Time:  1195000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1:  9 | rd_addr2:  2 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:  1205000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1:  9 | rd_addr2:  2 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:  1215000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1: 30 | rd_addr2: 25 | rd_data1: 0000 | rd_data2: 80e4 |
+# Time:  1225000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1: 30 | rd_addr2: 25 | rd_data1: 0000 | rd_data2: 80e4 |
+# Time:  1235000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1: 31 | rd_addr2: 30 | rd_data1: 2520 | rd_data2: 0000 |
+# Time:  1245000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1: 31 | rd_addr2: 30 | rd_data1: 2520 | rd_data2: 0000 |
+# Time:  1255000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1:  2 | rd_addr2: 25 | rd_data1: 0000 | rd_data2: 80e4 |
+# Time:  1265000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1:  2 | rd_addr2: 25 | rd_data1: 0000 | rd_data2: 80e4 |
+# Time:  1275000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1: 31 | rd_addr2: 27 | rd_data1: 2520 | rd_data2: 4a8a |
+# Time:  1285000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1: 31 | rd_addr2: 27 | rd_data1: 2520 | rd_data2: 4a8a |
+# Time:  1295000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 4a8a | err: 0 | rd_addr1:  3 | rd_addr2: 22 | rd_data1: 0000 | rd_data2: cfdd |
+# Time:  1305000 | rst: 1 | en: 1 | wr_addr: 29 | wr_data: 3dfb | err: 0 | rd_addr1:  3 | rd_addr2: 22 | rd_data1: 0000 | rd_data2: cfdd |
+# Time:  1315000 | rst: 1 | en: 0 | wr_addr: 29 | wr_data: 3dfb | err: 0 | rd_addr1: 24 | rd_addr2: 31 | rd_data1: 621a | rd_data2: 2520 |
+# Time:  1325000 | rst: 1 | en: 0 | wr_addr: 29 | wr_data: 3dfb | err: 0 | rd_addr1: 24 | rd_addr2: 31 | rd_data1: 621a | rd_data2: 2520 |
+# Time:  1335000 | rst: 1 | en: 0 | wr_addr: 29 | wr_data: 3dfb | err: 0 | rd_addr1: 16 | rd_addr2: 14 | rd_data1: 0000 | rd_data2: 996e |
+# ** Error: Read 1 failed: 76f5 != 0
+#    Time: 1335 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:  1345000 | rst: 1 | en: 1 | wr_addr: 30 | wr_data: a23d | err: 0 | rd_addr1: 16 | rd_addr2: 14 | rd_data1: 0000 | rd_data2: 996e |
+# ** Error: Read 1 failed: 76f5 != 0
+#    Time: 1345 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:  1355000 | rst: 1 | en: 0 | wr_addr: 30 | wr_data: a23d | err: 0 | rd_addr1: 16 | rd_addr2: 24 | rd_data1: 0000 | rd_data2: 621a |
+# ** Error: Read 1 failed: 76f5 != 0
+#    Time: 1355 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:  1365000 | rst: 1 | en: 1 | wr_addr: 10 | wr_data: 8a03 | err: 0 | rd_addr1: 16 | rd_addr2: 24 | rd_data1: 0000 | rd_data2: 621a |
+# ** Error: Read 1 failed: 76f5 != 0
+#    Time: 1365 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:  1375000 | rst: 1 | en: 0 | wr_addr: 10 | wr_data: 8a03 | err: 0 | rd_addr1: 18 | rd_addr2: 27 | rd_data1: d3ee | rd_data2: 4a8a |
+# Time:  1385000 | rst: 1 | en: 1 | wr_addr:  1 | wr_data: 77b8 | err: 0 | rd_addr1: 18 | rd_addr2: 27 | rd_data1: d3ee | rd_data2: 4a8a |
+# Time:  1395000 | rst: 1 | en: 0 | wr_addr:  1 | wr_data: 77b8 | err: 0 | rd_addr1: 27 | rd_addr2: 30 | rd_data1: 4a8a | rd_data2: a23d |
+# Time:  1405000 | rst: 1 | en: 1 | wr_addr:  3 | wr_data: c802 | err: 0 | rd_addr1: 27 | rd_addr2: 30 | rd_data1: 4a8a | rd_data2: a23d |
+# Time:  1415000 | rst: 1 | en: 0 | wr_addr:  3 | wr_data: c802 | err: 0 | rd_addr1: 25 | rd_addr2: 17 | rd_data1: 80e4 | rd_data2: f72f |
+# Time:  1425000 | rst: 1 | en: 1 | wr_addr: 27 | wr_data: 2cab | err: 0 | rd_addr1: 25 | rd_addr2: 17 | rd_data1: 80e4 | rd_data2: f72f |
+# Time:  1435000 | rst: 1 | en: 0 | wr_addr: 27 | wr_data: 2cab | err: 0 | rd_addr1: 17 | rd_addr2: 31 | rd_data1: f72f | rd_data2: 2520 |
+# Time:  1445000 | rst: 1 | en: 1 | wr_addr:  7 | wr_data: 6ff9 | err: 0 | rd_addr1: 17 | rd_addr2: 31 | rd_data1: f72f | rd_data2: 2520 |
+# Time:  1455000 | rst: 1 | en: 0 | wr_addr:  7 | wr_data: 6ff9 | err: 0 | rd_addr1: 16 | rd_addr2: 22 | rd_data1: 0000 | rd_data2: cfdd |
+# ** Error: Read 1 failed: 76f5 != 0
+#    Time: 1455 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:  1465000 | rst: 1 | en: 1 | wr_addr: 17 | wr_data: b8a1 | err: 0 | rd_addr1: 16 | rd_addr2: 22 | rd_data1: 0000 | rd_data2: cfdd |
+# ** Error: Read 1 failed: 76f5 != 0
+#    Time: 1465 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:  1475000 | rst: 1 | en: 0 | wr_addr: 17 | wr_data: b8a1 | err: 0 | rd_addr1:  1 | rd_addr2: 15 | rd_data1: 77b8 | rd_data2: fa0b |
+# Time:  1485000 | rst: 1 | en: 0 | wr_addr: 17 | wr_data: b8a1 | err: 0 | rd_addr1:  1 | rd_addr2: 15 | rd_data1: 77b8 | rd_data2: fa0b |
+# Time:  1495000 | rst: 1 | en: 0 | wr_addr: 17 | wr_data: b8a1 | err: 0 | rd_addr1: 21 | rd_addr2: 12 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:  1505000 | rst: 1 | en: 1 | wr_addr: 14 | wr_data: 0bf7 | err: 0 | rd_addr1: 21 | rd_addr2: 12 | rd_data1: 0000 | rd_data2: 0000 |
+# Time:  1515000 | rst: 1 | en: 0 | wr_addr: 14 | wr_data: 0bf7 | err: 0 | rd_addr1: 20 | rd_addr2: 22 | rd_data1: 7eca | rd_data2: cfdd |
+# Time:  1525000 | rst: 1 | en: 1 | wr_addr: 10 | wr_data: 58d0 | err: 0 | rd_addr1: 20 | rd_addr2: 22 | rd_data1: 7eca | rd_data2: cfdd |
+# Time:  1535000 | rst: 1 | en: 0 | wr_addr: 10 | wr_data: 58d0 | err: 0 | rd_addr1:  3 | rd_addr2: 31 | rd_data1: c802 | rd_data2: 2520 |
+# Time:  1545000 | rst: 1 | en: 0 | wr_addr: 10 | wr_data: 58d0 | err: 0 | rd_addr1:  3 | rd_addr2: 31 | rd_data1: c802 | rd_data2: 2520 |
+# Time:  1555000 | rst: 1 | en: 0 | wr_addr: 10 | wr_data: 58d0 | err: 0 | rd_addr1:  7 | rd_addr2: 16 | rd_data1: 6ff9 | rd_data2: 0000 |
+# ** Error: Read 2 failed: 76f5 != 0
+#    Time: 1555 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 255
+# Time:  1565000 | rst: 1 | en: 1 | wr_addr: 25 | wr_data: a094 | err: 0 | rd_addr1:  7 | rd_addr2: 16 | rd_data1: 6ff9 | rd_data2: 0000 |
+# ** Error: Read 2 failed: 76f5 != 0
+#    Time: 1565 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 255
+# Time:  1575000 | rst: 1 | en: 0 | wr_addr: 25 | wr_data: a094 | err: 0 | rd_addr1: 20 | rd_addr2:  9 | rd_data1: 7eca | rd_data2: 0000 |
+# Time:  1585000 | rst: 1 | en: 0 | wr_addr: 25 | wr_data: a094 | err: 0 | rd_addr1: 20 | rd_addr2:  9 | rd_data1: 7eca | rd_data2: 0000 |
+# Time:  1595000 | rst: 1 | en: 0 | wr_addr: 25 | wr_data: a094 | err: 0 | rd_addr1: 27 | rd_addr2: 17 | rd_data1: 2cab | rd_data2: b8a1 |
+# Time:  1605000 | rst: 1 | en: 0 | wr_addr: 25 | wr_data: a094 | err: 0 | rd_addr1: 27 | rd_addr2: 17 | rd_data1: 2cab | rd_data2: b8a1 |
+# Time:  1615000 | rst: 1 | en: 0 | wr_addr: 25 | wr_data: a094 | err: 0 | rd_addr1: 20 | rd_addr2: 26 | rd_data1: 7eca | rd_data2: 1acf |
+# Time:  1625000 | rst: 1 | en: 0 | wr_addr: 25 | wr_data: a094 | err: 0 | rd_addr1: 20 | rd_addr2: 26 | rd_data1: 7eca | rd_data2: 1acf |
+# Time:  1635000 | rst: 1 | en: 0 | wr_addr: 25 | wr_data: a094 | err: 0 | rd_addr1: 16 | rd_addr2: 31 | rd_data1: 0000 | rd_data2: 2520 |
+# ** Error: Read 1 failed: 76f5 != 0
+#    Time: 1635 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:  1645000 | rst: 1 | en: 1 | wr_addr: 11 | wr_data: 08f7 | err: 0 | rd_addr1: 16 | rd_addr2: 31 | rd_data1: 0000 | rd_data2: 2520 |
+# ** Error: Read 1 failed: 76f5 != 0
+#    Time: 1645 ns  Scope: tb_regfile_sv_unit.regfile_scoreboard.check_legal_rd File: tb_regfile.sv Line: 245
+# Time:  1655000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 08f7 | err: 0 | rd_addr1: 31 | rd_addr2: 11 | rd_data1: 2520 | rd_data2: 08f7 |
+# Time:  1665000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 08f7 | err: 0 | rd_addr1: 31 | rd_addr2: 11 | rd_data1: 2520 | rd_data2: 08f7 |
+# Time:  1675000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 08f7 | err: 0 | rd_addr1: 17 | rd_addr2: 19 | rd_data1: b8a1 | rd_data2: 245c |
+# Time:  1685000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 08f7 | err: 0 | rd_addr1: 17 | rd_addr2: 19 | rd_data1: b8a1 | rd_data2: 245c |
+# Time:  1695000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 08f7 | err: 0 | rd_addr1:  8 | rd_addr2: 14 | rd_data1: f5b3 | rd_data2: 0bf7 |
+# Time:  1705000 | rst: 1 | en: 1 | wr_addr: 28 | wr_data: 15f3 | err: 0 | rd_addr1:  8 | rd_addr2: 14 | rd_data1: f5b3 | rd_data2: 0bf7 |
+# Time:  1715000 | rst: 1 | en: 0 | wr_addr: 28 | wr_data: 15f3 | err: 0 | rd_addr1: 20 | rd_addr2: 29 | rd_data1: 7eca | rd_data2: 3dfb |
+# Time:  1725000 | rst: 1 | en: 1 | wr_addr:  4 | wr_data: db1b | err: 0 | rd_addr1: 20 | rd_addr2: 29 | rd_data1: 7eca | rd_data2: 3dfb |
+# Time:  1735000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: db1b | err: 0 | rd_addr1:  6 | rd_addr2: 11 | rd_data1: 0000 | rd_data2: 08f7 |
+# Time:  1745000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: db1b | err: 0 | rd_addr1:  6 | rd_addr2: 11 | rd_data1: 0000 | rd_data2: 08f7 |
+# Time:  1755000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: db1b | err: 0 | rd_addr1: 26 | rd_addr2:  8 | rd_data1: 1acf | rd_data2: f5b3 |
+# Time:  1765000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: db1b | err: 0 | rd_addr1: 26 | rd_addr2:  8 | rd_data1: 1acf | rd_data2: f5b3 |
+# Time:  1775000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: db1b | err: 0 | rd_addr1: 13 | rd_addr2:  8 | rd_data1: 0000 | rd_data2: f5b3 |
+# Time:  1785000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: db1b | err: 0 | rd_addr1: 13 | rd_addr2:  8 | rd_data1: 0000 | rd_data2: f5b3 |
+# Time:  1795000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: db1b | err: 0 | rd_addr1: 23 | rd_addr2: 14 | rd_data1: 0000 | rd_data2: 0bf7 |
+# Time:  1805000 | rst: 1 | en: 1 | wr_addr: 23 | wr_data: 194e | err: 0 | rd_addr1: 23 | rd_addr2: 14 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:  1815000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: 194e | err: 1 | rd_addr1: 17 | rd_addr2: 22 | rd_data1: b8a1 | rd_data2: cfdd |
+# Time:  1825000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: 194e | err: 0 | rd_addr1: 17 | rd_addr2: 22 | rd_data1: b8a1 | rd_data2: cfdd |
+# Time:  1835000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: 194e | err: 0 | rd_addr1: 14 | rd_addr2: 25 | rd_data1: 0bf7 | rd_data2: a094 |
+# Time:  1845000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: 194e | err: 0 | rd_addr1: 14 | rd_addr2: 25 | rd_data1: 0bf7 | rd_data2: a094 |
+# Time:  1855000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: 194e | err: 0 | rd_addr1: 19 | rd_addr2:  3 | rd_data1: 245c | rd_data2: c802 |
+# Time:  1865000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: 194e | err: 0 | rd_addr1: 19 | rd_addr2:  3 | rd_data1: 245c | rd_data2: c802 |
+# Time:  1875000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: 194e | err: 0 | rd_addr1: 23 | rd_addr2: 23 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:  1885000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: 194e | err: 1 | rd_addr1: 23 | rd_addr2: 23 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:  1895000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: 194e | err: 1 | rd_addr1: 18 | rd_addr2:  1 | rd_data1: d3ee | rd_data2: 77b8 |
+# Time:  1905000 | rst: 1 | en: 1 | wr_addr: 11 | wr_data: 108b | err: 0 | rd_addr1: 18 | rd_addr2:  1 | rd_data1: d3ee | rd_data2: 77b8 |
+# Time:  1915000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 108b | err: 0 | rd_addr1:  7 | rd_addr2:  6 | rd_data1: 6ff9 | rd_data2: 0000 |
+# Time:  1925000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 108b | err: 0 | rd_addr1:  7 | rd_addr2:  6 | rd_data1: 6ff9 | rd_data2: 0000 |
+# Time:  1935000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 108b | err: 0 | rd_addr1: 24 | rd_addr2: 27 | rd_data1: 621a | rd_data2: 2cab |
+# Time:  1945000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 108b | err: 0 | rd_addr1: 24 | rd_addr2: 27 | rd_data1: 621a | rd_data2: 2cab |
+# Time:  1955000 | rst: 1 | en: 0 | wr_addr: 11 | wr_data: 108b | err: 0 | rd_addr1: 25 | rd_addr2: 31 | rd_data1: a094 | rd_data2: 2520 |
+# Time:  1965000 | rst: 1 | en: 1 | wr_addr: 18 | wr_data: 6d8e | err: 0 | rd_addr1: 25 | rd_addr2: 31 | rd_data1: a094 | rd_data2: 2520 |
+# Time:  1975000 | rst: 1 | en: 0 | wr_addr: 18 | wr_data: 6d8e | err: 0 | rd_addr1: 27 | rd_addr2: 15 | rd_data1: 2cab | rd_data2: fa0b |
+# Time:  1985000 | rst: 1 | en: 1 | wr_addr:  7 | wr_data: 6069 | err: 0 | rd_addr1: 27 | rd_addr2: 15 | rd_data1: 2cab | rd_data2: fa0b |
+# Time:  1995000 | rst: 1 | en: 0 | wr_addr:  7 | wr_data: 6069 | err: 0 | rd_addr1: 19 | rd_addr2: 29 | rd_data1: 245c | rd_data2: 3dfb |
+# Time:  2005000 | rst: 1 | en: 1 | wr_addr: 23 | wr_data: be65 | err: 0 | rd_addr1: 19 | rd_addr2: 29 | rd_data1: 245c | rd_data2: 3dfb |
+# Time:  2015000 | rst: 1 | en: 0 | wr_addr: 23 | wr_data: be65 | err: 0 | rd_addr1: 30 | rd_addr2: 14 | rd_data1: a23d | rd_data2: 0bf7 |
+# Time:  2025000 | rst: 1 | en: 1 | wr_addr: 19 | wr_data: 23a8 | err: 0 | rd_addr1: 30 | rd_addr2: 14 | rd_data1: a23d | rd_data2: 0bf7 |
+# Time:  2035000 | rst: 1 | en: 0 | wr_addr: 19 | wr_data: 23a8 | err: 0 | rd_addr1: 15 | rd_addr2: 29 | rd_data1: fa0b | rd_data2: 3dfb |
+# Time:  2045000 | rst: 1 | en: 1 | wr_addr:  5 | wr_data: a632 | err: 0 | rd_addr1: 15 | rd_addr2: 29 | rd_data1: fa0b | rd_data2: 3dfb |
+# Time:  2055000 | rst: 1 | en: 0 | wr_addr:  5 | wr_data: a632 | err: 0 | rd_addr1:  3 | rd_addr2: 15 | rd_data1: c802 | rd_data2: fa0b |
+# Time:  2065000 | rst: 1 | en: 1 | wr_addr: 18 | wr_data: 27e1 | err: 0 | rd_addr1:  3 | rd_addr2: 15 | rd_data1: c802 | rd_data2: fa0b |
+# Time:  2075000 | rst: 1 | en: 0 | wr_addr: 18 | wr_data: 27e1 | err: 0 | rd_addr1: 23 | rd_addr2: 11 | rd_data1: be65 | rd_data2: 108b |
+# Time:  2085000 | rst: 1 | en: 0 | wr_addr: 18 | wr_data: 27e1 | err: 0 | rd_addr1: 23 | rd_addr2: 11 | rd_data1: be65 | rd_data2: 108b |
+# Time:  2095000 | rst: 1 | en: 0 | wr_addr: 18 | wr_data: 27e1 | err: 0 | rd_addr1: 18 | rd_addr2:  0 | rd_data1: 27e1 | rd_data2: 0000 |
+# Time:  2105000 | rst: 1 | en: 0 | wr_addr: 18 | wr_data: 27e1 | err: 0 | rd_addr1: 18 | rd_addr2:  0 | rd_data1: 27e1 | rd_data2: 0000 |
+# Time:  2115000 | rst: 1 | en: 0 | wr_addr: 18 | wr_data: 27e1 | err: 0 | rd_addr1: 31 | rd_addr2: 17 | rd_data1: 2520 | rd_data2: b8a1 |
+# Time:  2125000 | rst: 1 | en: 1 | wr_addr:  8 | wr_data: 3767 | err: 0 | rd_addr1: 31 | rd_addr2: 17 | rd_data1: 2520 | rd_data2: b8a1 |
+# Time:  2135000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: 3767 | err: 0 | rd_addr1: 23 | rd_addr2: 30 | rd_data1: be65 | rd_data2: a23d |
+# Time:  2145000 | rst: 1 | en: 1 | wr_addr:  1 | wr_data: 5030 | err: 0 | rd_addr1: 23 | rd_addr2: 30 | rd_data1: be65 | rd_data2: a23d |
+# Time:  2155000 | rst: 1 | en: 0 | wr_addr:  1 | wr_data: 5030 | err: 0 | rd_addr1:  5 | rd_addr2:  9 | rd_data1: a632 | rd_data2: 0000 |
+# Time:  2165000 | rst: 1 | en: 1 | wr_addr: 22 | wr_data: fe45 | err: 0 | rd_addr1:  5 | rd_addr2:  9 | rd_data1: a632 | rd_data2: 0000 |
+# Time:  2175000 | rst: 1 | en: 0 | wr_addr: 22 | wr_data: fe45 | err: 0 | rd_addr1: 30 | rd_addr2: 15 | rd_data1: a23d | rd_data2: fa0b |
+# Time:  2185000 | rst: 1 | en: 1 | wr_addr: 26 | wr_data: fe2e | err: 0 | rd_addr1: 30 | rd_addr2: 15 | rd_data1: a23d | rd_data2: fa0b |
+# Time:  2195000 | rst: 1 | en: 0 | wr_addr: 26 | wr_data: fe2e | err: 0 | rd_addr1: 21 | rd_addr2: 21 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:  2205000 | rst: 1 | en: 0 | wr_addr: 26 | wr_data: fe2e | err: 1 | rd_addr1: 21 | rd_addr2: 21 | rd_data1: xxxx | rd_data2: xxxx |
+# Time:  2215000 | rst: 1 | en: 0 | wr_addr: 26 | wr_data: fe2e | err: 1 | rd_addr1:  1 | rd_addr2: 11 | rd_data1: 5030 | rd_data2: 108b |
+# Time:  2225000 | rst: 1 | en: 1 | wr_addr:  8 | wr_data: aef2 | err: 0 | rd_addr1:  1 | rd_addr2: 11 | rd_data1: 5030 | rd_data2: 108b |
+# Time:  2235000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: aef2 | err: 0 | rd_addr1: 12 | rd_addr2: 26 | rd_data1: 0000 | rd_data2: fe2e |
+# Time:  2245000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: aef2 | err: 0 | rd_addr1: 12 | rd_addr2: 26 | rd_data1: 0000 | rd_data2: fe2e |
+# Time:  2255000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: aef2 | err: 0 | rd_addr1: 19 | rd_addr2:  2 | rd_data1: 23a8 | rd_data2: 0000 |
+# Time:  2265000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: aef2 | err: 0 | rd_addr1: 19 | rd_addr2:  2 | rd_data1: 23a8 | rd_data2: 0000 |
+# Time:  2275000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: aef2 | err: 0 | rd_addr1:  0 | rd_addr2: 17 | rd_data1: 0000 | rd_data2: b8a1 |
+# Time:  2285000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: aef2 | err: 0 | rd_addr1:  0 | rd_addr2: 17 | rd_data1: 0000 | rd_data2: b8a1 |
+# Time:  2295000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: aef2 | err: 0 | rd_addr1: 24 | rd_addr2: 12 | rd_data1: 621a | rd_data2: 0000 |
+# Time:  2305000 | rst: 1 | en: 1 | wr_addr:  2 | wr_data: 56df | err: 0 | rd_addr1: 24 | rd_addr2: 12 | rd_data1: 621a | rd_data2: 0000 |
+# Time:  2315000 | rst: 1 | en: 0 | wr_addr:  2 | wr_data: 56df | err: 0 | rd_addr1:  5 | rd_addr2: 24 | rd_data1: a632 | rd_data2: 621a |
+# Time:  2325000 | rst: 1 | en: 1 | wr_addr: 31 | wr_data: 0220 | err: 0 | rd_addr1:  5 | rd_addr2: 24 | rd_data1: a632 | rd_data2: 621a |
+# Time:  2335000 | rst: 1 | en: 0 | wr_addr: 31 | wr_data: 0220 | err: 0 | rd_addr1: 29 | rd_addr2: 21 | rd_data1: 3dfb | rd_data2: 0000 |
+# Time:  2345000 | rst: 1 | en: 1 | wr_addr:  8 | wr_data: 3007 | err: 0 | rd_addr1: 29 | rd_addr2: 21 | rd_data1: 3dfb | rd_data2: 0000 |
+# Time:  2355000 | rst: 1 | en: 0 | wr_addr:  8 | wr_data: 3007 | err: 0 | rd_addr1:  0 | rd_addr2: 19 | rd_data1: 0000 | rd_data2: 23a8 |
+# Time:  2365000 | rst: 1 | en: 1 | wr_addr:  4 | wr_data: 2b0d | err: 0 | rd_addr1:  0 | rd_addr2: 19 | rd_data1: 0000 | rd_data2: 23a8 |
+# Time:  2375000 | rst: 1 | en: 0 | wr_addr:  4 | wr_data: 2b0d | err: 0 | rd_addr1: 24 | rd_addr2: 31 | rd_data1: 621a | rd_data2: 0220 |
+# Time:  2385000 | rst: 1 | en: 1 | wr_addr: 29 | wr_data: cd62 | err: 0 | rd_addr1: 24 | rd_addr2: 31 | rd_data1: 621a | rd_data2: 0220 |
 # *********************************
 # * Directed tests:              *
 # *********************************
-# * success / errors:    2 /   13 *
+# * success / errors:   13 /    2 *
 # *********************************
-# * T_000:        0 /   10 *
-# * T_001:        0 /    1 *
+# * T_000:       10 /    0 *
+# * T_001:        1 /    0 *
 # * T_002:        0 /    1 *
 # * T_003:        0 /    1 *
 # * T_004:        1 /    0 *
@@ -154,14 +340,13 @@
 # *********************************
 # * Randomized tests:            *
 # *********************************
-# * success / errors:   75 /    3 *
+# * success / errors:  375 /   17 *
 # *********************************
-# * illegal read:       38 /    0 *
-# * legal read 1:       19 /    1 *
-# * legal read 2:       18 /    2 *
-# *********************************
+# * illegal read:       10 /    0 *
+# * legal read 1:      180 /   11 *
+# * legal read 2:      185 /    6 *
 # *********************************
 # ** Note: $finish    : tb_regfile.sv(507)
-#    Time: 595 ns  Iteration: 1  Instance: /tb_regfile
-# End time: 17:32:39 on Mar 29,2026, Elapsed time: 0:00:02
-# Errors: 16, Warnings: 1
+#    Time: 2395 ns  Iteration: 1  Instance: /tb_regfile
+# End time: 17:50:57 on Mar 29,2026, Elapsed time: 0:00:03
+# Errors: 19, Warnings: 1
