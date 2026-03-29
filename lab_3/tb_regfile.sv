@@ -11,6 +11,7 @@ package constants;
     localparam int NUM_DIRECTED_TESTS = 8;
     localparam int NUM_RANDOMIZED_TESTS = 100;
     localparam int SEED = 1234;
+    localparam int SCB_CHECKS = 3;
 endpackage
 
 import constants::*;
@@ -21,7 +22,7 @@ interface regfile_if (input logic clk);
     logic [ADDR_WIDTH - 1 : 0] wr_addr, rd_addr1, rd_addr2;
     logic [DATA_WIDTH - 1 : 0] wr_data, rd_data1, rd_data2;
 
-    logic is_illegal;
+    bit is_illegal;
 
     modport dut (
         input  rd_data1, rd_data2, err, clk,
@@ -212,13 +213,16 @@ class regfile_scoreboard;
 
     logic [DATA_WIDTH - 1 : 0] golden_model_data[NUM_REG];
 
-    int success_count_a = 0, error_count_a = 0;
-    int success_count_b = 0, error_count_b = 0;
-    int success_count_c = 0, error_count_c = 0;
+    int succsess_count[SCB_CHECKS];
+    int error_count[SCB_CHECKS];
 
     function void reset();
         for (int i = 0; i < NUM_REG; i++) begin
             golden_model_data[i] = '0;
+        end
+        for (int i = 0; i < SCB_CHECKS; i++) begin
+            succsess_count[i] = 0;
+            error_count[i] = 0;
         end
     endfunction
 
@@ -227,14 +231,33 @@ class regfile_scoreboard;
         this.reset();
     endfunction
 
+    function automatic void print_error_count();
+
+        int success_count_total = 0, error_count_total = 0;
+
+        for (int i = 0; i < SCB_CHECKS; i++) begin
+            success_count_total += success_count[i];
+            error_count_total   += error_count[i];
+        end
+
+        $display("*********************************");
+        $display("* success / errors: %4d / %4d *", success_count_total, error_count_total);
+        $display("*********************************");
+        $display("* illegal read:     %4d / %4d *", success_count[0], error_count[0]);
+        $display("* legal read 1:     %4d / %4d *", success_count[1], error_count[1]);
+        $display("* legal read 2:     %4d / %4d *", success_count[2], error_count[2]);
+        $display("*********************************");
+
+    endfunction
+
     task check_illegal_rd();
 
             // check read data 1 and 2
             assert (mail.rd_data1 === 16'bx && mail.rd_data2 === 16'bx) begin
-                success_count_a = success_count_a + 1;
+                success_count[0] = success_count[0] + 1;
             end else begin
                 $error("Read 1-2 failed: %0h != x | %0h != x", mail.rd_data1, mail.rd_data2);
-                error_count_a = error_count_a + 1;
+                error_count[0] = error_count[0] + 1;
             end
 
     endtask
@@ -243,22 +266,22 @@ class regfile_scoreboard;
 
         // check read data 1
         assert(golden_model_data[mail.rd_addr1] == mail.rd_data1) begin
-            success_count_b = success_count_b + 1;
+            success_count[1] = success_count[1] + 1;
         end else begin
             $error("Read 1 failed: %0h != %0h",
                     golden_model_data[mail.rd_addr1],
                     mail.rd_data1);
-            error_count_b = error_count_b + 1;
+            error_count[1] = error_count[1] + 1;
         end
 
         // check read data 2
         assert(golden_model_data[mail.rd_addr2] == mail.rd_data2) begin
-            success_count_c = success_count_c + 1;
+            success_count[2] = success_count[2] + 1;
         end else begin
             $error("Read 2 failed: %0h != %0h",
                     golden_model_data[mail.rd_addr2],
                     mail.rd_data2);
-            error_count_c = error_count_c + 1;
+            error_count[2] = error_count[2] + 1;
         end
 
     endtask
@@ -267,7 +290,6 @@ class regfile_scoreboard;
         if (mail.is_illegal)  check_illegal_rd();
         if (!mail.is_illegal) check_legal_rd();
     endtask
-
 
     task run();
 
@@ -284,21 +306,6 @@ class regfile_scoreboard;
             if (!mail.rst_n) reset();
         end
     endtask
-
-    function automatic void print_error_count();
-
-        int success_count = success_count_a + success_count_b + success_count_c;
-        int err_count     = error_count_a + error_count_b + error_count_c;
-
-        $display("*********************************");
-        $display("* success / errors: %4d / %4d *", success_count, err_count);
-        $display("*********************************");
-        $display("* illegal read:     %4d / %4d *", success_count_a, error_count_a);
-        $display("* legal read 1:     %4d / %4d *", success_count_b, error_count_b);
-        $display("* legal read 2:     %4d / %4d *", success_count_c, error_count_c);
-        $display("*********************************");
-
-    endfunction
 
 endclass
 
