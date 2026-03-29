@@ -213,16 +213,12 @@ class regfile_scoreboard;
 
     logic [DATA_WIDTH - 1 : 0] golden_model_data[NUM_REG];
 
-    int succsess_count[SCB_CHECKS];
-    int error_count[SCB_CHECKS];
+    int succsess_count[SCB_CHECKS] = '{default:0};
+    int error_count[SCB_CHECKS] = '{default:0};
 
     function void reset();
         for (int i = 0; i < NUM_REG; i++) begin
             golden_model_data[i] = '0;
-        end
-        for (int i = 0; i < SCB_CHECKS; i++) begin
-            succsess_count[i] = 0;
-            error_count[i] = 0;
         end
     endfunction
 
@@ -311,8 +307,8 @@ endclass
 
 module tb_regfile;
 
-    int success_count[NUM_DIRECTED_TESTS];
-    int error_count[NUM_DIRECTED_TESTS];
+    int success_count[NUM_DIRECTED_TESTS] = '{default:0};
+    int error_count[NUM_DIRECTED_TESTS] = '{default:0};
 
     logic clk;
     initial clk = 0;
@@ -477,13 +473,6 @@ module tb_regfile;
 
     endtask
 
-    function reset_error_count();
-        for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
-            success_count[i] = 0;
-            error_count[i] = 0;
-        end
-    endfunction
-
     function automatic void print_error_count();
         
         int success_count_total = 0, error_count_total = 0;
@@ -537,8 +526,6 @@ module tb_regfile;
         join_none
 
         // directed tests
-        reset_error_count();
-
         T_000();
         T_001();
         T_002();
