@@ -29,17 +29,46 @@ interface regfile_if (input logic clk);
         output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2, is_illegal
     );
 
-    assign is_illegal = rd_addr1 == rd_addr2 || (wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2));
+    clocking cb @(posedge clk);
 
-    property p_err_check_backward;
-        @(posedge clk) disable iff (!rst_n)
-        (err === 1'b1) iif $past(is_illegal);
-    endproperty
+        default input #0step output #0step; 
 
-    assert property (p_err_check_backward)
-        else $error("FAIL: err");
+        input  rd_data1, rd_data2, err;
+
+        output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2;
+
+    endclocking
 
 endinterface
+
+module regfile_assertions (
+    input logic clk,
+    input logic rst_n,
+    input logic wr_en,
+    input logic err,
+    input logic [ADDR_WIDTH - 1 : 0] wr_addr,
+    input logic [ADDR_WIDTH - 1 : 0] rd_addr1,
+    input logic [ADDR_WIDTH - 1 : 0] rd_addr2
+);
+
+    logic is_illegal;
+    assign is_illegal = (rd_addr1 == rd_addr2) || 
+                        (wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2));
+
+    property p_err_forward;
+        @(posedge clk) disable iff (!rst_n)
+        is_illegal |=> (err === 1'b1);
+    endproperty
+
+    property p_err_backward;
+        @(posedge clk) disable iff (!rst_n)
+        (err === 1'b1) |-> $past(is_illegal);
+    endproperty
+
+    assert property (p_err_forward)  else $error("FAIL: err signal not going high");
+    assert property (p_err_backward) else $error("FAIL: err signal high with no reason");
+
+endmodule
 
 class regfile_mail;
 
@@ -58,8 +87,12 @@ class regfile_mail;
     logic [DATA_WIDTH - 1 : 0]    rd_data2;
     bit                           err;
 
-    // METADATA
-    bit is_illegal;
+    function bit is_illegal();
+
+        if (rd_addr1 == rd_addr2 || wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2)) return 1'b1;        
+        else                                                                               return 1'b0;
+    
+    endfunction
 
 endclass
 
@@ -119,13 +152,13 @@ class regfile_generator;
         regfile_mail mail;
 
         for (int i = 0; i < 10; i++) begin
-            this.send_mail(1'b1, 1'b1, i, i + 16'h1000, 11, 12);
+            send_mail(1'b1, 1'b1, i, i + 16'h1000, 11, 12);
         end
 
-        this.send_mail(1'b0, 1'b0, 0, 0, 0, 0);
+        send_mail(1'b0, 1'b0, 0, 0, 0, 0);
         
         for (int i = 0; i < 10; i++) begin
-            this.send_mail(1'b1, 1'b0, 0, 0, i, 11);
+            send_mail(1'b1, 1'b0, 0, 0, i, 11);
         end
 
     endtask
@@ -133,30 +166,59 @@ class regfile_generator;
     task T_001();
 
         send_mail(1'b0, 1'b0, 0, 0, 0, 0);
-        fork
-            drv.read_reg(1, 1); // err
-            drv.reset();
-        join
 
-        assert(regfile_If.err == 1'b0) success_count[1] = success_count[1] + 1;
-        else begin 
-            $error("T_001 | Reset failed: err = %b != 0", 
-                    regfile_If.err);
-            error_count[1] = error_count[1] + 1;
-        end
+    endtask
+
+    task T_002();
+
+        send_mail(1'b1, 1'b0, 0, 0, 0, 1);
+        send_mail(1'b1, 1'b1, 2, 16'hC1A0, 0, 1);
+        send_mail(1'b1, 1'b1, 3, 16'hC1A1, 0, 1);
+        send_mail(1'b1, 1'b0, 0, 0, 2, 3);
+
+    endtask
+
+    task T_003();
+
+        send_mail(1'b1, 1'b0, 4, 0, 4, 4);
+        send_mail(1'b1, 1'b0, 4, 0, 4, 5);
+
+    endtask
+
+    task T_004();
+
+        send_mail(1'b1, 1'b0, 4, 16'hAAAA, 4, 5);
+
+    endtask
+
+    task T_005();
+
+        send_mail(1'b1, 1'b1, 5, 16'hAAAA, 5, 5);
+
+    endtask
+
+    task T_006();
+
+        send_mail(1'b1, 1'b1, 4, 16'hAAAA, 4, 5);
+
+    endtask
+
+    task T_007();
+
+        send_mail(1'b1, 1'b1, 5, 16'hAAAA, 5, 5);
 
     endtask
 
     task execute_directed_tests();
 
         T_000();
-        // T_001();
-        // T_002();
-        // T_003();
-        // T_004();
-        // T_005();
-        // T_006();
-        // T_007();
+        T_001();
+        T_002();
+        T_003();
+        T_004();
+        T_005();
+        T_006();
+        T_007();
 
     endtask
 
@@ -324,7 +386,8 @@ class regfile_scoreboard;
             assert (mail.rd_data1 === 16'bx && mail.rd_data2 === 16'bx) begin
                 success_count[0] = success_count[0] + 1;
             end else begin
-                $error("Read 1-2 failed: %0h != x | %0h != x", mail.rd_data1, mail.rd_data2);
+                $error("Read failed: %0h != x | %0h != x", 
+                        mail.rd_data1, mail.rd_data2);
                 error_count[0] = error_count[0] + 1;
             end
 
@@ -333,30 +396,25 @@ class regfile_scoreboard;
     task check_legal_rd();
 
         // check read data 1
-        assert(golden_model_data[mail.rd_addr1] == mail.rd_data1) begin
+        assert(golden_model_data[mail.rd_addr1] == mail.rd_data1 && 
+                golden_model_data[mail.rd_addr2] == mail.rd_data2) begin
             success_count[1] = success_count[1] + 1;
         end else begin
-            $error("Read 1 failed: %0h != %0h",
+            $error("Read failed: %0h != %0h | %0h != %0h",
                     golden_model_data[mail.rd_addr1],
-                    mail.rd_data1);
-            error_count[1] = error_count[1] + 1;
-        end
-
-        // check read data 2
-        assert(golden_model_data[mail.rd_addr2] == mail.rd_data2) begin
-            success_count[2] = success_count[2] + 1;
-        end else begin
-            $error("Read 2 failed: %0h != %0h",
+                    mail.rd_data1,
                     golden_model_data[mail.rd_addr2],
                     mail.rd_data2);
-            error_count[2] = error_count[2] + 1;
+            error_count[1] = error_count[1] + 1;
         end
 
     endtask
 
     task check_rd();
-        if (mail.is_illegal)  check_illegal_rd();
-        if (!mail.is_illegal) check_legal_rd();
+
+        if (mail.is_illegal())  check_illegal_rd();
+        else                    check_legal_rd();
+    
     endtask
 
     task run();
@@ -368,7 +426,7 @@ class regfile_scoreboard;
             check_rd();
 
             // update golden model if legal write
-            if (!mail.is_illegal) golden_model_data[mail.wr_addr] = mail.wr_data;
+            if (!mail.is_illegal() && mail.wr_en) golden_model_data[mail.wr_addr] = mail.wr_data;
             
             // reset scoreboard if reset low
             if (!mail.rst_n) reset();
@@ -405,6 +463,19 @@ module tb_regfile;
         .rd_data2 (regfile_If.rd_data2),
         .err      (regfile_If.err)
     );
+
+    bind `DUT_NAME regfile_assertions property_checker (
+        .clk      (clk),
+        .rst_n    (rst_n),
+        .wr_en    (wr_en),
+        .err      (err),
+        .wr_addr  (wr_addr),
+        .rd_addr1 (rd_addr1),
+        .rd_addr2 (rd_addr2)
+    );
+
+    int success_count[NUM_DIRECTED_TESTS] = '{default:0};
+    int error_count  [NUM_DIRECTED_TESTS] = '{default:0};
 
     task T_000();
         // reset
@@ -542,6 +613,19 @@ module tb_regfile;
 
     endtask
 
+    task execute_directed_tests();
+
+        T_000();
+        T_001();
+        T_002();
+        T_003();
+        T_004();
+        T_005();
+        T_006();
+        T_007();
+
+    endtask
+
     function automatic void print_error_count();
         
         int success_count_total = 0, error_count_total = 0;
@@ -552,24 +636,14 @@ module tb_regfile;
         end
 
         $display("*********************************");
+        $display("* Directed tests:        %5d *", NUM_DIRECTED_TESTS);
+        $display("*********************************");
         $display("* success / errors: %4d / %4d *", success_count_total, error_count_total);
         $display("*********************************");
         for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
             $display("* T_%03d:     %4d / %4d *", i, success_count[i], error_count[i]);
         end
         $display("*********************************");
-
-    endfunction
-
-    function void print_count();
-    
-        $display("*********************************");
-        $display("* Directed tests:        %5d *", NUM_DIRECTED_TESTS);
-        print_error_count();
-
-        $display("*********************************");
-        $display("* Randomized tests:      %5d *", NUM_RANDOMIZED_TESTS);
-        scb.print_error_count();
 
     endfunction
 
@@ -591,24 +665,16 @@ module tb_regfile;
         drv.init_dut();
 
         fork
+            drv.run();
             mon.run();
         join_none
 
         // directed tests
-        T_000();
-        T_001();
-        T_002();
-        T_003();
-        T_004();
-        T_005();
-        T_006();
-        T_007();
+        // this.execute_directed_tests(); flush_mbx(mon_scb_mbx); // option A: tests self-checked
+        gen.execute_directed_tests(); // option B: directed tests checked by scoreboard
 
         // randomized tests
-        flush_mbx(mon_scb_mbx);
-
         fork
-            drv.run();
             scb.run();
         join_none
 
