@@ -24,11 +24,6 @@ interface regfile_if (input logic clk);
 
     bit is_illegal;
 
-    modport dut (
-        input  rd_data1, rd_data2, err, clk,
-        output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2, is_illegal
-    );
-
     clocking cb @(posedge clk);
 
         default input #0s output #0s; 
@@ -254,10 +249,10 @@ endclass
 
 class regfile_driver;
 
-    virtual interface regfile_if.dut regfile_If;
+    virtual interface regfile_if regfile_If;
     mailbox #(regfile_mail) gen_drv_mbx;
 
-    function new(virtual interface regfile_if.dut regfile_If,
+    function new(virtual interface regfile_if regfile_If,
                  mailbox #(regfile_mail) gen_drv_mbx);
         this.regfile_If = regfile_If;
         this.gen_drv_mbx = gen_drv_mbx;
@@ -303,11 +298,11 @@ endclass
 
 class regfile_monitor;
 
-    virtual interface regfile_if.dut regfile_If;
+    virtual interface regfile_if regfile_If;
 
     mailbox #(regfile_mail) mon_scb_mbx;
 
-    function new(virtual interface regfile_if.dut regfile_If,
+    function new(virtual interface regfile_if regfile_If,
                  mailbox #(regfile_mail) mon_scb_mbx);
         this.regfile_If = regfile_If;
         this.mon_scb_mbx = mon_scb_mbx;
