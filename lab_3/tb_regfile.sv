@@ -67,10 +67,8 @@ endmodule
 
 class regfile_mail;
 
-    // RESET
-    bit                           rst_n;
-
     // INPUTS
+    rand bit                      rst_n;
     rand bit                      wr_en; 
     rand bit [ADDR_WIDTH - 1 : 0] wr_addr;
     rand bit [DATA_WIDTH - 1 : 0] wr_data;
@@ -82,31 +80,26 @@ class regfile_mail;
     logic [DATA_WIDTH - 1 : 0]    rd_data2;
     bit                           err;
 
-    // 1. Balance Writes and Reads
-    // Ensures the DUT isn't starved of either operation.
-    constraint c_wr_en {
-        wr_en dist { 1'b1 := 50, 1'b0 := 50 }; // 50% chance of write, 50% chance of read-only
+    constraint c_rst_n {
+        rst_n dist { 1'b0 := 5, 1'b1 := 95 }; 
     }
 
-    // 2. Data Corner Cases
-    // Plain random data is good, but injecting specific patterns catches bit-level wiring bugs.
+    constraint c_wr_en {
+        wr_en dist { 1'b1 := 50, 1'b0 := 50 };
+    }
+
     constraint c_data_corners {
         wr_data dist {
-            16'h0000 := 1,     // All zeros
-            16'hFFFF := 1,     // All ones
-            16'hAAAA := 1,     // Alternating 1010
-            16'h5555 := 1,     // Alternating 0101
-            [0:16'hFFFF] :/ 16 // Normal random data the rest of the time
+            16'h0000 := 1,
+            16'hFFFF := 1,
+            16'hAAAA := 1,
+            16'h5555 := 1,
+            [0:16'hFFFF] :/ 
         };
     }
 
-    // 3. Boost Illegal Address Collisions (The 'err' flag scenarios)
-    // The spec specifically flags rd_addr1 == rd_addr2 and Write-to-Read overlaps as illegal.
     constraint c_addr_collisions {
-        // Boost the chance of an illegal Read/Read collision to ~20%
         rd_addr1 dist { rd_addr2 := 2, [0:31] :/ 8 };
-        
-        // Boost the chance of an illegal Write/Read collision to ~20%
         wr_addr dist { rd_addr1 := 1, rd_addr2 := 1, [0:31] :/ 8 };
     }
 
@@ -149,8 +142,8 @@ class regfile_generator;
     endtask
 
     task send_mail(
-        bit rst_n,
-        bit wr_en,
+        bit                      rst_n,
+        bit                      wr_en,
         bit [ADDR_WIDTH - 1 : 0] wr_addr,
         bit [DATA_WIDTH - 1 : 0] wr_data,
         bit [ADDR_WIDTH - 1 : 0] rd_addr1,
