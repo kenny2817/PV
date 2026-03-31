@@ -30,7 +30,7 @@ interface regfile_if (input logic clk);
 
         input  rd_data1, rd_data2, err;
 
-        output rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2;
+        inout rst_n, wr_en, wr_addr, wr_data, rd_addr1, rd_addr2;
 
     endclocking
 
@@ -464,7 +464,7 @@ module tb_regfile;
         .err      (regfile_If.err)
     );
 
-    bind dut regfile_assertions property_checker (
+    regfile_assertions property_checker (
         .clk      (clk),
         .rst_n    (rst_n),
         .wr_en    (wr_en),
