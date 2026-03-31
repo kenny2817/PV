@@ -9,9 +9,9 @@ package constants;
     localparam int DATA_WIDTH = 16;
     localparam int ADDR_WIDTH = $clog2(NUM_REG);
     localparam int NUM_DIRECTED_TESTS = 8;
-    localparam int NUM_RANDOMIZED_TESTS = 100;
+    localparam int NUM_RANDOMIZED_TESTS = 1000;
     localparam int SEED = 1234;
-    localparam int SCB_CHECKS = 3;
+    localparam int SCB_CHECKS = 2;
 endpackage
 
 import constants::*;
@@ -364,8 +364,7 @@ class regfile_scoreboard;
         $display("* success / errors: %4d / %4d *", success_count_total, error_count_total);
         $display("*********************************");
         $display("* illegal read:     %4d / %4d *", success_count[0], error_count[0]);
-        $display("* legal read 1:     %4d / %4d *", success_count[1], error_count[1]);
-        $display("* legal read 2:     %4d / %4d *", success_count[2], error_count[2]);
+        $display("*   legal read:     %4d / %4d *", success_count[1], error_count[1]);
         $display("*********************************");
 
     endfunction
