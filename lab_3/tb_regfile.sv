@@ -264,6 +264,8 @@ class regfile_driver;
         
         regfile_If.cb.rst_n    <= 1'b1;
 
+        @(posedge regfile_If.clk);
+
     endtask
 
     task run();
