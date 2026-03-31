@@ -87,6 +87,34 @@ class regfile_mail;
     logic [DATA_WIDTH - 1 : 0]    rd_data2;
     bit                           err;
 
+    // 1. Balance Writes and Reads
+    // Ensures the DUT isn't starved of either operation.
+    constraint c_wr_en {
+        wr_en dist { 1'b1 := 50, 1'b0 := 50 }; // 50% chance of write, 50% chance of read-only
+    }
+
+    // 2. Data Corner Cases
+    // Plain random data is good, but injecting specific patterns catches bit-level wiring bugs.
+    constraint c_data_corners {
+        wr_data dist {
+            16'h0000 := 1,     // All zeros
+            16'hFFFF := 1,     // All ones
+            16'hAAAA := 1,     // Alternating 1010
+            16'h5555 := 1,     // Alternating 0101
+            [0:16'hFFFF] :/ 16 // Normal random data the rest of the time
+        };
+    }
+
+    // 3. Boost Illegal Address Collisions (The 'err' flag scenarios)
+    // The spec specifically flags rd_addr1 == rd_addr2 and Write-to-Read overlaps as illegal.
+    constraint c_addr_collisions {
+        // Boost the chance of an illegal Read/Read collision to ~20%
+        rd_addr1 dist { rd_addr2 := 2, [0:31] :/ 8 };
+        
+        // Boost the chance of an illegal Write/Read collision to ~20%
+        wr_addr dist { rd_addr1 := 1, rd_addr2 := 1, [0:31] :/ 8 };
+    }
+
     function bit is_illegal();
 
         if (rd_addr1 == rd_addr2 || wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2)) return 1'b1;        
@@ -235,63 +263,39 @@ class regfile_driver;
         this.gen_drv_mbx = gen_drv_mbx;
     endfunction
 
+    task init_dut();
+    
+        regfile_If.cb.rst_n    <= 1'b1;
+        regfile_If.cb.wr_en    <= 1'b0;
+        regfile_If.cb.wr_addr  <= 0;
+        regfile_If.cb.wr_data  <= 0;
+        regfile_If.cb.rd_addr1 <= 0;
+        regfile_If.cb.rd_addr2 <= 1;
+        regfile_If.cb.rst_n    <= 1'b0;
+
+        @(posedge regfile_If.clk);
+        
+        regfile_If.cb.rst_n    <= 1'b1;
+
+    endtask
+
     task run();
         regfile_mail mail;
         
         forever begin
+
             gen_drv_mbx.get(mail); 
             
-            fork
-                read_reg(mail.rd_addr1, mail.rd_addr2);
-                if (mail.wr_en) write_reg(mail.wr_addr, mail.wr_data);
-            join
+            regfile_If.cb.rst_n    <= mail.rst_n;
+            regfile_If.cb.wr_en    <= mail.wr_en;
+            regfile_If.cb.wr_addr  <= mail.wr_addr;
+            regfile_If.cb.wr_data  <= mail.wr_data;
+            regfile_If.cb.rd_addr1 <= mail.rd_addr1;
+            regfile_If.cb.rd_addr2 <= mail.rd_addr2;
+
+            @(posedge regfile_If.clk);
             
         end
-
-    endtask
-
-    task init_dut();
-    
-        regfile_If.rst_n = 1'b1;
-        regfile_If.wr_en = 1'b0;
-        regfile_If.wr_addr <= 0;
-        regfile_If.wr_data <= 0;
-        regfile_If.rd_addr1 <= 0;
-        regfile_If.rd_addr2 <= 0;
-
-        this.reset();
-
-    endtask
-
-    task reset();
-
-        regfile_If.rst_n = 1'b0;
-
-        @(posedge regfile_If.clk);
-        
-        regfile_If.rst_n = 1'b1;
-
-    endtask
-
-    task write_reg(input int addr, input int data);
-
-        regfile_If.wr_addr <= addr;
-        regfile_If.wr_data <= data;
-        regfile_If.wr_en   <= 1'b1;
-
-        @(posedge regfile_If.clk);
-
-        regfile_If.wr_en   <= 1'b0;
-
-    endtask
-
-    task read_reg(input int addr1, input int addr2);
-
-
-        regfile_If.rd_addr1 <= addr1;
-        regfile_If.rd_addr2 <= addr2;
-
-        @(posedge regfile_If.clk);
 
     endtask
 
@@ -318,20 +322,20 @@ class regfile_monitor;
 
             mail = new();
 
-            mail.rst_n      = regfile_If.rst_n;
-            mail.wr_en      = regfile_If.wr_en;
-            mail.wr_addr    = regfile_If.wr_addr;
-            mail.wr_data    = regfile_If.wr_data;
-            mail.rd_addr1   = regfile_If.rd_addr1;
-            mail.rd_addr2   = regfile_If.rd_addr2;
-            mail.rd_data1   = regfile_If.rd_data1;
-            mail.rd_data2   = regfile_If.rd_data2;
-            mail.err        = regfile_If.err;
+            mail.rst_n      = regfile_If.cb.rst_n;
+            mail.wr_en      = regfile_If.cb.wr_en;
+            mail.wr_addr    = regfile_If.cb.wr_addr;
+            mail.wr_data    = regfile_If.cb.wr_data;
+            mail.rd_addr1   = regfile_If.cb.rd_addr1;
+            mail.rd_addr2   = regfile_If.cb.rd_addr2;
+            mail.rd_data1   = regfile_If.cb.rd_data1;
+            mail.rd_data2   = regfile_If.cb.rd_data2;
+            mail.err        = regfile_If.cb.err;
             
             mon_scb_mbx.put(mail);
 
             $display("Time: %8t | rst: %b | en: %b | wr_addr: %2d | wr_data: %4h | err: %b | rd_addr1: %2d | rd_addr2: %2d | rd_data1: %4h | rd_data2: %4h |",
-                $time, regfile_If.rst_n, regfile_If.wr_en, regfile_If.wr_addr, regfile_If.wr_data, regfile_If.err, regfile_If.rd_addr1, regfile_If.rd_addr2, regfile_If.rd_data1, regfile_If.rd_data2);
+                $time, regfile_If.rst_n, regfile_If.cb.wr_en, regfile_If.cb.wr_addr, regfile_If.cb.wr_data, regfile_If.cb.err, regfile_If.cb.rd_addr1, regfile_If.cb.rd_addr2, regfile_If.cb.rd_data1, regfile_If.cb.rd_data2);
         end 
 
     endtask
@@ -411,9 +415,11 @@ class regfile_scoreboard;
 
     task check_rd();
 
-        if (mail.is_illegal())  check_illegal_rd();
-        else                    check_legal_rd();
-    
+        if (mail.is_illegal())
+            check_illegal_rd();
+        else
+            check_legal_rd();
+
     endtask
 
     task run();
@@ -463,7 +469,7 @@ module tb_regfile;
         .err      (regfile_If.err)
     );
 
-    bind `DUT_NAME regfile_assertions property_checker (
+    bind dut regfile_assertions property_checker (
         .clk      (clk),
         .rst_n    (rst_n),
         .wr_en    (wr_en),
@@ -472,184 +478,6 @@ module tb_regfile;
         .rd_addr1 (rd_addr1),
         .rd_addr2 (rd_addr2)
     );
-
-    int success_count[NUM_DIRECTED_TESTS] = '{default:0};
-    int error_count  [NUM_DIRECTED_TESTS] = '{default:0};
-
-    task T_000();
-        // reset
-        for (int i = 0; i < 10; i++) begin
-            drv.write_reg(i, i + 16'h1000);
-            drv.read_reg(i, i + 1);
-        end
-        
-        drv.reset();
-        
-        for (int i = 0; i < 10; i++) begin
-            drv.read_reg(i, i + 1);
-
-            assert(regfile_If.rd_data1 == 16'h0000) success_count[0] = success_count[0] + 1;
-            else begin
-                $error("T_000 | Reset failed: rd_data1[%0d] = %0h != %0h", 
-                        i, regfile_If.rd_data1, 16'b0000);
-                error_count[0] = error_count[0] + 1;
-            end
-        end
-
-    endtask
-
-    task T_001();
-        // err reset
-        fork
-            drv.read_reg(1, 1); // err
-            drv.reset();
-        join
-
-        assert(regfile_If.err == 1'b0) success_count[1] = success_count[1] + 1;
-        else begin 
-            $error("T_001 | Reset failed: err = %b != 0", 
-                    regfile_If.err);
-            error_count[1] = error_count[1] + 1;
-        end
-
-    endtask
-
-    task T_002();
-        // W -> R
-        drv.read_reg(0, 1);
-        drv.write_reg(2, 16'hC1A0);
-        drv.write_reg(3, 16'hC1A1);
-        drv.read_reg(2, 3);
-
-        assert(regfile_If.rd_data1 == 16'hC1A0 && regfile_If.rd_data2 == 16'hC1A1) success_count[2] = success_count[2] + 1;
-        else begin
-            $error("T_002 | Write -> Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h",
-                    regfile_If.rd_data1, 16'hC1A0, regfile_If.rd_data2, 16'hC1A1);
-            error_count[2] = error_count[2] + 1;
-        end
-
-    endtask
-
-    task T_003();
-        // illegal R + R
-        drv.read_reg(4, 4);
-        drv.read_reg(4, 5);
-
-        assert(regfile_If.err == 1'b1) success_count[3] = success_count[3] + 1;
-        else begin
-            $error("T_003 | Illegal Read + Read failed: err = %b != 1", 
-                    regfile_If.err);
-            error_count[3] = error_count[3] + 1;
-        end
-
-    endtask
-
-    task T_004();
-        // illegal W + R
-        fork
-            drv.write_reg(4, 16'hAAAA);
-            drv.read_reg(4, 5);
-        join
-
-        assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx) success_count[4] = success_count[4] + 1;
-        else begin
-            $error("T_004 | Illegal Write + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h",
-                    regfile_If.rd_data1, 16'hx, regfile_If.rd_data2, 16'hx);
-            error_count[4] = error_count[4] + 1;
-        end
-
-    endtask
-
-    task T_005();
-        // illegal W + R + R
-        fork
-            drv.write_reg(5, 16'hAAAA);
-            drv.read_reg(5, 5);
-        join
-
-        assert(regfile_If.rd_data1 === 16'hx && regfile_If.rd_data2 === 16'hx) success_count[5] = success_count[5] + 1;
-        else begin
-            $error("T_005 | Illegal Write + Read + Read failed: rd_data1 = %0h != %0h | rd_data2 = %0h != %0h",
-                    regfile_If.rd_data1, 16'hx, regfile_If.rd_data2, 16'hx);
-            error_count[5] = error_count[5] + 1;
-        end
-
-    endtask
-
-    task T_006();
-        // illegal W + R
-        fork
-            drv.write_reg(4, 16'hAAAA);
-            drv.read_reg(4, 5);
-        join
-
-        drv.read_reg(4, 5);
-
-        assert(regfile_If.err == 1'b1) success_count[6] = success_count[6] + 1;
-        else begin
-            $error("T_006 | Illegal Write + Read failed: err = %b != 1", 
-                    regfile_If.err);
-            error_count[6] = error_count[6] + 1;
-        end
-
-    endtask
-
-    task T_007();
-        // illegal W + R + R
-        fork
-            drv.write_reg(5, 16'hAAAA);
-            drv.read_reg(5, 5);
-        join
-
-        drv.read_reg(4, 5);
-
-        assert(regfile_If.err == 1'b1) success_count[7] = success_count[7] + 1;
-        else begin
-            $error("T_007 | Illegal Write + Read + Read failed: err = %b != 1", 
-                    regfile_If.err);
-            error_count[7] = error_count[7] + 1;
-        end
-
-    endtask
-
-    task execute_directed_tests();
-
-        T_000();
-        T_001();
-        T_002();
-        T_003();
-        T_004();
-        T_005();
-        T_006();
-        T_007();
-
-    endtask
-
-    function automatic void print_error_count();
-        
-        int success_count_total = 0, error_count_total = 0;
-
-        for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
-            success_count_total += success_count[i];
-            error_count_total   += error_count[i];
-        end
-
-        $display("*********************************");
-        $display("* Directed tests:        %5d *", NUM_DIRECTED_TESTS);
-        $display("*********************************");
-        $display("* success / errors: %4d / %4d *", success_count_total, error_count_total);
-        $display("*********************************");
-        for (int i = 0; i < NUM_DIRECTED_TESTS; i++) begin
-            $display("* T_%03d:     %4d / %4d *", i, success_count[i], error_count[i]);
-        end
-        $display("*********************************");
-
-    endfunction
-
-    function void flush_mbx(mailbox #(regfile_mail) mbx);
-        regfile_mail dummy;
-        while (mbx.try_get(dummy));
-    endfunction
 
     initial begin
 
@@ -666,17 +494,12 @@ module tb_regfile;
         fork
             drv.run();
             mon.run();
-        join_none
-
-        // directed tests
-        // this.execute_directed_tests(); flush_mbx(mon_scb_mbx); // option A: tests self-checked
-        gen.execute_directed_tests(); // option B: directed tests checked by scoreboard
-
-        // randomized tests
-        fork
             scb.run();
         join_none
 
+        gen.execute_directed_tests(); // directed tests checked by scoreboard
+
+        // randomized tests
         gen.run();
 
         repeat(5) @(posedge clk);
