@@ -22,8 +22,6 @@ interface regfile_if (input logic clk);
     logic [ADDR_WIDTH - 1 : 0] wr_addr, rd_addr1, rd_addr2;
     logic [DATA_WIDTH - 1 : 0] wr_data, rd_data1, rd_data2;
 
-    bit is_illegal;
-
     clocking cb @(posedge clk);
 
         default input #0s output #0s; 
@@ -102,6 +100,13 @@ class regfile_mail;
         rd_addr1 dist { rd_addr2 := 2, [0:31] :/ 8 };
         wr_addr dist { rd_addr1 := 1, rd_addr2 := 1, [0:31] :/ 8 };
     }
+
+    function bit is_illegal();
+
+        if (rd_addr1 == rd_addr2 || wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2)) return 1'b1;        
+        else                                                                               return 1'b0;
+    
+    endfunction
 
 endclass
 
@@ -397,7 +402,7 @@ class regfile_scoreboard;
 
     task check_rd();
 
-        if (mail.err)
+        if (mail.is_illegal())
             check_illegal_rd();
         else
             check_legal_rd();
@@ -413,7 +418,7 @@ class regfile_scoreboard;
             check_rd();
 
             // update golden model if legal write
-            if (!mail.err && mail.wr_en) golden_model_data[mail.wr_addr] = mail.wr_data;
+            if (!mail.is_illegal() && mail.wr_en) golden_model_data[mail.wr_addr] = mail.wr_data;
             
             // reset scoreboard if reset low
             if (!mail.rst_n) reset();
