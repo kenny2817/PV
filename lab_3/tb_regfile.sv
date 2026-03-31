@@ -497,4 +497,9 @@ module tb_regfile;
         $finish();
     end
 
+    initial begin
+        $dumpfile("waves%s.vcd", `DUT_NAME); 
+        $dumpvars(0, tb_regfile);  
+    end
+
 endmodule
