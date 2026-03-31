@@ -31,7 +31,7 @@ interface regfile_if (input logic clk);
 
     clocking cb @(posedge clk);
 
-        default input #0step output #0step; 
+        default input #0s output #0s; 
 
         input  rd_data1, rd_data2, err;
 
@@ -327,7 +327,6 @@ class regfile_monitor;
             mail.rd_data1   = regfile_If.rd_data1;
             mail.rd_data2   = regfile_If.rd_data2;
             mail.err        = regfile_If.err;
-            mail.is_illegal = regfile_If.is_illegal;
             
             mon_scb_mbx.put(mail);
 
@@ -682,7 +681,7 @@ module tb_regfile;
 
         repeat(5) @(posedge clk);
 
-        print_count();
+        scb.print_error_count();
         $finish();
     end
 
