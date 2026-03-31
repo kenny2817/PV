@@ -103,13 +103,6 @@ class regfile_mail;
         wr_addr dist { rd_addr1 := 1, rd_addr2 := 1, [0:31] :/ 8 };
     }
 
-    function bit is_illegal();
-
-        if (rd_addr1 == rd_addr2 || wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2)) return 1'b1;        
-        else                                                                               return 1'b0;
-    
-    endfunction
-
 endclass
 
 class regfile_generator;
@@ -260,7 +253,7 @@ class regfile_driver;
         regfile_If.cb.rd_addr1 <= 0;
         regfile_If.cb.rd_addr2 <= 1;
 
-        @(posedge regfile_If.clk);
+        repeat(2) @(posedge regfile_If.clk);
         
         regfile_If.cb.rst_n    <= 1'b1;
 
@@ -341,14 +334,14 @@ class regfile_scoreboard;
     int success_count[SCB_CHECKS] = '{default:0};
     int error_count[SCB_CHECKS] = '{default:0};
 
+    function new(mailbox #(regfile_mail) mon_scb_mbx);
+        this.mon_scb_mbx = mon_scb_mbx;
+    endfunction
+
     function void reset();
         for (int i = 0; i < NUM_REG; i++) begin
             golden_model_data[i] = '0;
         end
-    endfunction
-
-    function new(mailbox #(regfile_mail) mon_scb_mbx);
-        this.mon_scb_mbx = mon_scb_mbx;
     endfunction
 
     function automatic void print_error_count();
@@ -404,7 +397,7 @@ class regfile_scoreboard;
 
     task check_rd();
 
-        if (mail.is_illegal())
+        if (mail.err)
             check_illegal_rd();
         else
             check_legal_rd();
@@ -420,11 +413,13 @@ class regfile_scoreboard;
             check_rd();
 
             // update golden model if legal write
-            if (!mail.is_illegal() && mail.wr_en) golden_model_data[mail.wr_addr] = mail.wr_data;
+            if (!mail.err && mail.wr_en) golden_model_data[mail.wr_addr] = mail.wr_data;
             
             // reset scoreboard if reset low
             if (!mail.rst_n) reset();
+
         end
+
     endtask
 
 endclass
