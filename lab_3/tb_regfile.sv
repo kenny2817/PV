@@ -94,7 +94,7 @@ class regfile_mail;
             16'hFFFF := 1,
             16'hAAAA := 1,
             16'h5555 := 1,
-            [0:16'hFFFF] :/ 
+            [0:16'hFFFF] :/ 100 - 4
         };
     }
 
@@ -253,13 +253,12 @@ class regfile_driver;
 
     task init_dut();
     
-        regfile_If.cb.rst_n    <= 1'b1;
+        regfile_If.cb.rst_n    <= 1'b0;
         regfile_If.cb.wr_en    <= 1'b0;
         regfile_If.cb.wr_addr  <= 0;
         regfile_If.cb.wr_data  <= 0;
         regfile_If.cb.rd_addr1 <= 0;
         regfile_If.cb.rd_addr2 <= 1;
-        regfile_If.cb.rst_n    <= 1'b0;
 
         @(posedge regfile_If.clk);
         
@@ -392,10 +391,10 @@ class regfile_scoreboard;
             success_count[1] = success_count[1] + 1;
         end else begin
             $error("Read failed: %0h != %0h | %0h != %0h",
-                    golden_model_data[mail.rd_addr1],
                     mail.rd_data1,
-                    golden_model_data[mail.rd_addr2],
-                    mail.rd_data2);
+                    golden_model_data[mail.rd_addr1],
+                    mail.rd_data2,
+                    golden_model_data[mail.rd_addr2]);
             error_count[1] = error_count[1] + 1;
         end
 
