@@ -1,2 +1,3 @@
+code /dades/PV_main/lab3
 setenv setenv SALT_LICENSE_SERVER 1717@questa.fib.upc.edu
 setenv PATH /opt/siemens/questasim/bin:$PATH
