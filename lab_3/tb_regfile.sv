@@ -466,12 +466,12 @@ module tb_regfile;
 
     regfile_assertions property_checker (
         .clk      (clk),
-        .rst_n    (rst_n),
-        .wr_en    (wr_en),
-        .err      (err),
-        .wr_addr  (wr_addr),
-        .rd_addr1 (rd_addr1),
-        .rd_addr2 (rd_addr2)
+        .rst_n    (regfile_If.rst_n),
+        .wr_en    (regfile_If.wr_en),
+        .err      (regfile_If.err),
+        .wr_addr  (regfile_If.wr_addr),
+        .rd_addr1 (regfile_If.rd_addr1),
+        .rd_addr2 (regfile_If.rd_addr2)
     );
 
     initial begin
