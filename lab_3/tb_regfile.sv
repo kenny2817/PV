@@ -9,7 +9,7 @@ package constants;
     localparam int DATA_WIDTH = 16;
     localparam int ADDR_WIDTH = $clog2(NUM_REG);
     localparam int NUM_DIRECTED_TESTS = 8;
-    localparam int NUM_RANDOMIZED_TESTS = 1000;
+    localparam int NUM_RANDOMIZED_TESTS = 100000;
     localparam int SEED = 1234;
     localparam int SCB_CHECKS = 2;
 endpackage
