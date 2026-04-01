@@ -358,14 +358,16 @@ class regfile_scoreboard;
             error_count_total   += error_count[i];
         end
 
-        $display("*********************************");
-        $display("* Randomized tests:      %5d *", NUM_RANDOMIZED_TESTS);
-        $display("*********************************");
-        $display("* success / errors: %4d / %4d *", success_count_total, error_count_total);
-        $display("*********************************");
-        $display("* illegal read:     %4d / %4d *", success_count[0], error_count[0]);
-        $display("*   legal read:     %4d / %4d *", success_count[1], error_count[1]);
-        $display("*********************************");
+        $display("**********************************");
+        $display("* Directed tests:         %5d *", NUM_DIRECTED_TESTS);
+        $display("**********************************");
+        $display("* Randomized tests:       %5d *", NUM_RANDOMIZED_TESTS);
+        $display("**********************************");
+        $display("* success / errors: %5d / %5d *", success_count_total, error_count_total);
+        $display("**********************************");
+        $display("* illegal read:     %5d / %5d *", success_count[0], error_count[0]);
+        $display("*   legal read:     %5d / %5d *", success_count[1], error_count[1]);
+        $display("**********************************");
 
     endfunction
 
