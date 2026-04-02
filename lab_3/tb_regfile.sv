@@ -16,7 +16,7 @@ endpackage
 
 import constants::*;
 
-interface regfile_if (input logic clk);
+interface regfile_interface (input logic clk);
 
     logic                      rst_n, wr_en, err;
     logic [ADDR_WIDTH - 1 : 0] wr_addr, rd_addr1, rd_addr2;
@@ -33,35 +33,6 @@ interface regfile_if (input logic clk);
     endclocking
 
 endinterface
-
-module regfile_assertions (
-    input logic clk,
-    input logic rst_n,
-    input logic wr_en,
-    input logic err,
-    input logic [ADDR_WIDTH - 1 : 0] wr_addr,
-    input logic [ADDR_WIDTH - 1 : 0] rd_addr1,
-    input logic [ADDR_WIDTH - 1 : 0] rd_addr2
-);
-
-    logic is_illegal;
-    assign is_illegal = (rd_addr1 == rd_addr2) || 
-                        (wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2));
-
-    property p_err_forward;
-        @(posedge clk) disable iff (!rst_n)
-        is_illegal |=> (err === 1'b1);
-    endproperty
-
-    property p_err_backward;
-        @(posedge clk) disable iff (!rst_n)
-        (err === 1'b1) |-> $past(is_illegal);
-    endproperty
-
-    assert property (p_err_forward)  else $error("FAIL: err signal not going high");
-    assert property (p_err_backward) else $error("FAIL: err signal high with no reason");
-
-endmodule
 
 class regfile_mail;
 
@@ -240,10 +211,10 @@ endclass
 
 class regfile_driver;
 
-    virtual interface regfile_if regfile_If;
+    virtual interface regfile_interface regfile_If;
     mailbox #(regfile_mail) gen_drv_mbx;
 
-    function new(virtual interface regfile_if regfile_If,
+    function new(virtual interface regfile_interface regfile_If,
                  mailbox #(regfile_mail) gen_drv_mbx);
         this.regfile_If = regfile_If;
         this.gen_drv_mbx = gen_drv_mbx;
@@ -290,11 +261,11 @@ endclass
 
 class regfile_monitor;
 
-    virtual interface regfile_if regfile_If;
+    virtual interface regfile_interface regfile_If;
 
     mailbox #(regfile_mail) mon_scb_mbx;
 
-    function new(virtual interface regfile_if regfile_If,
+    function new(virtual interface regfile_interface regfile_If,
                  mailbox #(regfile_mail) mon_scb_mbx);
         this.regfile_If = regfile_If;
         this.mon_scb_mbx = mon_scb_mbx;
@@ -328,6 +299,35 @@ class regfile_monitor;
     endtask
 
 endclass
+
+module regfile_checker (
+    input logic clk,
+    input logic rst_n,
+    input logic wr_en,
+    input logic err,
+    input logic [ADDR_WIDTH - 1 : 0] wr_addr,
+    input logic [ADDR_WIDTH - 1 : 0] rd_addr1,
+    input logic [ADDR_WIDTH - 1 : 0] rd_addr2
+);
+
+    logic is_illegal;
+    assign is_illegal = (rd_addr1 == rd_addr2) || 
+                        (wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2));
+
+    property p_err_forward;
+        @(posedge clk) disable iff (!rst_n)
+        is_illegal |=> (err === 1'b1);
+    endproperty
+
+    property p_err_backward;
+        @(posedge clk) disable iff (!rst_n)
+        (err === 1'b1) |-> $past(is_illegal);
+    endproperty
+
+    assert property (p_err_forward)  else $error("FAIL: err signal not going high");
+    assert property (p_err_backward) else $error("FAIL: err signal high with no reason");
+
+endmodule
 
 class regfile_scoreboard;
 
@@ -436,7 +436,7 @@ module tb_regfile;
     initial clk = 0;
     always #5 clk = ~clk;
 
-    regfile_if regfile_If(clk);
+    regfile_interface regfile_If(clk);
 
     mailbox #(regfile_mail) gen_drv_mbx;
     mailbox #(regfile_mail) mon_scb_mbx;
@@ -459,7 +459,7 @@ module tb_regfile;
         .err      (regfile_If.err)
     );
 
-    regfile_assertions property_checker (
+    regfile_checker property_checker (
         .clk      (clk),
         .rst_n    (regfile_If.rst_n),
         .wr_en    (regfile_If.wr_en),
