@@ -24,7 +24,7 @@ interface regfile_interface (input logic clk);
 
     clocking cb @(posedge clk);
 
-        default input #1step output #1step; 
+        default input #1step output #0; 
 
         input  rd_data1, rd_data2, err;
 
