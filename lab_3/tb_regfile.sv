@@ -266,22 +266,19 @@ class regfile_monitor;
 
     mailbox #(regfile_mail) mon_scb_mbx;
 
+    int verbosity;
+
     function new(virtual interface regfile_interface regfile_If,
                  mailbox #(regfile_mail) mon_scb_mbx);
         this.regfile_If = regfile_If;
         this.mon_scb_mbx = mon_scb_mbx;
+
+        if (!$value$plusargs("VERBOSITY=%d", verbosity)) verbosity = 0;
     endfunction
 
     task run();
     
         regfile_mail mail;
-        bit is_verbose;
-
-        if ($test$plusargs("VERBOSE")) begin
-            is_verbose = 1'b1;
-        end else begin
-            is_verbose = 1'b0;
-        end
 
         forever begin
             @(posedge regfile_If.clk);
@@ -300,7 +297,7 @@ class regfile_monitor;
             
             mon_scb_mbx.put(mail);
 
-            if (is_verbose) begin
+            if (verbosity == 2) begin
                 $display("Time: %8t | rst: %b | en: %b | wr_addr: %2d | wr_data: %4h | err: %b | rd_addr1: %2d | rd_addr2: %2d | rd_data1: %4h | rd_data2: %4h |",
                     $time, regfile_If.rst_n, regfile_If.cb.wr_en, regfile_If.cb.wr_addr, regfile_If.cb.wr_data, regfile_If.cb.err, regfile_If.cb.rd_addr1, regfile_If.cb.rd_addr2, regfile_If.cb.rd_data1, regfile_If.cb.rd_data2);
             end
@@ -322,6 +319,9 @@ module regfile_checker (
 
     int success_count[CHK_CHECKS] = '{default:0};
     int error_count  [CHK_CHECKS] = '{default:0};
+    
+    int verbosity;
+    initial if (!$value$plusargs("VERBOSITY=%d", verbosity)) verbosity = 0;
 
     logic is_illegal;
     assign is_illegal = (rd_addr1 == rd_addr2) || 
@@ -338,7 +338,7 @@ module regfile_checker (
     endproperty
 
     assert property (p_err_forward) else begin
-        $error("err signal failed: not going high");
+        if (verbosity > 0) $error("err signal failed: not going high");
         error_count[0] += 1;
     end
 
@@ -347,7 +347,7 @@ module regfile_checker (
     end
 
     assert property (p_err_backward) else begin
-       $error("err signal failed: high with no reason");
+        if (verbosity > 0) $error("err signal failed: high with no reason");
         error_count[1] += 1;
     end
 
@@ -385,8 +385,11 @@ class regfile_scoreboard;
     int success_count[SCB_CHECKS] = '{default:0};
     int error_count  [SCB_CHECKS] = '{default:0};
 
+    int verbosity;
+
     function new(mailbox #(regfile_mail) mon_scb_mbx);
         this.mon_scb_mbx = mon_scb_mbx;
+        if (!$value$plusargs("VERBOSITY=%d", verbosity)) verbosity = 0;
     endfunction
 
     function void reset();
@@ -403,7 +406,7 @@ class regfile_scoreboard;
         int success_illegal_read = success_count[2] + success_count[3];
         int error_illegal_read   = error_count[2]   + error_count[3];
     
-        int success_count_total = , error_count_total = 0;
+        int success_count_total = 0, error_count_total = 0;
 
         for (int i = 0; i < SCB_CHECKS; i++) begin
             success_count_total += success_count[i];
@@ -434,7 +437,7 @@ class regfile_scoreboard;
         assert(golden_model_data[mail.rd_addr1] == mail.rd_data1) begin
             success_count[0] += 1;
         end else begin
-            $error("Read 1 failed: %0h != %0h", mail.rd_data1, golden_model_data[mail.rd_addr1]);
+            if (verbosity > 0) $error("Read 1 failed: %0h != %0h", mail.rd_data1, golden_model_data[mail.rd_addr1]);
             error_count[1] += 1;
         end
 
@@ -442,7 +445,7 @@ class regfile_scoreboard;
         assert(golden_model_data[mail.rd_addr2] == mail.rd_data2) begin
             success_count[1] += 1;
         end else begin
-            $error("Read 2 failed: %0h != %0h", mail.rd_data2, golden_model_data[mail.rd_addr2]);
+            if (verbosity > 0) $error("Read 2 failed: %0h != %0h", mail.rd_data2, golden_model_data[mail.rd_addr2]);
             error_count[1] += 1;
         end
 
@@ -454,7 +457,7 @@ class regfile_scoreboard;
         assert (mail.rd_data1 === 16'bx) begin
             success_count[2] += 1;
         end else begin
-            $error("Read 1 failed: %0h != x", mail.rd_data1);
+            if (verbosity > 0) $error("Read 1 failed: %0h != x", mail.rd_data1);
             error_count[2] += 1;
         end
 
@@ -462,7 +465,7 @@ class regfile_scoreboard;
         assert (mail.rd_data2 === 16'bx) begin
             success_count[3] += 1;
         end else begin
-            $error("Read 2 failed: %0h != x", mail.rd_data2);
+            if (verbosity > 0) $error("Read 2 failed: %0h != x", mail.rd_data2);
             error_count[3] += 1;
         end
 
@@ -560,7 +563,7 @@ module tb_regfile;
         repeat(5) @(posedge clk);
 
         scb.print_error_count();
-        chk.print_error_count();
+        property_checker.print_error_count();
 
         $finish();
     end

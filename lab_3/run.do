@@ -1,21 +1,20 @@
-
 # version
 set VERSION $1
-
-# verbose
-set VERBOSITY ""
-if {$argc == 2 && $2 == "verbose"} {
-    set VERBOSITY "+VERBOSE"
-}
-
 set FULL_NAME "regfile_v$VERSION"
 
-# compilation
+# Default mode is NONE (Silent Regression)
+set FLAGS "+VERBOSITY=NONE" 
+
+# Check the second argument to set the verbosity state
+if {$argc == 2} {
+    if {$2 == "full"} {
+        set FLAGS "+VERBOSITY=FULL"
+    } elseif {$2 == "errors"} {
+        set FLAGS "+VERBOSITY=ERRORS"
+    }
+}
+
 vlog +acc +define+DUT_NAME=$FULL_NAME tb_regfile.sv
-
-# execution
-vsim work.tb_regfile $VERBOSITY
-
+vsim work.tb_regfile $FLAGS
 add wave *
-restart -f
 run -all
