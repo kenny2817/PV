@@ -11,7 +11,8 @@ package constants;
     localparam int NUM_DIRECTED_TESTS = 8;
     localparam int NUM_RANDOMIZED_TESTS = 100000;
     localparam int SEED = 1234;
-    localparam int SCB_CHECKS = 2;
+    localparam int SCB_CHECKS = 4;
+    localparam int CHK_CHECKS = 2;
 endpackage
 
 import constants::*;
@@ -274,6 +275,13 @@ class regfile_monitor;
     task run();
     
         regfile_mail mail;
+        bit is_verbose;
+
+        if ($test$plusargs("VERBOSE")) begin
+            is_verbose = 1'b1;
+        end else begin
+            is_verbose = 1'b0;
+        end
 
         forever begin
             @(posedge regfile_If.clk);
@@ -292,8 +300,10 @@ class regfile_monitor;
             
             mon_scb_mbx.put(mail);
 
-            $display("Time: %8t | rst: %b | en: %b | wr_addr: %2d | wr_data: %4h | err: %b | rd_addr1: %2d | rd_addr2: %2d | rd_data1: %4h | rd_data2: %4h |",
-                $time, regfile_If.rst_n, regfile_If.cb.wr_en, regfile_If.cb.wr_addr, regfile_If.cb.wr_data, regfile_If.cb.err, regfile_If.cb.rd_addr1, regfile_If.cb.rd_addr2, regfile_If.cb.rd_data1, regfile_If.cb.rd_data2);
+            if (is_verbose) begin
+                $display("Time: %8t | rst: %b | en: %b | wr_addr: %2d | wr_data: %4h | err: %b | rd_addr1: %2d | rd_addr2: %2d | rd_data1: %4h | rd_data2: %4h |",
+                    $time, regfile_If.rst_n, regfile_If.cb.wr_en, regfile_If.cb.wr_addr, regfile_If.cb.wr_data, regfile_If.cb.err, regfile_If.cb.rd_addr1, regfile_If.cb.rd_addr2, regfile_If.cb.rd_data1, regfile_If.cb.rd_data2);
+            end
         end 
 
     endtask
@@ -310,6 +320,9 @@ module regfile_checker (
     input logic [ADDR_WIDTH - 1 : 0] rd_addr2
 );
 
+    int success_count[CHK_CHECKS] = '{default:0};
+    int error_count  [CHK_CHECKS] = '{default:0};
+
     logic is_illegal;
     assign is_illegal = (rd_addr1 == rd_addr2) || 
                         (wr_en && (wr_addr == rd_addr1 || wr_addr == rd_addr2));
@@ -324,8 +337,41 @@ module regfile_checker (
         (err === 1'b1) |-> $past(is_illegal);
     endproperty
 
-    assert property (p_err_forward)  else $error("FAIL: err signal not going high");
-    assert property (p_err_backward) else $error("FAIL: err signal high with no reason");
+    assert property (p_err_forward) else begin
+        $error("err signal failed: not going high");
+        error_count[0] += 1;
+    end
+
+    cover property (p_err_forward) begin
+        success_count[0] += 1;
+    end
+
+    assert property (p_err_backward) else begin
+       $error("err signal failed: high with no reason");
+        error_count[1] += 1;
+    end
+
+    cover property (p_err_backward) begin
+        success_count[1] += 1;
+    end
+
+    function automatic void print_error_count();
+        int success_count_total = 0, error_count_total = 0;
+
+        for (int i = 0; i < CHK_CHECKS; i++) begin
+            success_count_total += success_count[i];
+            error_count_total   += error_count[i];
+        end
+
+        $display("*************************************");
+        $display("* checker                           *");
+        $display("*************************************");
+        $display("* success / errors: %6d / %6d *", success_count_total, error_count_total);
+        $display("*************************************");
+        $display("* err not high:     %6d / %6d *", success_count[0], error_count[0]);
+        $display("*     err high:     %6d / %6d *", success_count[1], error_count[1]);
+        $display("*************************************");
+    endfunction
 
 endmodule
 
@@ -337,7 +383,7 @@ class regfile_scoreboard;
     logic [DATA_WIDTH - 1 : 0] golden_model_data [NUM_REG] = '{default : 0};
 
     int success_count[SCB_CHECKS] = '{default:0};
-    int error_count[SCB_CHECKS] = '{default:0};
+    int error_count  [SCB_CHECKS] = '{default:0};
 
     function new(mailbox #(regfile_mail) mon_scb_mbx);
         this.mon_scb_mbx = mon_scb_mbx;
@@ -350,8 +396,14 @@ class regfile_scoreboard;
     endfunction
 
     function automatic void print_error_count();
+
+        int success_legal_read = success_count[0] + success_count[1];
+        int error_legal_read   = error_count[0]   + error_count[1];
+
+        int success_illegal_read = success_count[2] + success_count[3];
+        int error_illegal_read   = error_count[2]   + error_count[3];
     
-        int success_count_total = 0, error_count_total = 0;
+        int success_count_total = , error_count_total = 0;
 
         for (int i = 0; i < SCB_CHECKS; i++) begin
             success_count_total += success_count[i];
@@ -365,38 +417,53 @@ class regfile_scoreboard;
         $display("*************************************");
         $display("* success / errors: %6d / %6d *", success_count_total, error_count_total);
         $display("*************************************");
-        $display("* illegal read:     %6d / %6d *", success_count[0], error_count[0]);
-        $display("*   legal read:     %6d / %6d *", success_count[1], error_count[1]);
+        $display("* legal read tot:   %6d / %6d *", success_legal_read, error_legal_read);
+        $display("*   legal read 1:   %6d / %6d *", success_count[0], error_count[0]);
+        $display("*   legal read 2:   %6d / %6d *", success_count[1], error_count[1]);
+        $display("*************************************");
+        $display("* illegal read tot: %6d / %6d *", success_illegal_read, error_illegal_read);
+        $display("* illegal read 1:   %6d / %6d *", success_count[2], error_count[2]);
+        $display("* illegal read 2:   %6d / %6d *", success_count[3], error_count[3]);
         $display("*************************************");
 
     endfunction
 
-    task check_illegal_rd();
-
-            // check read data 1 and 2
-            assert (mail.rd_data1 === 16'bx && mail.rd_data2 === 16'bx) begin
-                success_count[0] = success_count[0] + 1;
-            end else begin
-                $error("Read failed: %0h != x | %0h != x", 
-                        mail.rd_data1, mail.rd_data2);
-                error_count[0] = error_count[0] + 1;
-            end
-
-    endtask
-
     task check_legal_rd();
 
         // check read data 1
-        assert(golden_model_data[mail.rd_addr1] == mail.rd_data1 && 
-                golden_model_data[mail.rd_addr2] == mail.rd_data2) begin
-            success_count[1] = success_count[1] + 1;
+        assert(golden_model_data[mail.rd_addr1] == mail.rd_data1) begin
+            success_count[0] += 1;
         end else begin
-            $error("Read failed: %0h != %0h | %0h != %0h",
-                    mail.rd_data1,
-                    golden_model_data[mail.rd_addr1],
-                    mail.rd_data2,
-                    golden_model_data[mail.rd_addr2]);
-            error_count[1] = error_count[1] + 1;
+            $error("Read 1 failed: %0h != %0h", mail.rd_data1, golden_model_data[mail.rd_addr1]);
+            error_count[1] += 1;
+        end
+
+        // check read data 2
+        assert(golden_model_data[mail.rd_addr2] == mail.rd_data2) begin
+            success_count[1] += 1;
+        end else begin
+            $error("Read 2 failed: %0h != %0h", mail.rd_data2, golden_model_data[mail.rd_addr2]);
+            error_count[1] += 1;
+        end
+
+    endtask
+
+    task check_illegal_rd();
+
+        // check read data 1
+        assert (mail.rd_data1 === 16'bx) begin
+            success_count[2] += 1;
+        end else begin
+            $error("Read 1 failed: %0h != x", mail.rd_data1);
+            error_count[2] += 1;
+        end
+
+        // check read data 2
+        assert (mail.rd_data2 === 16'bx) begin
+            success_count[3] += 1;
+        end else begin
+            $error("Read 2 failed: %0h != x", mail.rd_data2);
+            error_count[3] += 1;
         end
 
     endtask
@@ -471,7 +538,7 @@ module tb_regfile;
 
     initial begin
 
-        gen_drv_mbx = new(1);
+        gen_drv_mbx = new(10);
         mon_scb_mbx = new(); // unbounded
 
         gen = new(gen_drv_mbx, NUM_RANDOMIZED_TESTS, SEED);
@@ -487,14 +554,14 @@ module tb_regfile;
             scb.run();
         join_none
 
-        gen.execute_directed_tests(); // directed tests checked by scoreboard
-
-        // randomized tests
+        gen.execute_directed_tests();
         gen.run();
 
         repeat(5) @(posedge clk);
 
         scb.print_error_count();
+        chk.print_error_count();
+
         $finish();
     end
 

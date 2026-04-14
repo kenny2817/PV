@@ -1,12 +1,21 @@
+
 # version
 set VERSION $1
-set FULL_NAME "reg_file_v$VERSION"
+
+# verbose
+set VERBOSITY ""
+if {$argc == 2 && $2 == "verbose"} {
+    set VERBOSITY "+VERBOSE"
+}
+
+set FULL_NAME "regfile_v$VERSION"
 
 # compilation
 vlog +acc +define+DUT_NAME=$FULL_NAME tb_regfile.sv
-vsim work.tb_regfile
 
 # execution
+vsim work.tb_regfile $VERBOSITY
+
 add wave *
 restart -f
 run -all
