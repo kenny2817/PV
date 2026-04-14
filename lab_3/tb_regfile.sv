@@ -567,16 +567,16 @@ module tb_regfile;
 
         repeat(5) @(posedge clk);
 
-        constants.print_test_config();
+        print_test_config();
         scb.print_error_count();
         property_checker.print_error_count();
 
         $finish();
     end
 
-    initial begin
-        $dumpfile("waves.vcd"); 
-        $dumpvars(0, tb_regfile);  
-    end
+    // initial begin
+    //     $dumpfile("waves.vcd"); 
+    //     $dumpvars(0, tb_regfile);  
+    // end
 
 endmodule
