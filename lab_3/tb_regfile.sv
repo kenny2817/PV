@@ -13,6 +13,15 @@ package constants;
     localparam int SEED = 1234;
     localparam int SCB_CHECKS = 4;
     localparam int CHK_CHECKS = 2;
+
+    function automatic void print_test_config();
+        $display("*************************************");
+        $display("* Directed tests:            %6d *", NUM_DIRECTED_TESTS);
+        $display("*************************************");
+        $display("* Randomized tests:          %6d *", NUM_RANDOMIZED_TESTS);
+        $display("*************************************");
+    endfunction
+
 endpackage
 
 import constants::*;
@@ -365,7 +374,6 @@ module regfile_checker (
 
         $display("*************************************");
         $display("* checker                           *");
-        $display("*************************************");
         $display("* success / errors: %6d / %6d *", success_count_total, error_count_total);
         $display("*************************************");
         $display("* err not high:     %6d / %6d *", success_count[0], error_count[0]);
@@ -414,10 +422,7 @@ class regfile_scoreboard;
         end
 
         $display("*************************************");
-        $display("* Directed tests:            %6d *", NUM_DIRECTED_TESTS);
-        $display("*************************************");
-        $display("* Randomized tests:          %6d *", NUM_RANDOMIZED_TESTS);
-        $display("*************************************");
+        $display("* scoreboard                        *");
         $display("* success / errors: %6d / %6d *", success_count_total, error_count_total);
         $display("*************************************");
         $display("* legal read tot:   %6d / %6d *", success_legal_read, error_legal_read);
@@ -562,6 +567,7 @@ module tb_regfile;
 
         repeat(5) @(posedge clk);
 
+        constants.print_test_config();
         scb.print_error_count();
         property_checker.print_error_count();
 
