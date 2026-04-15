@@ -10,7 +10,6 @@ package constants;
     localparam int ADDR_WIDTH = $clog2(NUM_REG);
     localparam int NUM_DIRECTED_TESTS = 8;
     localparam int NUM_RANDOMIZED_TESTS = 100000;
-    localparam int SEED = 1234;
     localparam int SCB_CHECKS = 4;
     localparam int CHK_CHECKS = 2;
 
@@ -97,18 +96,16 @@ class regfile_generator;
     int num_transactions;
 
     function new(mailbox #(regfile_mail) gen_drv_mbx,
-                 int num_transactions = 10,
-                 int seed = 0);
+                 int num_transactions = 10);
         this.gen_drv_mbx = gen_drv_mbx;
         this.num_transactions = num_transactions;
-        if (seed != 0) this.srandom(seed);
     endfunction
 
     task run();
 
         regfile_mail mail;
 
-        for (int i = 0; i < num_transactions; i++) begin
+        repeat(num_transactions) begin
             mail = new();
             
             if (!mail.randomize()) begin
@@ -443,7 +440,7 @@ class regfile_scoreboard;
             success_count[0] += 1;
         end else begin
             if (verbosity > 0) $error("Read 1 failed: %0h != %0h", mail.rd_data1, golden_model_data[mail.rd_addr1]);
-            error_count[1] += 1;
+            error_count[0] += 1;
         end
 
         // check read data 2
@@ -549,7 +546,7 @@ module tb_regfile;
         gen_drv_mbx = new(10);
         mon_scb_mbx = new(); // unbounded
 
-        gen = new(gen_drv_mbx, NUM_RANDOMIZED_TESTS, SEED);
+        gen = new(gen_drv_mbx, NUM_RANDOMIZED_TESTS);
         drv = new(regfile_If, gen_drv_mbx);
         mon = new(regfile_If, mon_scb_mbx);
         scb = new(mon_scb_mbx);
