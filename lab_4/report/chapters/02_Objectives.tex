@@ -1,0 +1,77 @@
+% ------------------------------------------------------------------------------
+% Chapter 2
+% ------------------------------------------------------------------------------
+\chapter{Assertions} 
+\label{cha:assertions}
+
+
+\begin{verbatim}
+    // INSERT ASSERTIONS BELOW
+  bind dut assertions checker (
+    .clk        (clk),
+    .rst_n      (rst_n),
+    .pc_en      (pc_en),
+    .branch_en  (branch_en),
+    .branch_addr(branch_addr),
+    .instr      (instr),
+
+    .pc(pc)
+  );
+
+endmodule
+
+module assertions (
+  input logic         clk,
+  input logic         rst_n,
+  input logic         pc_en,
+  input logic         branch_en,
+  input logic   [7:0] branch_addr,
+  output logic [15:0] instr,
+  
+  input logic   [7:0] pc
+);
+  
+  property P00;
+    // fetch reset
+    @(posedge clk);
+    rst_n = 0 |=> pc = $past(pc) + 2;
+  endproperty
+
+  property P01;
+    // branch priority
+    @(posedge clk); disable iff (rst_n == 0);
+    branch_en |=> pc = branch_addr;
+  endproperty
+
+  property P02;
+    // pc increment
+    @(posedge clk); disable iff (rst_n == 0 || branch_en == 1);
+    pc_en |=> pc = $past(pc) + 2;
+  endproperty
+
+  property P03;
+    // pc stability
+    @(posedge clk); disable iff (rst_n == 0);
+    (pc_en == 0 && branch_en == 0) |=>pc = $past(pc);
+  endproperty
+
+  property P04;
+    // instruction consistency
+    @(posedge clk);
+    instr = mem[pc];
+  endproperty
+
+  property P05;
+    pc < 255;
+    pc > 0;
+  endproperty
+
+  assert property (P00);
+  assert property (P01);
+  assert property (P02);
+  assert property (P03);
+  assert property (P04);
+  assert property (P05);
+
+endmodule
+\end{verbatim}

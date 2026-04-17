@@ -1,0 +1,44 @@
+
+\documentclass[11pt]{report} 
+
+\usepackage{projectreport}
+
+\newcommand{\name}{Quentin Meneghini}
+\newcommand{\course}{Process Verification}
+\newcommand{\projecttitle}{Lab 3}
+\newcommand{\submissiondate}{16th April 2026}
+
+
+% ------------------------------------------------------------------------------
+% Document
+% ------------------------------------------------------------------------------
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+% ------------------------------------------------------------------------------
+% Main matter
+% Chapters are added to the document using the \include{chapterx} command
+% ------------------------------------------------------------------------------
+\newpage
+\setcounter{page}{0}
+\pagenumbering{arabic}
+
+\begingroup
+    \include{chapters/01_Design_Overview}
+    \include{chapters/02_Objectives}
+\endgroup
+
+% ------------------------------------------------------------------------------
+% Reference list
+% ------------------------------------------------------------------------------
+% \addcontentsline{toc}{chapter}{References}
+% \renewcommand\bibname{References}
+% \printbibliography
+% ------------------------------------------------------------------------------
+% Appendices
+% ------------------------------------------------------------------------------
+\include{appendix}
+\end{document}

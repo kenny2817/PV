@@ -141,8 +141,6 @@ class regfile_generator;
 
     task T_000();
 
-        regfile_mail mail;
-
         for (int i = 0; i < 10; i++) begin
             send_mail(1'b1, 1'b1, i, i + 16'h1000, 11, 12);
         end
