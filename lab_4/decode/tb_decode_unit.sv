@@ -5,12 +5,12 @@ module assertions (
   input logic         rst_n,
   input logic         instr_valid,
   input logic [15:0] instr,
-  output logic        decode_done,
-  output logic [3:0]  opcode,
-  output logic [3:0]  rd,
-  output logic [3:0]  rs,
-  output logic [3:0]  imm,
-  output logic        hazard_stall
+  input logic        decode_done,
+  input logic [3:0]  opcode,
+  input logic [3:0]  rd,
+  input logic [3:0]  rs,
+  input logic [3:0]  imm,
+  input logic        hazard_stall
 );
 
     property P00;
