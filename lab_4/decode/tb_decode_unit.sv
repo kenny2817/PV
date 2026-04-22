@@ -13,9 +13,11 @@ module assertions (
   input logic        hazard_stall
 );
 
+    default clocking cb @(posedge clk); 
+    endclocking
+
     property P00;
         // reset
-        @(posedge clk)
         !rst_n |=> 
           (!decode_done && 
           !hazard_stall && 
@@ -27,7 +29,7 @@ module assertions (
 
     property P01;
         // instruction
-        @(posedge clk) disable iff (!rst_n)
+        disable iff (!rst_n)
         (instr_valid && !hazard_stall) |=> 
           (!hazard_stall)[->1] |=> 
             decode_done;
@@ -35,13 +37,13 @@ module assertions (
 
     property P02;
         // decode_done
-        @(posedge clk) disable iff (!rst_n)
+        disable iff (!rst_n)
         decode_done |-> $past(instr_valid) || $past(hazard_stall);
     endproperty
 
     property P03;
         // outputs
-        @(posedge clk) disable iff (!rst_n)
+        disable iff (!rst_n)
         (instr_valid && !hazard_stall) |-> 
           (opcode == instr[15:12] && 
           rd      == instr[11:8] && 
@@ -51,7 +53,7 @@ module assertions (
 
     property P04;
         // stall
-        @(posedge clk) disable iff (!rst_n)
+        disable iff (!rst_n)
         (instr_valid && hazard_stall) |=> 
           (opcode == $past(opcode) && 
           rd      == $past(rd) && 
@@ -62,7 +64,7 @@ module assertions (
 
     property P05;
         // hazard
-        @(posedge clk) disable iff (!rst_n)
+        disable iff (!rst_n)
         instr_valid && (instr[7:4] == rd) |-> 
           hazard_stall;
     endproperty
