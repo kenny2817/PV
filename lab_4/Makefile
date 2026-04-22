@@ -33,7 +33,8 @@ fetch: fetch/fetch_unit.v fetch/tb_fetch_unit.sv
 	./$@/$@ +verilator+error+limit+0
 
 decode: decode/decode_unit.v decode/tb_decode_unit.sv
-	${VERILATOR_COMPILE}
+	$(call VERILATOR_COMPILE, tb_decode_unit)
+	./$@/$@ +verilator+error+limit+0
 
 clean:
 	rm *.vcd

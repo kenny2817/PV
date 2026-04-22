@@ -1,4 +1,5 @@
 *.vv
+*.vcd
 
 lab_4/build/
 lab_4/report/build/

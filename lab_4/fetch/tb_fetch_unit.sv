@@ -43,6 +43,7 @@ module assertions (
   endproperty
 
   property P05;
+    // pc range safety
     @(posedge clk) disable iff (!rst_n)
     !$isunknown(pc);
   endproperty

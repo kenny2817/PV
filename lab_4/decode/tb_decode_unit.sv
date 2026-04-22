@@ -1,5 +1,80 @@
 `timescale 1ns/1ps
 
+module assertions (
+  input logic         clk,
+  input logic         rst_n,
+  input logic         instr_valid,
+  input logic [15:0] instr,
+  output logic        decode_done,
+  output logic [3:0]  opcode,
+  output logic [3:0]  rd,
+  output logic [3:0]  rs,
+  output logic [3:0]  imm,
+  output logic        hazard_stall
+);
+
+    property P00;
+        // reset
+        @(posedge clk)
+        !rst_n |=> 
+          (!decode_done && 
+          !hazard_stall && 
+          opcode == 0 && 
+          rd == 0 && 
+          rs == 0 && 
+          imm == 0);
+    endproperty
+
+    property P01;
+        // instruction
+        @(posedge clk) disable iff (!rst_n)
+        (instr_valid && !hazard_stall) |=> 
+          (!hazard_stall)[->1] |=> 
+            decode_done;
+    endproperty
+
+    property P02;
+        // decode_done
+        @(posedge clk) disable iff (!rst_n)
+        decode_done |-> $past(instr_valid) || $past(hazard_stall);
+    endproperty
+
+    property P03;
+        // outputs
+        @(posedge clk) disable iff (!rst_n)
+        (instr_valid && !hazard_stall) |-> 
+          (opcode == instr[15:12] && 
+          rd      == instr[11:8] && 
+          rs      == instr[7:4] && 
+          imm     == instr[3:0]);
+    endproperty
+
+    property P04;
+        // stall
+        @(posedge clk) disable iff (!rst_n)
+        (instr_valid && hazard_stall) |=> 
+          (opcode == $past(opcode) && 
+          rd      == $past(rd) && 
+          rs      == $past(rs) && 
+          imm     == $past(imm) && 
+          !decode_done);
+    endproperty
+
+    property P05;
+        // hazard
+        @(posedge clk) disable iff (!rst_n)
+        instr_valid && (instr[7:4] == rd) |-> 
+          hazard_stall;
+    endproperty
+
+    assert property (P00) else $warning("P00 FAILED: Reset logic broken");
+    assert property (P01) else $warning("P01 FAILED: Instruction logic broken");
+    assert property (P02) else $warning("P02 FAILED: Output logic broken");
+    assert property (P03) else $warning("P03 FAILED: Stall logic broken");
+    assert property (P04) else $warning("P04 FAILED: Hazard logic broken");
+
+endmodule
+
 module tb_decode_unit;
 
   // DUT interface
@@ -87,5 +162,22 @@ module tb_decode_unit;
   end
 
   // INSERT ASSERTIONS BELOW
+  bind decode_unit assertions chk_inst (
+    .clk            (clk),
+    .rst_n          (rst_n),
+    .instr_valid    (instr_valid),
+    .instr          (instr),
+    .decode_done    (decode_done),
+    .opcode         (opcode),
+    .rd             (rd),
+    .rs             (rs),
+    .imm            (imm),
+    .hazard_stall   (hazard_stall)
+  );
+
+    initial begin
+        $dumpfile("waves.vcd"); 
+        $dumpvars(0, tb_decode_unit);  
+    end
 
 endmodule
