@@ -44,7 +44,7 @@ module assertions (
     property P03;
         // outputs
         disable iff (!rst_n)
-        (instr_valid && !hazard_stall) |-> 
+        (instr_valid && !hazard_stall) |=> 
           (opcode == instr[15:12] && 
           rd      == instr[11:8] && 
           rs      == instr[7:4] && 
@@ -69,12 +69,29 @@ module assertions (
           hazard_stall;
     endproperty
 
-  assert property (P00) else $warning("P00 FAILED: Reset logic broken");
-  assert property (P01) else $warning("P01 FAILED: Instruction logic broken");
-  assert property (P02) else $warning("P02 FAILED: decode_done logic broken");
-  assert property (P03) else $warning("P03 FAILED: Output logic broken");
-  assert property (P04) else $warning("P04 FAILED: Stall logic broken");
-  assert property (P05) else $warning("P05 FAILED: Hazard logic broken");
+	assert property (P00) else 
+      $warning("P00 FAILED: Reset broken. Got: done=%b, stall=%b, op=%0h, rd=%0h, rs=%0h, imm=%0h", 
+               decode_done, hazard_stall, opcode, rd, rs, imm);
+
+    assert property (P01) else 
+      $warning("P01 FAILED: decode_done did not assert after valid instruction left the pipeline.");
+
+    assert property (P02) else 
+      $warning("P02 FAILED: Spurious decode_done. Previous cycle had no valid instr and no stall.");
+
+    assert property (P03) else 
+      $warning("P03 FAILED: Decode output mismatch.\n\tExpected: op=%0h, rd=%0h, rs=%0h, imm=%0h\n\tGot:      op=%0h, rd=%0h, rs=%0h, imm=%0h", 
+               $past(instr[15:12]), $past(instr[11:8]), $past(instr[7:4]), $past(instr[3:0]), 
+               opcode, rd, rs, imm);
+
+    assert property (P04) else 
+      $warning("P04 FAILED: State changed during stall or decode_done asserted.\n\tPast state:    op=%0h, rd=%0h, rs=%0h, imm=%0h\n\tCurrent state: op=%0h, rd=%0h, rs=%0h, imm=%0h, done=%b", 
+               $past(opcode), $past(rd), $past(rs), $past(imm), 
+               opcode, rd, rs, imm, decode_done);
+
+    assert property (P05) else 
+      $warning("P05 FAILED: RAW hazard missed. Incoming rs=%0h matches Current rd=%0h, but hazard_stall=%b", 
+               instr[7:4], rd, hazard_stall);
   
 endmodule
 
