@@ -70,28 +70,30 @@ module assertions (
     endproperty
 
 	assert property (P00) else 
-      $warning("P00 FAILED: Reset broken. Got: done=%b, stall=%b, op=%0h, rd=%0h, rs=%0h, imm=%0h", 
-               decode_done, hazard_stall, opcode, rd, rs, imm);
+        $warning("\n[SVA P00 FAILED]: Reset Active (!rst_n) but outputs are not zero.\n\t-> decode_done: %b (Exp: 0)\n\t-> hazard_stall: %b (Exp: 0)\n\t-> opcode: %0h (Exp: 0)\n\t-> rd: %0h (Exp: 0)\n\t-> rs: %0h (Exp: 0)\n\t-> imm: %0h (Exp: 0)", 
+                 $sampled(decode_done), $sampled(hazard_stall), $sampled(opcode), $sampled(rd), $sampled(rs), $sampled(imm));
 
     assert property (P01) else 
-      $warning("P01 FAILED: decode_done did not assert after valid instruction left the pipeline.");
+        $warning("\n[SVA P01 FAILED]: Pipeline latency missed. Expected decode_done=1 after stall dropped.\n\t-> Current decode_done: %b (Exp: 1)\n\t-> Current hazard_stall: %b", 
+                 $sampled(decode_done), $sampled(hazard_stall));
 
     assert property (P02) else 
-      $warning("P02 FAILED: Spurious decode_done. Previous cycle had no valid instr and no stall.");
+        $warning("\n[SVA P02 FAILED]: Spurious decode_done detected! Asserted without a valid prior state.\n\t-> Current decode_done: %b\n\t-> Previous instr_valid: %b (Exp: 1 if no stall)\n\t-> Previous hazard_stall: %b (Exp: 1 if recovering)", 
+                 $sampled(decode_done), $sampled($past(instr_valid)), $sampled($past(hazard_stall)));
 
     assert property (P03) else 
-      $warning("P03 FAILED: Decode output mismatch.\n\tExpected: op=%0h, rd=%0h, rs=%0h, imm=%0h\n\tGot:      op=%0h, rd=%0h, rs=%0h, imm=%0h", 
-               $past(instr[15:12]), $past(instr[11:8]), $past(instr[7:4]), $past(instr[3:0]), 
-               opcode, rd, rs, imm);
+        $warning("\n[SVA P03 FAILED]: Decoded output mismatch.\n\tEXPECTED (from past instr):\n\t\topcode=%0h, rd=%0h, rs=%0h, imm=%0h\n\tACTUAL (current outputs):\n\t\topcode=%0h, rd=%0h, rs=%0h, imm=%0h", 
+                 $sampled($past(instr[15:12])), $sampled($past(instr[11:8])), $sampled($past(instr[7:4])), $sampled($past(instr[3:0])), 
+                 $sampled(opcode), $sampled(rd), $sampled(rs), $sampled(imm));
 
     assert property (P04) else 
-      $warning("P04 FAILED: State changed during stall or decode_done asserted.\n\tPast state:    op=%0h, rd=%0h, rs=%0h, imm=%0h\n\tCurrent state: op=%0h, rd=%0h, rs=%0h, imm=%0h, done=%b", 
-               $past(opcode), $past(rd), $past(rs), $past(imm), 
-               opcode, rd, rs, imm, decode_done);
+        $warning("\n[SVA P04 FAILED]: Output state illegally changed during a stall!\n\tPAST STATE:\n\t\topcode=%0h, rd=%0h, rs=%0h, imm=%0h\n\tCURRENT STATE:\n\t\topcode=%0h, rd=%0h, rs=%0h, imm=%0h\n\t-> decode_done: %b (Exp: 0)", 
+                 $sampled($past(opcode)), $sampled($past(rd)), $sampled($past(rs)), $sampled($past(imm)), 
+                 $sampled(opcode), $sampled(rd), $sampled(rs), $sampled(imm), $sampled(decode_done));
 
     assert property (P05) else 
-      $warning("P05 FAILED: RAW hazard missed. Incoming rs=%0h matches Current rd=%0h, but hazard_stall=%b", 
-               instr[7:4], rd, hazard_stall);
+        $warning("\n[SVA P05 FAILED]: RAW hazard condition met, but stall did not assert immediately.\n\t-> instr_valid: %b\n\t-> Incoming rs: %0h\n\t-> Current rd:  %0h\n\t-> hazard_stall: %b (Exp: 1)", 
+                 $sampled(instr_valid), $sampled(instr[7:4]), $sampled(rd), $sampled(hazard_stall));
   
 endmodule
 
