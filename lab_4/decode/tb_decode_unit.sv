@@ -67,12 +67,13 @@ module assertions (
           hazard_stall;
     endproperty
 
-    assert property (P00) else $warning("P00 FAILED: Reset logic broken");
-    assert property (P01) else $warning("P01 FAILED: Instruction logic broken");
-    assert property (P02) else $warning("P02 FAILED: Output logic broken");
-    assert property (P03) else $warning("P03 FAILED: Stall logic broken");
-    assert property (P04) else $warning("P04 FAILED: Hazard logic broken");
-
+  assert property (P00) else $warning("P00 FAILED: Reset logic broken");
+  assert property (P01) else $warning("P01 FAILED: Instruction logic broken");
+  assert property (P02) else $warning("P02 FAILED: decode_done logic broken");
+  assert property (P03) else $warning("P03 FAILED: Output logic broken");
+  assert property (P04) else $warning("P04 FAILED: Stall logic broken");
+  assert property (P05) else $warning("P05 FAILED: Hazard logic broken");
+  
 endmodule
 
 module tb_decode_unit;
