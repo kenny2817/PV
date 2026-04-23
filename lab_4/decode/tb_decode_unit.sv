@@ -16,84 +16,76 @@ module assertions (
     default clocking cb @(posedge clk); 
     endclocking
 
-    property P00;
-        // reset
-        !rst_n |=> 
-          (!decode_done && 
-          !hazard_stall && 
-          opcode == 0 && 
-          rd == 0 && 
-          rs == 0 && 
-          imm == 0);
-    endproperty
+	// All outputs must be cleared to zero
+	property P00;
+		!rst_n |-> (
+			opcode       == 0 && 
+			rd 	         == 0 && 
+			rs           == 0 && 
+			imm          == 0 && 
+			decode_done  == 0 && 
+			hazard_stall == 0
+		);
+	endproperty
 
-    property P01;
-        // instruction
-        disable iff (!rst_n)
-        (instr_valid && !hazard_stall) |=> 
-          (!hazard_stall)[->1] |=> 
-            decode_done;
-    endproperty
+	// An instruction is accepted when instr_valid=1 and hazard_stall=0 in the nextcycle.
+	// On acceptance, the fields (opcode, rd, rs, imm) must capture the corresponding bits of instr
+	property P01;
+		disable iff (!rst_n)
+		(instr_valid && !hazard_stall) |=> (
+			opcode == $past(instr[15 : 12]) && 
+			rd     == $past(instr[11 :  8]) && 
+			rs     == $past(instr[ 7 :  4]) && 
+			imm    == $past(instr[ 3 :  0])
+		);
+	endproperty
 
-    property P02;
-        // decode_done
-        disable iff (!rst_n)
-        decode_done |-> $past(instr_valid) || $past(hazard_stall);
-    endproperty
+	// While instr_valid=1 and hazard_stall=1, the decoded fields (opcode, rd, rs, imm) must retain their previous values and only update when the instruction is accepted
+	property P02;
+		disable iff (!rst_n)
+		(instr_valid && hazard_stall) |=> (
+			$stable(opcode) && 
+			$stable(rd	  ) && 
+			$stable(rs	  ) && 
+			$stable(imm	  )
+		);
+	endproperty
+	
+	// A hazard occurs when the destination register (rd) of the previously accepted instruction matches the source register (rs) of the current instruction
+	// hazard_stallmust assert
+	property P03;
+		disable iff (!rst_n)
+		(instr_valid && (instr[7:4] == rd)) |-> hazard_stall;
+	endproperty
 
-    property P03;
-        // outputs
-        disable iff (!rst_n)
-        (instr_valid && !hazard_stall) |=> 
-          (opcode == instr[15:12] && 
-          rd      == instr[11:8] && 
-          rs      == instr[7:4] && 
-          imm     == instr[3:0]);
-    endproperty
+	// After acceptance in cycle N, decode_done must assert exactly in cycle N+2
+	// The current instruction is not accepted until the stall clears
+	// If instr_valid is high in consecutive cycles and no hazard occurs, each instruction is accepted immediately
+	property P04;
+		disable iff (!rst_n)
+		(instr_valid && !hazard_stall) |-> ##2 decode_done;
+	endproperty
 
-    property P04;
-        // stall
-        disable iff (!rst_n)
-        (instr_valid && hazard_stall) |=> 
-          (opcode == $past(opcode) && 
-          rd      == $past(rd) && 
-          rs      == $past(rs) && 
-          imm     == $past(imm) && 
-          !decode_done);
-    endproperty
+	// decode_done must be a single cycle pulse
+	// Each accepted instruction produces a decode_donepulse two cycles later, possibly resulting in consecutive decode_donepulses
+	property P05;
+		disable iff (!rst_n)
+		decode_done |-> $past(instr_valid && !hazard_stall, 2);
+	endproperty
 
-    property P05;
-        // hazard
-        disable iff (!rst_n)
-        instr_valid && (instr[7:4] == rd) |-> 
-          hazard_stall;
-    endproperty
+	// decode_done must not assert during the stall window
+	property P06;
+		disable iff (!rst)
+		hazard_stall |-> !decode_done;
+	endproperty
 
-	assert property (P00) else 
-        $warning("\n[SVA P00 FAILED]: Reset Active (!rst_n) but outputs are not zero.\n\t-> decode_done: %b (Exp: 0)\n\t-> hazard_stall: %b (Exp: 0)\n\t-> opcode: %0h (Exp: 0)\n\t-> rd: %0h (Exp: 0)\n\t-> rs: %0h (Exp: 0)\n\t-> imm: %0h (Exp: 0)", 
-                 $sampled(decode_done), $sampled(hazard_stall), $sampled(opcode), $sampled(rd), $sampled(rs), $sampled(imm));
-
-    assert property (P01) else 
-        $warning("\n[SVA P01 FAILED]: Pipeline latency missed. Expected decode_done=1 after stall dropped.\n\t-> Current decode_done: %b (Exp: 1)\n\t-> Current hazard_stall: %b", 
-                 $sampled(decode_done), $sampled(hazard_stall));
-
-    assert property (P02) else 
-        $warning("\n[SVA P02 FAILED]: Spurious decode_done detected! Asserted without a valid prior state.\n\t-> Current decode_done: %b\n\t-> Previous instr_valid: %b (Exp: 1 if no stall)\n\t-> Previous hazard_stall: %b (Exp: 1 if recovering)", 
-                 $sampled(decode_done), $sampled($past(instr_valid)), $sampled($past(hazard_stall)));
-
-    assert property (P03) else 
-        $warning("\n[SVA P03 FAILED]: Decoded output mismatch.\n\tEXPECTED (from past instr):\n\t\topcode=%0h, rd=%0h, rs=%0h, imm=%0h\n\tACTUAL (current outputs):\n\t\topcode=%0h, rd=%0h, rs=%0h, imm=%0h", 
-                 $sampled($past(instr[15:12])), $sampled($past(instr[11:8])), $sampled($past(instr[7:4])), $sampled($past(instr[3:0])), 
-                 $sampled(opcode), $sampled(rd), $sampled(rs), $sampled(imm));
-
-    assert property (P04) else 
-        $warning("\n[SVA P04 FAILED]: Output state illegally changed during a stall!\n\tPAST STATE:\n\t\topcode=%0h, rd=%0h, rs=%0h, imm=%0h\n\tCURRENT STATE:\n\t\topcode=%0h, rd=%0h, rs=%0h, imm=%0h\n\t-> decode_done: %b (Exp: 0)", 
-                 $sampled($past(opcode)), $sampled($past(rd)), $sampled($past(rs)), $sampled($past(imm)), 
-                 $sampled(opcode), $sampled(rd), $sampled(rs), $sampled(imm), $sampled(decode_done));
-
-    assert property (P05) else 
-        $warning("\n[SVA P05 FAILED]: RAW hazard condition met, but stall did not assert immediately.\n\t-> instr_valid: %b\n\t-> Incoming rs: %0h\n\t-> Current rd:  %0h\n\t-> hazard_stall: %b (Exp: 1)", 
-                 $sampled(instr_valid), $sampled(instr[7:4]), $sampled(rd), $sampled(hazard_stall));
+	assert property (P00) else $warning("P0 FAILE0D");
+	assert property (P01) else $warning("P01 FAILED");
+	assert property (P02) else $warning("P02 FAILED");
+	assert property (P03) else $warning("P03 FAILED");
+	assert property (P04) else $warning("P04 FAILED");
+	assert property (P05) else $warning("P05 FAILED");
+	assert property (P06) else $warning("P06 FAILED");
   
 endmodule
 
