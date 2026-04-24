@@ -16,74 +16,62 @@ module assertions (
     default clocking cb @(posedge clk); 
     endclocking
 
-	// All outputs must be cleared to zero
 	property P00;
-		!rst_n |=> (
-			opcode       == 0 && 
-			rd 	         == 0 && 
-			rs           == 0 && 
-			imm          == 0 && 
-			decode_done  == 0 && 
-			hazard_stall == 0
-		);
-	endproperty
+        !rst_n |-> (
+            opcode       == 0 && 
+            rd           == 0 && 
+            rs           == 0 && 
+            imm          == 0 && 
+            decode_done  == 0 && 
+            hazard_stall == 0
+        );
+    endproperty
 
-	// An instruction is accepted when instr_valid=1 and hazard_stall=0 in the nextcycle.
-	// On acceptance, the fields (opcode, rd, rs, imm) must capture the corresponding bits of instr
-	property P01;
-		disable iff (!rst_n)
-		(instr_valid && !hazard_stall) |=> (
-			opcode == $past(instr[15 : 12]) && 
-			rd     == $past(instr[11 :  8]) && 
-			rs     == $past(instr[ 7 :  4]) && 
-			imm    == $past(instr[ 3 :  0])
-		);
-	endproperty
+    property P01;
+        disable iff (!rst_n)
+        instr_valid |=> (!hazard_stall |-> (
+            opcode == $past(instr[15 : 12]) && 
+            rd     == $past(instr[11 :  8]) && 
+            rs     == $past(instr[ 7 :  4]) && 
+            imm    == $past(instr[ 3 :  0])
+        ));
+    endproperty
 
-	// While instr_valid=1 and hazard_stall=1, the decoded fields (opcode, rd, rs, imm) must retain their previous values and only update when the instruction is accepted
-	property P02;
-		disable iff (!rst_n)
-		(instr_valid && hazard_stall) |=> (
-			$stable(opcode) && 
-			$stable(rd	  ) && 
-			$stable(rs	  ) && 
-			$stable(imm	  )
-		);
-	endproperty
-	
-	// A hazard occurs when the destination register (rd) of the previously accepted instruction matches the source register (rs) of the current instruction
-	// hazard_stallmust assert
-	property P03;
-		disable iff (!rst_n)
-		(instr_valid && (instr[7:4] == rd)) |-> hazard_stall;
-	endproperty
+    property P02;
+        disable iff (!rst_n)
+        hazard_stall |-> (
+            $stable(opcode) && 
+            $stable(rd)     && 
+            $stable(rs)     && 
+            $stable(imm)
+        );
+    endproperty
+    
+    property P03;
+        disable iff (!rst_n)
+        (instr_valid && (instr[7:4] == rd)) |=> hazard_stall;
+    endproperty
 
-	// After acceptance in cycle N, decode_done must assert exactly in cycle N+2
-	// The current instruction is not accepted until the stall clears
-	// If instr_valid is high in consecutive cycles and no hazard occurs, each instruction is accepted immediately
-	property P04;
-		disable iff (!rst_n)
-		(instr_valid && !hazard_stall) |=> 1 |=> decode_done;
-	endproperty
+    property P04;
+        disable iff (!rst_n)
+        instr_valid |=> (!hazard_stall |-> ##2 decode_done);
+    endproperty
 
-	// decode_done must be a single cycle pulse
-	// Each accepted instruction produces a decode_donepulse two cycles later, possibly resulting in consecutive decode_donepulses
-	property P05;
-		disable iff (!rst_n)
-		decode_done |-> $past(instr_valid && !hazard_stall, 2);
-	endproperty
+    property P05;
+        disable iff (!rst_n)
+        decode_done |-> $past(!hazard_stall, 2) && $past(instr_valid, 3);
+    endproperty
 
-	// decode_done must not assert during the stall window
-	property P06;
-		disable iff (!rst_n)
-		hazard_stall |-> !decode_done;
-	endproperty
+    property P06;
+        disable iff (!rst_n)
+        hazard_stall |-> !decode_done;
+    endproperty
 
 	assert property (P00) else $warning("P00 FAILED");
 	assert property (P01) else $warning("P01 FAILED");
 	assert property (P02) else $warning("P02 FAILED");
 	assert property (P03) else $warning("P03 FAILED");
-	// assert property (P04) else $warning("P04 FAILED");
+	assert property (P04) else $warning("P04 FAILED");
 	assert property (P05) else $warning("P05 FAILED");
 	assert property (P06) else $warning("P06 FAILED");
   
