@@ -42,27 +42,26 @@ module tb_fifo;
     @(posedge clk);
     wait (rst_n);
 
-/*
     // Stimulus
-    repeat (5) begin
+    @(posedge clk);
+    wr_en   = 1;
+    rd_en   = 0;
+    repeat (17) begin
+      wr_data = 8'hAA;
       @(posedge clk);
-      wr_en   = 1;
-      rd_en   = 0;
-      wr_data = $urandom_range(0,255);
     end
 
-    repeat (10) begin
-      @(posedge clk);
-      wr_en = 0;
-      rd_en = 0;
-    end
-
-    repeat (2) begin
-      @(posedge clk);
-      wr_en = 0;
-      rd_en = 1;
-    end
-*/
+    wr_en = 0;
+    rd_en = 0;
+    @(posedge clk);
+    
+    wr_en = 1;
+    rd_en = 1;
+    @(posedge clk);
+    
+    wr_en = 0;
+    rd_en = 1;
+    repeat (17) @(posedge clk);
 
     // ADD ADDITIONAL STIMULUS AS NEEDED HERE
 
