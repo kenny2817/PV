@@ -4,126 +4,139 @@
 \chapter{Assertions} 
 \label{cha:assertions}
 
-\section{fetch}
+In both code listing the clocking is excluded form the properties using a clocking block.
+The binding uses all the signals of the dut as inputs and is connected to the module itself instead of the dut.
+The fetch unit required to have access to internal logic, thi shas been enabled by the use of the prefix "\texttt{fetch\_unit.}".
 
-\subsection*{bind}
-
-Other than the I/O of the module pc and mem which are intenal to the fetch unit have been added.
-
-\begin{verbatim}
-bind dut assertions checker_f (
-    .clk        (clk),
-    .rst_n      (rst_n),
-    .pc_en      (pc_en),
-    .branch_en  (branch_en),
-    .branch_addr(branch_addr),
-    .instr      (instr),
-
-    .pc         (pc),
-    .mem        (mem)
-);
-\end{verbatim}
-
-\subsection*{assertions block}
+\section{fetch\_unit}
 
 Here we show the assertion used to test the fetch stage. 
 In particular there are 6 properties each time dependant apart from the pc signal. 
-The test intent is described in table \ref{tbl:assertions}.
+The test intent is described in table \ref{tab:assertions_fetch}.
+It can be observed that \texttt{P04} is not disabled by the reset as it is not syncronized (combinational).
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|l|l|l|}
+		\hline
+		\textbf{\#} & \textbf{Assertion} & \textbf{Intent} \\ \hline
+		P00 		& Reset behavior 	 & On reset, PC must go to 0 \\ \hline
+		P01 		& Branch priority	 & If \texttt{branch\_en}, PC must load \texttt{branch\_addr} regardless of \texttt{pc\_en} \\ \hline
+		P02 		& PC increment   	 & If \texttt{pc\_en} is asserted (and no branch), PC must increment by 2 \\ \hline
+		P03 		& PC stability   	 & If neither \texttt{branch\_en} nor \texttt{pc\_en} is asserted, PC must hold its value \\ \hline
+		P04 		& Instr consistency  & \texttt{instr} must always equal mem[PC] \\ \hline
+		P05 		& PC range safety 	 & PC must never go out of memory bounds (0-255) \\ \hline
+	\end{tabular}
+	\caption{Assertions table for the fetch stage}
+	\label{tab:assertions_fetch}
+\end{table}
+
+\newpage
+\begin{verbatim}
+	property P00;
+		!rst_n |=> fetch_unit.pc == 0;
+	endproperty
+
+	property P01;
+		disable iff (!rst_n)
+		branch_en |=> fetch_unit.pc == $past(branch_addr);
+	endproperty
+
+	property P02;
+		disable iff (!rst_n)
+		(pc_en && !branch_en) |=> fetch_unit.pc == $past(fetch_unit.pc) + 2;
+	endproperty
+
+	property P03;
+		disable iff (!rst_n)
+		(!pc_en && !branch_en) |=> fetch_unit.pc == $past(fetch_unit.pc);
+	endproperty
+
+	property P04;
+		instr == fetch_unit.mem[fetch_unit.pc];
+	endproperty
+
+	property P05;
+		disable iff (!rst_n)
+		!$isunknown(fetch_unit.pc);
+	endproperty
+\end{verbatim}
+
+\section{decode\_unit}
+
+In the decode unit the first assertion developed followed the specification resulting in many errors. 
+Following the dut implementationit was possible to find th ecorrect assertions.
+The test intent is described in table \ref{tab:assertions_decode}.
 
 \begin{table}[h]
 	\centering
 	\begin{tabular}{|l|l|l|}
 		\hline
 		\textbf{\#} & \textbf{Assertion} 		& \textbf{Intent} \\ \hline
-		P00 		& Reset behavior 	 		& On reset, PC must go to 0 \\ \hline
-		P01 		& Branch priority	 		& If \textbf{branch\_en} is asserted, PC must load \textbf{branch\_addr} regardless of \textbf{pc\_en} \\ \hline
-		P02 		& PC increment   	 		& If \textbf{pc\_en} is asserted (and no branch), PC must increment by 2 \\ \hline
-		P03 		& PC stability   	 		& If neither \textbf{branch\_en} nor \textbf{pc\_en} is asserted, PC must hold its value \\ \hline
-		P04 		& Instruction consistency 	& \textbf{instr} must always equal mem[PC] \\ \hline
-		P05 		& PC range safety 			& PC must never go out of memory bounds (0-255) \\ \hline
+		P00 		& Reset behavior 	 		& On reset, all outputs must got to 0 \\ \hline
+		P01			& Accepted instruction		& On acceptance without hazard, all outputs should be set \\ \hline
+		P02         & Stall						& On stall, all outputs should be stable \\ \hline
+		P03			& Hazard					& On hazard, the flag should be high \\ \hline
+		P04			& Decode delay (fwd)		& On acceptance, decode flag should be high after 2 cycles \\ \hline
+		P05 		& Decode delay (bkw)		& Decode flag should be a pulse and enabled only on acceptance \\ \hline
+		P06			& Decode (hazard)			& On hazard, non decode flag shpould be high \\ \hline
 	\end{tabular}
-	\caption{Assertions table}
-	\label{tbl:assertions}
+	\caption{Assertions table for the decode stage}
+	\label{tab:assertions_decode}
 \end{table}
 
-
 \begin{verbatim}
-
-module assertions (
-	input logic         clk,
-	input logic         rst_n,
-	input logic         pc_en,
-	input logic         branch_en,
-	input logic   [7:0] branch_addr,
-	output logic [15:0] instr,
-	
-	input logic   [7:0] pc
-);
-
 	property P00;
-		@(posedge clk);
-		rst_n = 0 |=> pc = $past(pc) + 2;
-	endproperty
+        !rst_n |=> (
+            opcode       == 0 && 
+            rd           == 0 && 
+            rs           == 0 && 
+            imm          == 0 && 
+            decode_done  == 0 && 
+            hazard_stall == 0
+        );
+    endproperty
 
-	property P01;
-		// branch priority
-		@(posedge clk); disable iff (rst_n == 0);
-		branch_en |=> pc = branch_addr;
-	endproperty
+    property P01;
+        disable iff (!rst_n)
+        instr_valid |=> 
+          !hazard_stall |-> (
+              opcode == $past(instr[15 : 12]) && 
+              rd     == $past(instr[11 :  8]) && 
+              rs     == $past(instr[ 7 :  4]) && 
+              imm    == $past(instr[ 3 :  0])
+          );
+    endproperty
 
-	property P02;
-		// pc increment
-		@(posedge clk); disable iff (rst_n == 0 || branch_en == 1);
-		pc_en |=> pc = $past(pc) + 2;
-	endproperty
 
-	property P03;
-		// pc stability
-		@(posedge clk); disable iff (rst_n == 0);
-		(pc_en == 0 && branch_en == 0) |=>pc = $past(pc);
-	endproperty
+	
+    property P02;
+        disable iff (!rst_n)
+        hazard_stall |-> (
+            $stable(opcode) && 
+            $stable(rd)     && 
+            $stable(rs)     && 
+            $stable(imm)
+        );
+    endproperty
+    
+    property P03;
+        disable iff (!rst_n)
+        (instr_valid && (instr[7:4] == rd)) |=> hazard_stall;
+    endproperty
 
-	property P04;
-		// instruction consistency
-		@(posedge clk);
-		instr = mem[pc];
-	endproperty
+    property P04;
+        disable iff (!rst_n)
+        instr_valid |=> !hazard_stall |-> ##2 decode_done;
+    endproperty
 
-	property P05;
-		pc < 255;
-		pc > 0;
-	endproperty
+    property P05;
+        disable iff (!rst_n)
+        decode_done |-> $past(!hazard_stall, 2) && $past(instr_valid, 3);
+    endproperty
 
-	assert property (P00);
-	assert property (P01);
-	assert property (P02);
-	assert property (P03);
-	assert property (P04);
-	assert property (P05);
-
-endmodule
-\end{verbatim}
-
-\section{decoder}
-
-\subsection*{bind}
-
-\begin{verbatim}
-bind decode_unit assertions checker (
-    .clk            (clk),
-    .rst_n          (rst_n),
-    .instr_valid    (instr_valid),
-    .instr          (instr),
-    .decode_done    (decode_done),
-    .opcode         (opcode),
-    .rd             (rd),
-    .rs             (rs),
-    .imm            (imm),
-    .hazard_stall   (hazard_stall)
-);
-\end{verbatim}
-
-\subsection*{assertions block}
-
-\begin{verbatim}
+    property P06;
+        disable iff (!rst_n)
+        hazard_stall |-> !decode_done;
+    endproperty
 \end{verbatim}

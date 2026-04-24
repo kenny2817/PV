@@ -6,36 +6,37 @@ module assertions (
   input logic         pc_en,
   input logic         branch_en,
   input logic   [7:0] branch_addr,
-  output logic [15:0] instr
+  input logic  [15:0] instr
 );
-  
+
+    default clocking cb @(posedge clk); 
+    endclocking
+
   property P00;
-    @(posedge clk)
     !rst_n |=> fetch_unit.pc == 0;
   endproperty
 
   property P01;
-    @(posedge clk) disable iff (!rst_n)
+    disable iff (!rst_n)
     branch_en |=> fetch_unit.pc == $past(branch_addr);
   endproperty
 
   property P02;
-   @(posedge clk) disable iff (!rst_n || branch_en)
-    pc_en |=> fetch_unit.pc == $past(fetch_unit.pc) + 2;
+    disable iff (!rst_n)
+    (pc_en && !branch_en) |=> fetch_unit.pc == $past(fetch_unit.pc) + 2;
   endproperty
 
   property P03;
-    @(posedge clk) disable iff (!rst_n)
+    disable iff (!rst_n)
     (!pc_en && !branch_en) |=> fetch_unit.pc == $past(fetch_unit.pc);
   endproperty
 
   property P04;
-    @(posedge clk)
     instr == fetch_unit.mem[fetch_unit.pc];
   endproperty
 
   property P05;
-    @(posedge clk) disable iff (!rst_n)
+    disable iff (!rst_n)
     !$isunknown(fetch_unit.pc);
   endproperty
 
