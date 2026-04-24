@@ -6,46 +6,37 @@ module assertions (
   input logic         pc_en,
   input logic         branch_en,
   input logic   [7:0] branch_addr,
-  output logic [15:0] instr,
-  
-  input logic   [7:0] pc,
-  input logic [15:0] mem [0:255]
+  output logic [15:0] instr
 );
   
   property P00;
-    // fetch reset
     @(posedge clk)
-    !rst_n |=> pc == 0;
+    !rst_n |=> fetch_unit.pc == 0;
   endproperty
 
   property P01;
-    // branch priority
     @(posedge clk) disable iff (!rst_n)
-    branch_en |=> pc == $past(branch_addr);
+    branch_en |=> fetch_unit.pc == $past(branch_addr);
   endproperty
 
   property P02;
-    // pc increment
    @(posedge clk) disable iff (!rst_n || branch_en)
-    pc_en |=> pc == $past(pc) + 2;
+    pc_en |=> fetch_unit.pc == $past(fetch_unit.pc) + 2;
   endproperty
 
   property P03;
-    // pc stability
     @(posedge clk) disable iff (!rst_n)
-    (!pc_en && !branch_en) |=> pc == $past(pc);
+    (!pc_en && !branch_en) |=> fetch_unit.pc == $past(fetch_unit.pc);
   endproperty
 
   property P04;
-    // instruction consistency
     @(posedge clk)
-    instr == mem[pc];
+    instr == fetch_unit.mem[fetch_unit.pc];
   endproperty
 
   property P05;
-    // pc range safety
     @(posedge clk) disable iff (!rst_n)
-    !$isunknown(pc);
+    !$isunknown(fetch_unit.pc);
   endproperty
 
   assert property (P00) else $warning("P00 FAILED: Reset logic broken");
@@ -137,16 +128,13 @@ module tb_fetch_unit;
   always $monitor("%d | %b | %b | %b | %0h | %0d", $time, rst_n, pc_en, branch_en, branch_addr, instr);
 
   // INSERT ASSERTIONS BELOW
-  bind fetch_unit assertions chk_inst (
+  bind fetch_unit assertions checker_f (
     .clk        (clk),
     .rst_n      (rst_n),
     .pc_en      (pc_en),
     .branch_en  (branch_en),
     .branch_addr(branch_addr),
-    .instr      (instr),
-
-    .pc         (pc),
-    .mem        (mem)
+    .instr      (instr)
   );
 
 endmodule

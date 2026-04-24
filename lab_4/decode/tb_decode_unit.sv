@@ -17,7 +17,7 @@ module assertions (
     endclocking
 
 	property P00;
-        !rst_n |-> (
+        !rst_n |=> (
             opcode       == 0 && 
             rd           == 0 && 
             rs           == 0 && 
@@ -29,12 +29,13 @@ module assertions (
 
     property P01;
         disable iff (!rst_n)
-        instr_valid |=> (!hazard_stall |-> (
-            opcode == $past(instr[15 : 12]) && 
-            rd     == $past(instr[11 :  8]) && 
-            rs     == $past(instr[ 7 :  4]) && 
-            imm    == $past(instr[ 3 :  0])
-        ));
+        instr_valid |=> 
+          !hazard_stall |-> (
+              opcode == $past(instr[15 : 12]) && 
+              rd     == $past(instr[11 :  8]) && 
+              rs     == $past(instr[ 7 :  4]) && 
+              imm    == $past(instr[ 3 :  0])
+          );
     endproperty
 
     property P02;
@@ -54,7 +55,7 @@ module assertions (
 
     property P04;
         disable iff (!rst_n)
-        instr_valid |=> (!hazard_stall |-> ##2 decode_done);
+        instr_valid |=> !hazard_stall |-> ##2 decode_done;
     endproperty
 
     property P05;
@@ -164,7 +165,7 @@ module tb_decode_unit;
   end
 
   // INSERT ASSERTIONS BELOW
-  bind decode_unit assertions chk_inst (
+  bind decode_unit assertions checker_d (
     .clk            (clk),
     .rst_n          (rst_n),
     .instr_valid    (instr_valid),

@@ -4,10 +4,14 @@
 \chapter{Assertions} 
 \label{cha:assertions}
 
+\section{fetch}
+
+\subsection*{bind}
+
+Other than the I/O of the module pc and mem which are intenal to the fetch unit have been added.
 
 \begin{verbatim}
-    // INSERT ASSERTIONS BELOW
-  bind dut assertions checker (
+bind dut assertions checker_f (
     .clk        (clk),
     .rst_n      (rst_n),
     .pc_en      (pc_en),
@@ -15,63 +19,111 @@
     .branch_addr(branch_addr),
     .instr      (instr),
 
-    .pc(pc)
-  );
+    .pc         (pc),
+    .mem        (mem)
+);
+\end{verbatim}
 
-endmodule
+\subsection*{assertions block}
+
+Here we show the assertion used to test the fetch stage. 
+In particular there are 6 properties each time dependant apart from the pc signal. 
+The test intent is described in table \ref{tbl:assertions}.
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|l|l|l|}
+		\hline
+		\textbf{\#} & \textbf{Assertion} 		& \textbf{Intent} \\ \hline
+		P00 		& Reset behavior 	 		& On reset, PC must go to 0 \\ \hline
+		P01 		& Branch priority	 		& If \textbf{branch\_en} is asserted, PC must load \textbf{branch\_addr} regardless of \textbf{pc\_en} \\ \hline
+		P02 		& PC increment   	 		& If \textbf{pc\_en} is asserted (and no branch), PC must increment by 2 \\ \hline
+		P03 		& PC stability   	 		& If neither \textbf{branch\_en} nor \textbf{pc\_en} is asserted, PC must hold its value \\ \hline
+		P04 		& Instruction consistency 	& \textbf{instr} must always equal mem[PC] \\ \hline
+		P05 		& PC range safety 			& PC must never go out of memory bounds (0-255) \\ \hline
+	\end{tabular}
+	\caption{Assertions table}
+	\label{tbl:assertions}
+\end{table}
+
+
+\begin{verbatim}
 
 module assertions (
-  input logic         clk,
-  input logic         rst_n,
-  input logic         pc_en,
-  input logic         branch_en,
-  input logic   [7:0] branch_addr,
-  output logic [15:0] instr,
-  
-  input logic   [7:0] pc
+	input logic         clk,
+	input logic         rst_n,
+	input logic         pc_en,
+	input logic         branch_en,
+	input logic   [7:0] branch_addr,
+	output logic [15:0] instr,
+	
+	input logic   [7:0] pc
 );
-  
-  property P00;
-    // fetch reset
-    @(posedge clk);
-    rst_n = 0 |=> pc = $past(pc) + 2;
-  endproperty
 
-  property P01;
-    // branch priority
-    @(posedge clk); disable iff (rst_n == 0);
-    branch_en |=> pc = branch_addr;
-  endproperty
+	property P00;
+		@(posedge clk);
+		rst_n = 0 |=> pc = $past(pc) + 2;
+	endproperty
 
-  property P02;
-    // pc increment
-    @(posedge clk); disable iff (rst_n == 0 || branch_en == 1);
-    pc_en |=> pc = $past(pc) + 2;
-  endproperty
+	property P01;
+		// branch priority
+		@(posedge clk); disable iff (rst_n == 0);
+		branch_en |=> pc = branch_addr;
+	endproperty
 
-  property P03;
-    // pc stability
-    @(posedge clk); disable iff (rst_n == 0);
-    (pc_en == 0 && branch_en == 0) |=>pc = $past(pc);
-  endproperty
+	property P02;
+		// pc increment
+		@(posedge clk); disable iff (rst_n == 0 || branch_en == 1);
+		pc_en |=> pc = $past(pc) + 2;
+	endproperty
 
-  property P04;
-    // instruction consistency
-    @(posedge clk);
-    instr = mem[pc];
-  endproperty
+	property P03;
+		// pc stability
+		@(posedge clk); disable iff (rst_n == 0);
+		(pc_en == 0 && branch_en == 0) |=>pc = $past(pc);
+	endproperty
 
-  property P05;
-    pc < 255;
-    pc > 0;
-  endproperty
+	property P04;
+		// instruction consistency
+		@(posedge clk);
+		instr = mem[pc];
+	endproperty
 
-  assert property (P00);
-  assert property (P01);
-  assert property (P02);
-  assert property (P03);
-  assert property (P04);
-  assert property (P05);
+	property P05;
+		pc < 255;
+		pc > 0;
+	endproperty
+
+	assert property (P00);
+	assert property (P01);
+	assert property (P02);
+	assert property (P03);
+	assert property (P04);
+	assert property (P05);
 
 endmodule
+\end{verbatim}
+
+\section{decoder}
+
+\subsection*{bind}
+
+\begin{verbatim}
+bind decode_unit assertions checker (
+    .clk            (clk),
+    .rst_n          (rst_n),
+    .instr_valid    (instr_valid),
+    .instr          (instr),
+    .decode_done    (decode_done),
+    .opcode         (opcode),
+    .rd             (rd),
+    .rs             (rs),
+    .imm            (imm),
+    .hazard_stall   (hazard_stall)
+);
+\end{verbatim}
+
+\subsection*{assertions block}
+
+\begin{verbatim}
 \end{verbatim}
