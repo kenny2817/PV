@@ -36,7 +36,9 @@ module tb_fifo;
     rd_en = 0;
     wr_data = '0;
     #20;
-    rst_n = 1;
+    rst_n = 1; @(posedge clk);
+    rst_n = 0; @(posedge clk);
+    rst_n = 1; @(posedge clk);
   
     // Wait until reset is released on a clock edge
     @(posedge clk);
@@ -59,9 +61,9 @@ module tb_fifo;
     rd_en = 1;
     @(posedge clk);
     
-    wr_en = 0;
-    rd_en = 1;
-    repeat (17) @(posedge clk);
+    wr_en = 0; rd_en = 1; repeat (16) @(posedge clk);
+    wr_en = 1; rd_en = 0; wr_data = 8'h00; repeat (16) @(posedge clk);
+    wr_en = 0; rd_en = 1; repeat (16) @(posedge clk);
 
     // ADD ADDITIONAL STIMULUS AS NEEDED HERE
 
