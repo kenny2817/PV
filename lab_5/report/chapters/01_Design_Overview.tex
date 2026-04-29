@@ -4,120 +4,123 @@
 \chapter{Design Overview} 
 \label{cha:design_overview}
 
-There are 2 font-end modules under test: Fetch and Decode.
+There are 2 modules under test: fifo and cache.
 
-\section{Fetch}
+\section{Fifo}
 
-The fetch unit is responsible for supplying instructions to the pipeline.
-It maintains a program counter (PC), updates it according to control signals, and outputs the instruction stored at the current PC address.
-The unit supports sequential execution andbranch redirection.
-Instruction memory is modeled internally as a simple array initialized with dummy values.
+A circular buffer.
+It utilizes internal write and read pointers to manage data flow and provides status flags to prevent data loss or invalid reads.
 
-The fetch unit maintains an internal program counter (PC) that determines which instruction is supplied to the pipeline.
-On every rising edge of the clock, the PC is updated according to a strict priority of control signals.
-If reset is asserted, the PC isforced to zero regardless of any other inputs.
-If reset is not active and a branch request is signaled, the PC is immediately loaded with the branch target address.
-In the absence of a branch, if the sequential enable signal is asserted, the PC advances by 2, assuming 16-bit instructions and byte addressing.
-When neither branch nor sequential enable is active, the PC simply retains its previous value.
-The next PC value is computed combinationally based on control signals, ensuring that both the PC and instruction outputs are updated synchronously and consistently on each clock edge.
-The instruction output reflects the contents of the memory location that will be addressed by the PC in the next cycle.
-This ensures that the instruction is fetched ahead of execution and remains consistent with the updated PC value.
-Memory is modeled as a 256‑entry array of sixteen‑bit words, each initialized with a dummy value equal to its address index.
-This initialization strategy allows for easy verification of PC behavior, as the instruction output directly reflects the PC value.
-Branch requests take precedence over sequential increments, so if both signals are asserted in the same cycle, the branch target address is chosen.
-The PC must remain within the legal range of zero to 255 at all times, and any attempt to access outside this range is considered invalid behavior.
-Together, these rules define the functional behavior of the fetch unit: reset initializes the PC to zero, branch requests redirect execution, sequential enable advances the PC, and the instruction output is always consistent with the memory contents at thecurrent PC.
+\subsection{Parameters}
 
-\subsection{Interface}
-
-\begin{table}[h!]
-    \centering
-    \begin{tabular}{|l|c|c|l|}
-        \hline
-        \textbf{Signal}         & \textbf{Direction} & \textbf{Width} & \textbf{Description}            \\ \hline
-        \texttt{clk}            & Input              & 1              & Clock signal                    \\ \hline
-        \texttt{rst\_n}         & Input              & 1              & Active-low synchronous reset    \\ \hline
-        \texttt{pc\_en}         & Input              & 1              & Program counter enable          \\ \hline
-        \texttt{branch\_en}     & Input              & 1              & Branching enable                \\ \hline
-        \texttt{branch\_addr}   & Input              & 8              & Branching address               \\ \hline
-        \texttt{instr}          & Output             & 16             & Instruction fetched             \\ \hline
-    \end{tabular}
-    \caption{Register File signals}
-
-\end{table}
-
-\section{Decode}
-
-The decode stage is a pipeline block that interprets 16 bit instructions received from the fetch stage.
-It extracts the opcode, destination register, source register, and immediate field, and prepares them for the execute stage.
-To model realistic pipeline behavior, the decode stage introduces a fixed two cycle latency between instruction acceptance and completion.
-It also performs simple hazard detection: if the destination register of the previous instruction matches the source register of the current one, the stage asserts a stall signal to delay acceptance until the hazard clears.
-The stage receives instructions from fetch via an instr\_validsignal and signals completion with a single-cycle decode\_donepulse.
-
-\subsection{Interface}
-
-\begin{table}[h!]
-    \centering
-    \begin{tabular}{|l|c|c|l|}
-        \hline
-        \textbf{Signal}         & \textbf{Direction} & \textbf{Width} & \textbf{Description}                    \\ \hline
-        \texttt{clk}            & Input              & 1              & Clock signal                            \\ \hline
-        \texttt{rst\_n}         & Input              & 1              & Active-low synchronous reset            \\ \hline
-        \texttt{instr\_valid}   & Input              & 1              & notify succesful fetch                  \\ \hline
-        \texttt{instr}          & Input              & 16             & Instruction fetched                     \\ \hline
-        \texttt{decode\_done}   & Output             & 1              & Pulse signaling the succesful decode    \\ \hline
-        \texttt{opcode}         & Output             & 4              & decoded opcode                          \\ \hline
-        \texttt{rd}             & Output             & 4              & decoded destination register            \\ \hline
-        \texttt{rs}             & Output             & 4              & decoded source register                 \\ \hline
-        \texttt{imm}            & Output             & 4              & decoded immediate value                 \\ \hline
-        \texttt{hazard\_stall}  & Output             & 1              & data hazard stalls                      \\ \hline
-    \end{tabular}
-    \caption{Register File signals}
-\end{table}
-
-\subsection{Behavior}
+There are two parameters to this dut:
 
 \begin{itemize}
-    \item \textbf{Instruction acceptance}
+    \item \texttt{WIDTH} : data size.
+    \item \texttt{DEPTH} : fifo depth.
+\end{itemize}
+
+\subsection{Interface}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|l|c|c|l|}
+        \hline
+        \textbf{Signal}     & \textbf{Direction} & \textbf{Width} & \textbf{Description}            \\ \hline
+        \texttt{clk}        & Input              & 1              & Clock signal                    \\ \hline
+        \texttt{rst\_n}     & Input              & 1              & Active-low synchronous reset    \\ \hline
+        \texttt{wr\_en}     & Input              & 1              & Write enable signal             \\ \hline
+        \texttt{rd\_en}     & Input              & 1              & Read enable signal              \\ \hline
+        \texttt{wr\_data}   & Input              & WIDTH          & Write data                      \\ \hline
+        \texttt{rd\_data}   & Output             & WIDTH          & Read data                       \\ \hline
+        \texttt{full}       & Output             & 1              & Full signal                     \\ \hline
+        \texttt{empty}      & Output             & 1              & Empty signal                    \\ \hline
+    \end{tabular}
+    \caption{Fifo signals}
+
+\end{table}
+
+\subsection{Functional Description}
+
+\begin{itemize}
+
+    \item \textbf{Reset State}: On a low-level reset (\texttt{rst\_n}), all internal pointers and the occupancy count are cleared. The empty flag is asserted, and the full flag is de-asserted.
+
+    \item \textbf{Write Operation}: Triggered by \texttt{wr\_en}. If the FIFO is not full and no simultaneous read is requested, data is written to the current \texttt{wr\_ptr} location, the pointer increments (modulo \texttt{DEPTH}), and the count increases.
+    
+    \item \textbf{Read Operation}: Triggered by \texttt{rd\_en}. If the FIFO is not empty and no simultaneous write is requested, data is retrieved from \texttt{rd\_ptr}, the pointer increments (modulo \texttt{DEPTH}), and the count decreases.
+
+    \item \textbf{Conflict Resolution}: The logic includes a strict mutual exclusion rule: if both \texttt{wr\_en} and \texttt{rd\_en} are high, the FIFO performs no action, maintaining the current state.
+
+    \item \textbf{Flag Logic}:
     \begin{itemize}
-        \item An instruction is accepted when instr\_valid=1 and hazard\_stall=0 in the nextcycle.
-        \item On acceptance, the fields (opcode, rd, rs, imm) must capture the corresponding bits of instr
+        \item \textbf{Full}: Asserted when count == \texttt{DEPTH}.
+        \item \textbf{Empty}: Asserted when count == 0.
     \end{itemize}
 
-    \item \textbf{Decode latency}
+\end{itemize}
+
+\section{Cache}
+
+A direct-mapped cache.
+It translates an 8-bit address into Tag, Index, and Offset fields to determine if requested data is currently "local" (hit) or needs to be fetched (miss).
+
+\subsection{Parameters}
+
+There are four parameters to this dut:
+
+\begin{itemize}
+    \item \texttt{CACHE\_LINES} : lines in the cache.
+    \item \texttt{LINE\_SIZE} : size of each line.
+    \item \texttt{ADDR\_WIDTH} : size of the address.
+    \item \texttt{DATA\_WIDTH} : size of the data.
+\end{itemize}
+
+\subsection{Interface}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|l|c|c|l|}
+        \hline
+        \textbf{Signal}     & \textbf{Direction} & \textbf{Width} & \textbf{Description}    \\ \hline
+        \texttt{clk}        & Input              & 1              & Clock signal            \\ \hline
+        \texttt{reset}      & Input              & 1              & synchronous reset       \\ \hline
+        \texttt{read}       & Input              & 1              & read signal             \\ \hline
+        \texttt{write}      & Input              & 1              & write signal            \\ \hline
+        \texttt{addr}       & Input              & ADDR\_WIDTH    & address                 \\ \hline
+        \texttt{data\_in}   & Input              & DATA\_WIDTH    & input data              \\ \hline
+        \texttt{data\_out}  & Output             & DATA\_WIDTH    & output data             \\ \hline
+        \texttt{hit}        & Output             & 1              & hit signal              \\ \hline
+    \end{tabular}
+    \caption{Cache signals}
+
+\end{table}
+
+\subsection{Functional Description}
+
+\begin{itemize}
+
+    \item \textbf{Address Decoding}: The input address (\texttt{addr}) is partitioned into three functional fields:
     \begin{itemize}
-        \item After acceptance in cycle N, decode\_donemust assert exactly in cycle N+2.
-        \item decode\_done must be a single cycle pulse
+        \item \textbf{Tag}: Identifies the memory block.
+        \item \textbf{Index}: Selects one of the 16 cache lines.
+        \item \textbf{Offset}: Selects the specific 32-bit word within the 4-word line.
     \end{itemize}
 
-    \item \textbf{Hazard detection}
+    \item \textbf{Read Operation (Priority)}: 
     \begin{itemize}
-        \item A hazard occurs when the destination register (rd) of the previously accepted instruction matches the source register (rs) of the current instruction.
-        \item When a hazard is detected:
-        \begin{itemize}
-            \item hazard\_stallmust assert.
-            \item The current instruction is not accepted until the stall clears.
-            \item decode\_done must not assert during the stall window.
-        \end{itemize}
+        \item \textbf{Hit}: If the indexed line is valid and the stored tag matches the request, the \texttt{hit} signal is asserted and \texttt{data\_out} is driven from internal memory.
+        \item \textbf{Miss}: If the tag differs or the line is invalid, \texttt{hit} is de-asserted. The cache performs a simulated fetch, updating the \texttt{cache\_mem}, \texttt{tag\_array}, and \texttt{valid\_array} with the new data.
+    \end{itemize}
+    
+    \item \textbf{Write Operation}: Updates the \texttt{cache\_mem} with \texttt{data\_in}. 
+    \begin{itemize}
+        \item If the access matches an existing valid tag, it is reported as a \texttt{hit}.
+        \item If the access is a \texttt{miss}, the \texttt{tag\_array} and \texttt{valid\_array} are updated to reflect the new memory block.
     \end{itemize}
 
-    \item \textbf{Field stability}
-    \begin{itemize}
-        \item While instr\_valid=1 and hazard\_stall=1, the decoded fields (opcode, rd, rs, imm) must retain their previous values and only update when the instruction is accepted.
-    \end{itemize}
+    \item \textbf{Precedence Rule}: The module implements a strict priority for read requests. If both \texttt{read} and \texttt{write} signals are asserted simultaneously, the design executes the read operation only, and the write request is ignored.
 
-    \item \textbf{Back-to-back instructions}
-    \begin{itemize}
-        \item If instr\_valid is high in consecutive cycles and no hazard occurs, each instruction is accepted immediately.
-        \item Each accepted instruction produces a decode\_donepulse two cycles later, possibly resulting in consecutive decode\_donepulses.
-    \end{itemize}
+    \item \textbf{Replacement Policy}: Being a direct-mapped cache, it utilizes an implicit "always overwrite" policy. Any access to an occupied index with a non-matching tag results in the previous data being replaced without further logic.
 
-    \item \textbf{reset behavior}
-    \begin{itemize}
-        \item When rst\_n=0:
-         \begin{itemize}
-            \item All outputsmust be cleared to zero.
-            \item No instruction is accepted or completed until reset is released.
-        \end{itemize}       
-    \end{itemize}
 \end{itemize}
