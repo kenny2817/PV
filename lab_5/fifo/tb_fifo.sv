@@ -49,7 +49,7 @@ module tb_fifo;
       wr_en   = 1;
       rd_en   = 0;
     repeat (17) begin
-      wr_data = 8'hAA;
+      wr_data = 8'hFF;
       @(posedge clk);
     end
 
