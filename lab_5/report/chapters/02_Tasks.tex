@@ -6,7 +6,69 @@
 
 \section{Task 1}
 
+There are 13 covergroup bins that are written in the \texttt{covergroup fifo\_cov} block.
+The Table \ref{tab:fifo_bins} describe better the various bins.
+
+The directive is expicit in the property block \texttt{becomes\_empty\_after\_read}.
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{@{}lll@{}}
+		\toprule
+		\textbf{Coverpoint}         	& \textbf{Bins}	& \textbf{Names} 																	\\ \midrule
+		\texttt{full}               	& 1 	        & \texttt{went\_full} 																\\
+		\texttt{empty}              	& 1 	        & \texttt{went\_empty} 																\\
+		\texttt{dut.count}          	& 3 	        & \texttt{empty\_bin}, \texttt{mid\_bins}, \texttt{full\_bin} 						\\
+		\texttt{wr\_en}             	& 2 	        & 0 and 1 (Implicit) 																\\
+		\texttt{rd\_en}             	& 2 	        & 0 and 1 (Implicit) 																\\
+		\texttt{Cross wr\_en, rd\_en}	& 4 	        & \texttt{write\_only}, \texttt{read\_only}, \texttt{both\_off}, \texttt{illegal} 	\\ \midrule
+		\textbf{Total Bins}         	& \textbf{13}   & 																					\\ \bottomrule
+	\end{tabular}
+	\caption{FIFO bins}
+	\label{tab:fifo_bins}
+\end{table}
+
+Using only the reset sequence we cover only partially the dut.
+5 bins were overed out of 13 and 0 directives out of 1 directives.
+In particular each uncovered bin is listed in Table \ref{tab:reset_coverage}.
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{@{}lll@{}}
+		\toprule
+		\textbf{Covergroup Object} 		& \textbf{Specific Bin} & \textbf{Functional Justification} 					\\ \midrule
+		\texttt{full}              		& \texttt{went\_full}  	& the buffer was never full     						\\
+		\texttt{dut.count}              & \texttt{mid\_bins}  	& the buffer was always empty   						\\
+		\texttt{dut.count}           	& \texttt{full\_bin}   	& the buffer was never full 							\\
+		\texttt{wr\_en}              	& \texttt{1}        	& the fifo is never written 							\\
+		\texttt{rd\_en}              	& \texttt{1}  			& the fifo is never read 								\\
+		\texttt{cross wr\_en, rd\_en}   & \texttt{write\_only} 	& the fifo is never written 							\\
+		\texttt{cross wr\_en, rd\_en}   & \texttt{read\_only}  	& the fifo is never read 								\\
+		\texttt{cross wr\_en, rd\_en}   & \texttt{illegal}     	& \texttt{wr\_en, rd\_en} were never 1 at the same time \\ \bottomrule
+	\end{tabular}
+	\caption{Coverage Miss during Reset Sequence}
+	\label{tab:reset_coverage}
+\end{table}
+
 \section{Task 2}
+
+Using the full sequence we cover only partially the dut.
+10 bins were overed out of 13 and 0 directives out of 1 directives.
+In particular each uncovered bin is listed in Table \ref{tab:stimulus_coverage}.
+
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{@{}lll@{}}
+		\toprule
+		\textbf{Covergroup Object} 		& \textbf{Specific Bin}	& \textbf{Functional Justification} \\ \midrule
+		\texttt{full}              		& \texttt{went\_full}  	& the buffer was never full \\
+		\texttt{dut.count}           	& \texttt{full\_bin}   	& the buffer was never full \\
+		\texttt{cross wr\_en, rd\_en}   & \texttt{illegal}     	& \texttt{wr\_en, rd\_en} were never 1 at the same time\\ \bottomrule
+	\end{tabular}
+	\caption{Coverage Miss during enabled full Sequence}
+	\label{tab:stimulus_coverage}
+\end{table}
 
 \section{Task 3}
 
