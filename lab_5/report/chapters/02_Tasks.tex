@@ -72,9 +72,11 @@ In particular each uncovered bin is listed in Table \ref{tab:stimulus_coverage}.
 
 \section{Task 3}
 
-To reach 100\% coverage of the dut the fifo was first filled with 1s and even tryed to write when full (17 > 16).
+To reach 100\% coverage of the dut the fifo was first filled with 1s.
+Tryed to write when full (17 > 16).
 Then valued the edgecases of \texttt{cross wr\_en, rd\_en}. 
-At this point the buffer was made empty and refilled with 0s to toggle all bits of the internal memory. End then read back.
+At this point the buffer was made empty and refilled with 0s to toggle all bits of the internal memory. 
+Read back.
 The final stimulus is to toggle the reset bit first to 0 and then to 1.
 
 \begin{verbatim}
