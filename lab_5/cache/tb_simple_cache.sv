@@ -70,8 +70,8 @@ module tb_simple_cache;
         option.per_instance = 1;
         option.name = "simple_cache_cov";
 
-        cp_index:  coverpoint addr_past[5:2];
-        cp_offset: coverpoint addr_past[1:0];
+        cp_index:  coverpoint addr_past[dut.OFFSET_WIDTH + dut.INDEX_WIDTH-1 -: dut.INDEX_WIDTH];
+        cp_offset: coverpoint addr_past[dut.OFFSET_WIDTH -1 -: dut.OFFSET_WIDTH];
 
         cp_rw_hit: coverpoint {read_past, write_past, hit} {
             
@@ -96,7 +96,7 @@ module tb_simple_cache;
         reset |=> (hit == 1'b0) && (dut.valid_array == '{default:0}); 
     endproperty
 
-    cover property reset_p;
+    cover property (reset_p);
     
     simple_cache_cov cov_inst = new();
 
