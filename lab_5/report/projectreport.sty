@@ -53,6 +53,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \lstdefinestyle{matlabcode}{
+	inputpath={../},
 	backgroundcolor=\color{gray!10},   
 	commentstyle=\color{green!50!black},
 	keywordstyle=\color{blue},
@@ -65,8 +66,8 @@
 	frame=single,
 	keepspaces=true,         
 	language=matlab,        
-	numbers=none,             
-	numbersep=5pt,                  
+	numbers=left,             
+	numbersep=10pt,                  
 	showspaces=false,                
 	showstringspaces=false,
 	showtabs=false,                  
@@ -74,6 +75,27 @@
 	aboveskip=1em,
 	belowskip=1em,
 	belowcaptionskip=12pt
+}
+\lstdefinestyle{svlog}{
+	inputpath={../},
+    backgroundcolor=\color{gray!10},   
+    commentstyle=\color{green!50!black},
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{magenta},
+    basicstyle=\linespread{1}\footnotesize\ttfamily, % ttfamily is better for code
+    numberstyle=\tiny\color{gray},
+    numbers=left,                    
+    breaklines=true,                 
+    language=Verilog,                 % Base language
+    morekeywords={logic, bit, byte, int, longint, shortint, void, 
+                  always_ff, always_comb, always_latch, interface, 
+                  endinterface, package, endpackage, enum, struct, 
+                  typedef, assign, assert, property, sequence, 
+                  virtual, local, protected, package, import, export,
+				  covergroup, coverpoint, endgroup, illegal_bins, 
+				  bins, ignore_bins, endproperty, iff, repeat},
+    frame=single,
+    tabsize=2,
 }
 
 % ------------------------------------------------------------------------------

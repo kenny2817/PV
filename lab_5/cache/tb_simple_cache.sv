@@ -51,6 +51,53 @@ module tb_simple_cache;
         $finish;
     end
 
-    // ADD COVERAGE STATEMENTS HERE
+    logic read_past, write_past;
+    logic [ADDR_WIDTH-1:0] addr_past;
+
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            read_past  <= 0;
+            write_past <= 0;
+            addr_past  <= 0;
+        end else begin
+            read_past  <= read;
+            write_past <= write;
+            addr_past  <= addr;
+        end
+    end
+
+    covergroup simple_cache_cov @(posedge clk iff !reset);
+        option.per_instance = 1;
+        option.name = "simple_cache_cov";
+
+        cp_index:  coverpoint addr_past[5:2];
+        cp_offset: coverpoint addr_past[1:0];
+
+        cp_rw_hit: coverpoint {read_past, write_past, hit} {
+            
+            // 3'b[read][write][hit]
+            bins read_hit       = {3'b101};
+            bins read_miss      = {3'b100};
+            
+            bins write_hit      = {3'b011};
+            bins write_miss     = {3'b010};
+            
+            bins collision_hit  = {3'b111};
+            bins collision_miss = {3'b110};
+            
+            illegal_bins fake   = {3'b001};
+            ignore_bins idle    = {3'b000};
+        }
+    
+    endgroup
+
+    property reset_p;
+        @(posedge clk) 
+        reset |=> (hit == 1'b0) && (dut.valid_array == '{default:0}); 
+    endproperty
+
+    cover property reset_p;
+    
+    simple_cache_cov cov_inst = new();
 
 endmodule
