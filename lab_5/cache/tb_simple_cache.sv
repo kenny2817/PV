@@ -53,6 +53,12 @@ module tb_simple_cache;
         addr[dut.ADDR_WIDTH-1 -: dut.TAG_WIDTH] = ~addr[dut.ADDR_WIDTH-1 -: dut.TAG_WIDTH];
         read = 1; write = 1;
 
+        @(posedge clk);
+        reset = 1;
+        read = 0; write = 0;
+        @(posedge clk);
+        reset = 0;
+
         #50
         $display("TEST FINISHED");
         $finish;
