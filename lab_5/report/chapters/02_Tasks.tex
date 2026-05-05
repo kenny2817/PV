@@ -88,7 +88,7 @@ The final stimulus is to toggle the reset bit first to 0 and then to 1.
 \section{Task 4 - CACHE}
 
 A covergoup was used to cover the main points of the dut, a property covered the reset sequence.
-Coverage over hit/miss (and code toggling) was also used ot check the \texttt{tag}.
+Coverage over hit/miss (and code toggling) was also used ot check indirectely the \texttt{tag}.
 
 \begin{itemize}
 	\item \textbf{Operations}: read/write/idle.
@@ -105,8 +105,18 @@ In fact 2 bins out of 27 are not covered: the edge case with the collisoni betwe
 
 \lstinputlisting[
     style=svlog, 
-    linerange={69 - 99}, 
+    linerange={84 - 114}, 
     firstnumber=69
 ]{cache/tb_simple_cache.sv}
 
 \section{Task 5 - CACHE}
+
+To reach the full coverage of the dut, the addidtion of a simple stimulus to target the edge cases was enough.
+The added stimulus fills a random address and then tries to read it. First with the same tag, and then with a different one to get both hit and miss.
+Furthermore the toggle or the reset signal was added to reach 100\% toggle coverage and overall coverage.
+
+\lstinputlisting[
+    style=svlog, 
+    linerange={47 - 62}, 
+    firstnumber=69
+]{cache/tb_simple_cache.sv}
