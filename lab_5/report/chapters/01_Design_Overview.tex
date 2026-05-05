@@ -4,9 +4,9 @@
 \chapter{Design Overview} 
 \label{cha:design_overview}
 
-There are 2 modules under test: fifo and cache.
+There are 2 modules under test: FIFO and cache.
 
-\section{Fifo}
+\section{FIFO}
 
 A circular buffer.
 It utilizes internal write and read pointers to manage data flow and provides status flags to prevent data loss or invalid reads.
@@ -60,7 +60,7 @@ There are two parameters to this dut:
 
 \end{itemize}
 
-\section{Cache}
+\section{CACHE}
 
 A direct-mapped cache.
 It translates an 8-bit address into Tag, Index, and Offset fields to determine if requested data is currently "local" (hit) or needs to be fetched (miss).

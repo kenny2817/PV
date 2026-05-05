@@ -9,7 +9,7 @@
 There are 13 covergroup bins that are written in the \texttt{covergroup fifo\_cov} block.
 The Table \ref{tab:fifo_bins} describe better the various bins.
 
-The directive is expicit in the property block \texttt{becomes\_empty\_after\_read}.
+The directive is explicit in the property block \texttt{becomes\_empty\_after\_read}.
 
 \begin{table}[H]
 	\centering
@@ -29,7 +29,7 @@ The directive is expicit in the property block \texttt{becomes\_empty\_after\_re
 \end{table}
 
 Using only the reset sequence we cover only partially the dut.
-5 bins were overed out of 13 and 0 directives out of 1 directives.
+5 bins were covered out of 13 and 0 directives out of 1 directive.
 In particular each uncovered bin is listed in Table \ref{tab:reset_coverage}.
 
 \begin{table}[H]
@@ -40,10 +40,10 @@ In particular each uncovered bin is listed in Table \ref{tab:reset_coverage}.
 		\texttt{full}              		& \texttt{went\_full}  	& the buffer was never full     						\\
 		\texttt{dut.count}              & \texttt{mid\_bins}  	& the buffer was always empty   						\\
 		\texttt{dut.count}           	& \texttt{full\_bin}   	& the buffer was never full 							\\
-		\texttt{wr\_en}              	& \texttt{1}        	& the fifo is never written 							\\
-		\texttt{rd\_en}              	& \texttt{1}  			& the fifo is never read 								\\
-		\texttt{cross wr\_en, rd\_en}   & \texttt{write\_only} 	& the fifo is never written 							\\
-		\texttt{cross wr\_en, rd\_en}   & \texttt{read\_only}  	& the fifo is never read 								\\
+		\texttt{wr\_en}              	& \texttt{1}        	& the FIFO is never written 							\\
+		\texttt{rd\_en}              	& \texttt{1}  			& the FIFO is never read 								\\
+		\texttt{cross wr\_en, rd\_en}   & \texttt{write\_only} 	& the FIFO is never written 							\\
+		\texttt{cross wr\_en, rd\_en}   & \texttt{read\_only}  	& the FIFO is never read 								\\
 		\texttt{cross wr\_en, rd\_en}   & \texttt{illegal}     	& \texttt{wr\_en, rd\_en} were never 1 at the same time \\ \bottomrule
 	\end{tabular}
 	\caption{Coverage Miss during Reset Sequence}
@@ -53,7 +53,7 @@ In particular each uncovered bin is listed in Table \ref{tab:reset_coverage}.
 \section{Task 2 - FIFO}
 
 Using the full sequence we cover only partially the dut.
-10 bins were overed out of 13 and 0 directives out of 1 directives.
+10 bins were covered out of 13 and 0 directives out of 1 directive.
 In particular each uncovered bin is listed in Table \ref{tab:stimulus_coverage}.
 
 
@@ -72,9 +72,9 @@ In particular each uncovered bin is listed in Table \ref{tab:stimulus_coverage}.
 
 \section{Task 3 - FIFO}
 
-To reach 100\% coverage of the dut the fifo was first filled with 1s.
-Tryed to write when full (17 $>$ 16).
-Then valued the edgecases of \texttt{cross wr\_en, rd\_en}. 
+To reach 100\% coverage of the dut the FIFO was first filled with 1s.
+Tried to write when full (17 $>$ 16).
+Then valued the edge cases of \texttt{cross wr\_en, rd\_en}. 
 At this point the buffer was made empty and refilled with 0s to toggle all bits of the internal memory. 
 Read back.
 The final stimulus is to toggle the reset bit first to 0 and then to 1.
@@ -88,20 +88,20 @@ The final stimulus is to toggle the reset bit first to 0 and then to 1.
 \section{Task 4 - CACHE}
 
 A covergoup was used to cover the main points of the dut, a property covered the reset sequence.
-Coverage over hit/miss (and code toggling) was also used ot check indirectely the \texttt{tag}.
+Coverage over hit/miss (and code toggling) was also used to check indirectly the \texttt{tag}.
 
 \begin{itemize}
 	\item \textbf{Operations}: read/write/idle.
 	\item \textbf{Outcomes}: hit/miss.
 	\item \textbf{Cross Coverage}: read/write * hit/miss.
-	\item \textbf{Structure}: indeces + offsets.
+	\item \textbf{Structure}: indices + offsets.
 	\item \textbf{Corner Case}: read + write.
 \end{itemize}
 
-the signals read, write, and addr have been propagated to be able to confront input and sequential output in the covergroup.
-The resulting signals are: named adding the suffix \texttt{\_past} to the orignal name.
+The signals read, write, and addr have been propagated to be able to confront input and sequential output in the covergroup.
+The resulting signals are: named adding the suffix \texttt{\_past} to the original name.
 After executing the random stimulus already provided, we obtained a \texttt{90.47\%} weighted coverage and a \texttt{92.59\%} absolute coverage, while the directive is fully covered.
-In fact 2 bins out of 27 are not covered: the edge case with the collisoni between the signals read and write (both in case of hit and miss).
+In fact 2 bins out of 27 are not covered: the edge case with the collision between the signals read and write (both in case of hit-and-miss).
 
 \lstinputlisting[
     style=svlog, 
@@ -111,9 +111,9 @@ In fact 2 bins out of 27 are not covered: the edge case with the collisoni betwe
 
 \section{Task 5 - CACHE}
 
-To reach the full coverage of the dut, the addidtion of a simple stimulus to target the edge cases was enough.
-The added stimulus fills a random address and then tries to read it. First with the same tag, and then with a different one to get both hit and miss.
-Furthermore the toggle or the reset signal was added to reach 100\% toggle coverage and overall coverage.
+To reach the full coverage of the dut, the addition of a simple stimulus to target the edge cases was enough.
+The added stimulus fills a random address and then tries to read it. First with the same tag, and then with a different one to get both hit-and-miss.
+Furthermore, the toggle or the reset signal was added to reach 100\% toggle coverage and overall coverage.
 
 \lstinputlisting[
     style=svlog, 
