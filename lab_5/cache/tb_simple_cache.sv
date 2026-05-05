@@ -44,7 +44,11 @@ module tb_simple_cache;
             end
         end
 
-        // ADD ADDITIONAL STIMULUS AS NEEDED HERE
+        repeat (5) begin
+            @(posedge clk);
+            addr = $urandom_range(0,255);
+            read = 1; write = 1;
+        end
 
         #50
         $display("TEST FINISHED");
@@ -87,8 +91,8 @@ module tb_simple_cache;
             bins collision_hit  = {3'b111};
             bins collision_miss = {3'b110};
             
+            bins idle           = {3'b000};
             illegal_bins fake   = {3'b001};
-            ignore_bins idle    = {3'b000};
         }
     
     endgroup

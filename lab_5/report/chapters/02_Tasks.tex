@@ -88,6 +88,7 @@ The final stimulus is to toggle the reset bit first to 0 and then to 1.
 \section{Task 4 - CACHE}
 
 A covergoup was used to cover the main points of the dut, a property covered the reset sequence.
+Coverage over hit/miss (and code toggling) was also used ot check the \texttt{tag}.
 
 \begin{itemize}
 	\item \textbf{Operations}: read/write/idle.
@@ -97,7 +98,10 @@ A covergoup was used to cover the main points of the dut, a property covered the
 	\item \textbf{Corner Case}: read + write.
 \end{itemize}
 
-the signals read, write, and addr have been propagated to be able to confront input and sequential output in the covergroup. The resulting signals are: named adding the suffix \texttt{\_past} to the orignal name.
+the signals read, write, and addr have been propagated to be able to confront input and sequential output in the covergroup.
+The resulting signals are: named adding the suffix \texttt{\_past} to the orignal name.
+After executing the random stimulus already provided, we obtained a \texttt{90.47\%} weighted coverage and a \texttt{92.59\%} absolute coverage, while the directive is fully covered.
+In fact 2 bins out of 27 are not covered: the edge case with the collisoni between the signals read and write (both in case of hit and miss).
 
 \lstinputlisting[
     style=svlog, 
