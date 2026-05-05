@@ -44,16 +44,18 @@ module tb_simple_cache;
             end
         end
 
-        @(posedge clk);
-        addr = $urandom_range(0,255);
-        read = 0; write = 1;
-        @(posedge clk);
-        read = 1; write = 1;
-        @(posedge clk);
-        addr[dut.ADDR_WIDTH-1 -: dut.TAG_WIDTH] = ~addr[dut.ADDR_WIDTH-1 -: dut.TAG_WIDTH];
-        read = 1; write = 1;
+        repeat(5) begin
+            @(posedge clk);
+            addr = $urandom_range(0,255);
+            read = 0; write = 1;
+            @(posedge clk);
+            read = 1; write = 1;
+            @(posedge clk);
+            addr[dut.ADDR_WIDTH-1 -: dut.TAG_WIDTH] = ~addr[dut.ADDR_WIDTH-1 -: dut.TAG_WIDTH];
+            read = 1; write = 1;
+        end
 
-        @(posedge clk);
+        repeat(2) @(posedge clk);
         reset = 1;
         read = 0; write = 0;
         @(posedge clk);
