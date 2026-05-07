@@ -1,0 +1,33 @@
+% ------------------------------------------------------------------------------
+% Chapter 2
+% ------------------------------------------------------------------------------
+\chapter{Diagram} 
+\label{cha:diagram}
+
+
+Single master transaction:
+
+\begin{verbatim}
+    class ctrl_master_transaction extends uvm_sequence_item;
+        `uvm_object_utils(ctrl_master_transaction)
+        
+        rand bit use_m;
+        rand bit is_write;
+        rand logic [ADDR_WIDTH-1:0] addr;
+        rand logic [DATA_WIDTH-1:0] data;
+        
+        function new(string name = "ctrl_master_transaction");
+            super.new(name);
+        endfunction
+
+        function string convert2string();
+            return $sformatf(
+                "M: [%0s] Addr=%0h Data=%0h",
+                (use_m ? (is_write ? "WR" : "RD") : "IDLE"), addr, data,
+            );
+        endfunction
+
+    endclass
+\end{verbatim}
+
+\includegraphics[width=0.5\textwidth]{../diagram.png}
