@@ -62,11 +62,15 @@ package ctrl_pkg;
         endfunction
 
         task run_phase(uvm_phase phase);
-            ctrl_det_seq seq;
+            ctrl_det_seq seq0;
+            ctrl_det_seq seq1;
             phase.raise_objection(this);
-            seq = ctrl_det_seq::type_id::create("seq");
-            seq.num_trans = 50;
-            seq.start(env.master0_agent.sqr); 
+            seq0 = ctrl_det_seq::type_id::create("seq0");
+            seq1 = ctrl_det_seq::type_id::create("seq1");
+            seq0.num_trans = 8;
+            seq1.num_trans = 8;
+            seq0.start(env.master0_agent.sqr); 
+            seq1.start(env.master1_agent.sqr); 
             phase.drop_objection(this);
         endtask
     endclass
@@ -83,8 +87,27 @@ package ctrl_pkg;
         task body();
             ctrl_transaction req;
             for (int i = 0; i < num_trans; i++) begin
-                `uvm_do_with(req, { we == 1; req == 0; addr == i; wdata == (i * 16) + 100; })
-                `uvm_do_with(req, { we == 0; req == 1; addr == i; wdata == 0;              })
+                `uvm_do_with(req, { we == 1; req == 0; addr == i; wdata == (i * 16) + 100; }) // write
+                `uvm_do_with(req, { we == 0; req == 1; addr == i; wdata == 0;              }) // read
+                seq_item_port.put_item(req);
+            end
+        endtask
+    endclass
+
+    class ctrl_rnd_seq extends uvm_sequence #(ctrl_transaction);
+        `uvm_object_utils(ctrl_rnd_seq)
+
+        int num_trans = 8;
+
+        function new(string name = "ctrl_rnd_seq");
+            super.new(name);
+        endfunction
+
+        task body();
+            ctrl_transaction req;
+            for (int i = 0; i < num_trans; i++) begin
+                `uvm_do_with(req)
+                seq_item_port.put_item(req);
             end
         endtask
     endclass
