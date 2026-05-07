@@ -1,0 +1,64 @@
+% ------------------------------------------------------------------------------
+% Chapter 1
+% ------------------------------------------------------------------------------
+\chapter{Design Overview} 
+\label{cha:design_overview}
+
+\section{Controller}
+
+A dual-master memory controller.
+Master 0 (CPU) has fixed priority over Master 1 (DMA). Synchronous writes on clock, and combinational reads.
+
+\subsection{Parameters}
+
+There are two parameters to this dut:
+
+\begin{itemize}
+    \item \texttt{ADDR\_WIDTH} : address size.
+    \item \texttt{DATA\_WIDTH} : data width.
+\end{itemize}
+
+\subsection{Interface}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|l|c|c|l|}
+        \hline
+        \textbf{Signal}     & \textbf{Direction} & \textbf{Width} & \textbf{Description}            \\ \hline
+        \texttt{clk}        & Input              & 1              & Clock signal                    \\ \hline
+        \texttt{rst\_n}     & Input              & 1              & Active-low synchronous reset    \\ \hline
+        \texttt{addr0}      & Input              & ADDR\_WIDTH    & Master 0 address                \\ \hline
+        \texttt{wdata0}     & Input              & DATA\_WIDTH    & Master 0 data                   \\ \hline
+        \texttt{rdata0}     & Output             & DATA\_WIDTH    & Master 0 data                   \\ \hline
+        \texttt{we0}        & Input              & 1              & Master 0 write enable           \\ \hline
+        \texttt{req0}       & Input              & 1              & Master 0 read request           \\ \hline
+        \texttt{gnt0}       & Output             & 1              & Master 0 grant                  \\ \hline
+        \texttt{addr1}      & Input              & ADDR\_WIDTH    & Master 1 address                \\ \hline
+        \texttt{wdata1}     & Input              & DATA\_WIDTH    & Master 1 data                   \\ \hline
+        \texttt{rdata1}     & Output             & DATA\_WIDTH    & Master 1 data                   \\ \hline
+        \texttt{we1}        & Input              & 1              & Master 1 write enable           \\ \hline
+        \texttt{req1}       & Input              & 1              & Master 1 read request           \\ \hline
+        \texttt{gnt1}       & Output             & 1              & Master 1 grant                  \\ \hline
+    \end{tabular}
+    \caption{Controller signals}
+
+\end{table}
+
+\subsection{Functional Description}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Condition}      & \textbf{Behavior}                                                                                 \\ \hline
+        Only one master valid   & That master is serviced immediately                                                               \\ \hline
+        Both masters valid      & Master 0 is serviced (priority). Master 1 is not granted until Master 0 de-asserts \texttt{req0}  \\ \hline
+        No master valid         & Controller idle                                                                                   \\ \hline
+    \end{tabular}
+    \caption{Controller Behavior}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Reads}: 0 clock cycles (combinational —immediate once address \& grant are stable).
+    \item \textbf{Writes}: 1 clock cycle (synchronous —update happens on next rising edge when grant \& we are true).
+\end{itemize}
