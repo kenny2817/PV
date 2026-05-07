@@ -34,16 +34,17 @@ package ctrl_pkg;
         `uvm_object_utils(ctrl_transaction)
         
         rand bit                    we;
-        rand bit                    req;
         rand logic [ADDR_WIDTH-1:0] addr;
         rand logic [DATA_WIDTH-1:0] wdata;
+
+        rand int                    delay_cycles;
         
         function new(string name = "ctrl_transaction");
             super.new(name);
         endfunction
 
         function string convert2string();
-            return $sformatf( "M: [%0s] Addr=%0h Data=%0h", (use_m ? (is_write ? "WR" : "RD") : "IDLE"), addr, data );
+            return $sformatf( "M: [%0s] Addr=%0h Data=%0h Delay=%0d", (we ? "WR" : "RD"), addr, data, delay_cycles );
         endfunction
     endclass
 
@@ -67,10 +68,51 @@ package ctrl_pkg;
             phase.raise_objection(this);
             seq0 = ctrl_det_seq::type_id::create("seq0");
             seq1 = ctrl_det_seq::type_id::create("seq1");
-            seq0.num_trans = 8;
-            seq1.num_trans = 8;
+            seq0.num_trans = 8; seq1.num_trans = 8;
+            seq0.min_delay = 1; seq1.min_delay = 1;
+            seq0.max_delay = 3; seq1.max_delay = 3;
+            // master 0 only
             seq0.start(env.master0_agent.sqr); 
-            seq1.start(env.master1_agent.sqr); 
+            // master 1 only
+            seq1.start(env.master1_agent.sqr);
+            seq0.max_delay = 1; seq1.max_delay = 1;
+            // both masters
+            fork
+                seq0.start(env.master0_agent.sqr); 
+                seq1.start(env.master1_agent.sqr); 
+            join
+            phase.drop_objection(this);
+        endtask
+    endclass
+
+    class ctrl_rnd_test extends uvm_test;
+        `uvm_component_utils(ctrl_rnd_test)
+
+        ctrl_env env;
+
+        function new(string name = "ctrl_rnd_test", uvm_component parent = null);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            env = ctrl_env::type_id::create("env", this);
+        endfunction
+
+        task run_phase(uvm_phase phase);
+            ctrl_det_seq seq0;
+            ctrl_det_seq seq1;
+            phase.raise_objection(this);
+            seq0 = ctrl_rnd_seq::type_id::create("seq0");
+            seq1 = ctrl_rnd_seq::type_id::create("seq1");
+            seq0.num_trans = 20; seq1.num_trans = 20;
+            seq0.min_delay = 0; seq1.min_delay = 0;
+            seq0.max_delay = 2; seq1.max_delay = 2;
+            // both masters
+            fork
+                seq0.start(env.master0_agent.sqr);
+                seq1.start(env.master1_agent.sqr);
+            join
             phase.drop_objection(this);
         endtask
     endclass
@@ -79,6 +121,8 @@ package ctrl_pkg;
         `uvm_object_utils(ctrl_det_seq)
         
         int num_trans = 8;
+        int min_delay = 0;
+        int max_delay = 2;
 
         function new(string name = "ctrl_det_seq");
             super.new(name);
@@ -87,8 +131,8 @@ package ctrl_pkg;
         task body();
             ctrl_transaction req;
             for (int i = 0; i < num_trans; i++) begin
-                `uvm_do_with(req, { we == 1; req == 0; addr == i; wdata == (i * 16) + 100; }) // write
-                `uvm_do_with(req, { we == 0; req == 1; addr == i; wdata == 0;              }) // read
+                `uvm_do_with(req, { we == 1; addr == i; wdata == (i * 16) + 100; delay_cycles inside {[min_delay : max_delay]}; }) // write
+                `uvm_do_with(req, { we == 0; addr == i; wdata == 0;              delay_cycles inside {[min_delay : max_delay]}; }) // read
                 seq_item_port.put_item(req);
             end
         endtask
@@ -98,6 +142,8 @@ package ctrl_pkg;
         `uvm_object_utils(ctrl_rnd_seq)
 
         int num_trans = 8;
+        int min_delay = 0;
+        int max_delay = 2;
 
         function new(string name = "ctrl_rnd_seq");
             super.new(name);
@@ -105,8 +151,8 @@ package ctrl_pkg;
 
         task body();
             ctrl_transaction req;
-            for (int i = 0; i < num_trans; i++) begin
-                `uvm_do_with(req)
+            repeat (num_trans) begin
+                `uvm_do_with(req, { delay_cycles inside {[min_delay : max_delay]}; })
                 seq_item_port.put_item(req);
             end
         endtask
@@ -127,31 +173,25 @@ package ctrl_pkg;
 
         virtual function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            if (!uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)) begin
-                `uvm_fatal("NOVIF", {"Virtual interface not found for: ", get_full_name()})
-            end
+            uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)
         endfunction
 
         task reset_interface();
-            ctrl_if.cb.req   <= 1'b0;
-            ctrl_if.cb.we    <= 1'b0;
-            ctrl_if.cb.addr  <= '0;
-            ctrl_if.cb.wdata <= '0;
         endtask
 
         task apply(ctrl_transaction req);
+            repeat (req.delay_cycles) @(posedge ctrl_if.clk);
             ctrl_if.cb.we       <= req.we;
-            ctrl_if.cb.req      <= req.req;
+            ctrl_if.cb.req      <= 1'b1;
             ctrl_if.cb.addr     <= req.addr;
             ctrl_if.cb.wdata    <= req.wdata;
             @(posedge ctrl_if.clk);
             wait (ctrl_if.cb.gnt === 1'b1);
-            ctrl_if.cb.we       <= 1'b0;
             ctrl_if.cb.req      <= 1'b0;
         endtask
 
         task run_phase(uvm_phase phase);
-            this.reset_interface();
+            ctrl_if.cb.req   <= 1'b0;
             ctrl_transaction req;
             forever begin
                 seq_item_port.get_next_item(req);
