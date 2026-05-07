@@ -98,7 +98,7 @@ Coverage over hit/miss (and code toggling) was also used to check indirectly the
 	\item \textbf{Corner Case}: read + write.
 \end{itemize}
 
-The signals read, write, and addr have been propagated to be able to confront input and sequential output in the covergroup.
+The signals \texttt{read}, \texttt{write}, and \texttt{addr} have been propagated to be able to confront input and sequential output in the covergroup.
 The resulting signals are: named adding the suffix \texttt{\_past} to the original name.
 After executing the random stimulus already provided, we obtained a \texttt{90.47\%} weighted coverage and a \texttt{92.59\%} absolute coverage, while the directive is fully covered.
 In fact 2 bins out of 27 are not covered: the edge case with the collision between the signals read and write (both in case of hit-and-miss).
