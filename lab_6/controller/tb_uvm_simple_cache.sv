@@ -65,120 +65,6 @@ package ctrl_pkg;
         endfunction
     endclass
 
-    class ctrl_det_test extends uvm_test;
-        `uvm_component_utils(ctrl_det_test)
-
-        ctrl_env env;
-
-        function new(string name = "ctrl_det_test", uvm_component parent = null);
-            super.new(name, parent);
-        endfunction
-
-        function void build_phase(uvm_phase phase);
-            super.build_phase(phase);
-            env = ctrl_env::type_id::create("env", this);
-        endfunction
-
-        task run_phase(uvm_phase phase);
-            ctrl_det_seq seq0;
-            ctrl_det_seq seq1;
-            phase.raise_objection(this);
-            seq0 = ctrl_det_seq::type_id::create("seq0");
-            seq1 = ctrl_det_seq::type_id::create("seq1");
-            seq0.num_trans = 8; seq1.num_trans = 8;
-            seq0.min_delay = 1; seq1.min_delay = 1;
-            seq0.max_delay = 3; seq1.max_delay = 3;
-            // master 0 only
-            seq0.start(env.master0_agent.sqr); 
-            // master 1 only
-            seq1.start(env.master1_agent.sqr);
-            seq0.max_delay = 1; seq1.max_delay = 1;
-            // both masters
-            fork
-                seq0.start(env.master0_agent.sqr); 
-                seq1.start(env.master1_agent.sqr); 
-            join
-            phase.drop_objection(this);
-        endtask
-    endclass
-
-    class ctrl_rnd_test extends uvm_test;
-        `uvm_component_utils(ctrl_rnd_test)
-
-        ctrl_env env;
-
-        function new(string name = "ctrl_rnd_test", uvm_component parent = null);
-            super.new(name, parent);
-        endfunction
-
-        function void build_phase(uvm_phase phase);
-            super.build_phase(phase);
-            env = ctrl_env::type_id::create("env", this);
-        endfunction
-
-        task run_phase(uvm_phase phase);
-            ctrl_det_seq seq0;
-            ctrl_det_seq seq1;
-            phase.raise_objection(this);
-            seq0 = ctrl_rnd_seq::type_id::create("seq0");
-            seq1 = ctrl_rnd_seq::type_id::create("seq1");
-            seq0.num_trans = 20; seq1.num_trans = 20;
-            seq0.min_delay = 0; seq1.min_delay = 0;
-            seq0.max_delay = 2; seq1.max_delay = 2;
-            // both masters
-            fork
-                seq0.start(env.master0_agent.sqr);
-                seq1.start(env.master1_agent.sqr);
-            join
-            phase.drop_objection(this);
-        endtask
-    endclass
-
-    class ctrl_det_seq extends uvm_sequence #(ctrl_input_transaction);
-        `uvm_object_utils(ctrl_det_seq)
-        
-        int num_trans = 8;
-        int min_delay = 0;
-        int max_delay = 2;
-
-        function new(string name = "ctrl_det_seq");
-            super.new(name);
-        endfunction
-
-        task body();
-            ctrl_input_transaction trans;
-            for (int i = 0; i < num_trans; i++) begin
-                `uvm_do_with(trans, { we == 1; addr == i; wdata == (i * 16) + 100; delay_cycles inside {[min_delay : max_delay]}; }) // write
-                `uvm_do_with(trans, { we == 0; addr == i; wdata == 0;              delay_cycles inside {[min_delay : max_delay]}; }) // read
-                seq_item_port.put_item(trans);
-            end
-        endtask
-    endclass
-
-    class ctrl_rnd_seq extends uvm_sequence #(ctrl_input_transaction);
-        `uvm_object_utils(ctrl_rnd_seq)
-
-        int num_trans = 8;
-        int min_delay = 0;
-        int max_delay = 2;
-
-        function new(string name = "ctrl_rnd_seq");
-            super.new(name);
-        endfunction
-
-        task body();
-            ctrl_input_transaction trans;
-            repeat (num_trans) begin
-                `uvm_do_with(trans, { delay_cycles inside {[min_delay : max_delay]}; })
-                seq_item_port.put_item(trans);
-            end
-        endtask
-    endclass
-
-    class ctrl_sequencer extends uvm_sequencer #(ctrl_input_transaction);
-        `uvm_component_utils(ctrl_sequencer)
-    endclass
-
     class ctrl_driver extends uvm_driver #(ctrl_input_transaction);
         `uvm_component_utils(ctrl_driver)
 
@@ -250,6 +136,10 @@ package ctrl_pkg;
         endtask
     endclass
 
+    class ctrl_sequencer extends uvm_sequencer #(ctrl_input_transaction);
+        `uvm_component_utils(ctrl_sequencer)
+    endclass
+
     class ctrl_agent extends uvm_agent;
         uvm_sequencer sqr;
         ctrl_driver   drv;
@@ -300,7 +190,7 @@ package ctrl_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            master0_agent = ctrl_agent::type_id::create("master0_agent", this);
+            master0_agent = ctrl_agent::type_id::create("master0_agent", this); 
             master1_agent = ctrl_agent::type_id::create("master1_agent", this);
             scb = ctrl_scoreboard::type_id::create("scb", this);
         endfunction
@@ -311,7 +201,158 @@ package ctrl_pkg;
             master1_agent.sqr.connect(scb.sqr);
         endfunction
     endclass
+
+    class ctrl_det_seq extends uvm_sequence #(ctrl_input_transaction);
+        `uvm_object_utils(ctrl_det_seq)
+        
+        int num_trans = 8;
+        int min_delay = 0;
+        int max_delay = 2;
+
+        function new(string name = "ctrl_det_seq");
+            super.new(name);
+        endfunction
+
+        task body();
+            ctrl_input_transaction trans;
+            for (int i = 0; i < num_trans; i++) begin
+                `uvm_do_with(trans, { we == 1; addr == i; wdata == (i * 16) + 100; delay_cycles inside {[min_delay : max_delay]}; }) // write
+                `uvm_do_with(trans, { we == 0; addr == i; wdata == 0;              delay_cycles inside {[min_delay : max_delay]}; }) // read
+                seq_item_port.put_item(trans);
+            end
+        endtask
+    endclass
+
+    class ctrl_rnd_seq extends uvm_sequence #(ctrl_input_transaction);
+        `uvm_object_utils(ctrl_rnd_seq)
+
+        int num_trans = 8;
+        int min_delay = 0;
+        int max_delay = 2;
+
+        function new(string name = "ctrl_rnd_seq");
+            super.new(name);
+        endfunction
+
+        task body();
+            ctrl_input_transaction trans;
+            repeat (num_trans) begin
+                `uvm_do_with(trans, { delay_cycles inside {[min_delay : max_delay]}; })
+                seq_item_port.put_item(trans);
+            end
+        endtask
+    endclass
+
+    class ctrl_det_test extends uvm_test;
+        `uvm_component_utils(ctrl_det_test)
+
+        ctrl_env env;
+
+        function new(string name = "ctrl_det_test", uvm_component parent = null);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            env = ctrl_env::type_id::create("env", this);
+        endfunction
+
+        task run_phase(uvm_phase phase);
+            ctrl_det_seq seq0;
+            ctrl_det_seq seq1;
+            phase.raise_objection(this);
+            seq0 = ctrl_det_seq::type_id::create("seq0");
+            seq1 = ctrl_det_seq::type_id::create("seq1");
+            seq0.num_trans = 8; seq1.num_trans = 8;
+            seq0.min_delay = 1; seq1.min_delay = 1;
+            seq0.max_delay = 3; seq1.max_delay = 3;
+            // master 0 only
+            seq0.start(env.master0_agent.sqr); 
+            // master 1 only
+            seq1.start(env.master1_agent.sqr);
+            seq0.max_delay = 1; seq1.max_delay = 1;
+            // both masters
+            fork
+                seq0.start(env.master0_agent.sqr); 
+                seq1.start(env.master1_agent.sqr); 
+            join
+            phase.drop_objection(this);
+        endtask
+    endclass
+
+    class ctrl_rnd_test extends uvm_test;
+        `uvm_component_utils(ctrl_rnd_test)
+
+        ctrl_env env;
+
+        function new(string name = "ctrl_rnd_test", uvm_component parent = null);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            env = ctrl_env::type_id::create("env", this);
+        endfunction
+
+        task run_phase(uvm_phase phase);
+            ctrl_rnd_seq seq0;
+            ctrl_rnd_seq seq1;
+            phase.raise_objection(this);
+            seq0 = ctrl_rnd_seq::type_id::create("seq0");
+            seq1 = ctrl_rnd_seq::type_id::create("seq1");
+            seq0.num_trans = 20; seq1.num_trans = 20;
+            seq0.min_delay = 0; seq1.min_delay = 0;
+            seq0.max_delay = 2; seq1.max_delay = 2;
+            // both masters
+            fork
+                seq0.start(env.master0_agent.sqr);
+                seq1.start(env.master1_agent.sqr);
+            join
+            phase.drop_objection(this);
+        endtask
+    endclass
 endpackage
 
 import uvm_pkg::*;
 import controller_pkg::*;// Parameters must match DUTparameterADDR_WIDTH = 8;parameterDATA_WIDTH = 32;...endmodule: tb_uvm_simple_mem_ctrl
+
+module tb_ctrl;
+
+    logic clk, rst_n;
+
+    ctrl_interface ctrl_master0_If(clk, rst_n);
+    ctrl_interface ctrl_master1_If(clk, rst_n);
+
+    simple_mem_ctrl dut (
+        .clk      (clk),
+        .rst_n    (rst_n),
+        .addr0    (ctrl_master0_If.addr),
+        .wdata0   (ctrl_master0_If.wdata),
+        .rdata0   (ctrl_master0_If.rdata),
+        .we0      (ctrl_master0_If.we),
+        .req0     (ctrl_master0_If.req),
+        .gnt0     (ctrl_master0_If.gnt),
+        .addr1    (ctrl_master1_If.addr),
+        .wdata1   (ctrl_master1_If.wdata),
+        .rdata1   (ctrl_master1_If.rdata),
+        .we1      (ctrl_master1_If.we),
+        .req1     (ctrl_master1_If.req),
+        .gnt1     (ctrl_master1_If.gnt)
+    );
+
+    always #5 clk = ~clk;
+
+    initial begin
+        clk = 0;
+        rst_n = 0;
+        @(posedge clk);
+        rst_n = 1;
+        @(posedge clk);
+
+        uvm_config_db#(virtual ctrl_interface)::set(null, "*master0_agent*", "vif", ctrl_master0_If);
+        uvm_config_db#(virtual ctrl_interface)::set(null, "*master1_agent*", "vif", ctrl_master1_If);
+
+        run_test("ctrl_det_test");
+        // run_test("ctrl_rnd_test");
+    end
+endmodule
