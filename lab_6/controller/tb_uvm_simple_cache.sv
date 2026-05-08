@@ -85,7 +85,9 @@ package ctrl_pkg;
 
         virtual function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)
+            if (!uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)) begin
+                `uvm_fatal("DRV", "interface not found")
+            end
         endfunction
 
         task apply(ctrl_input_transaction trans);
@@ -124,7 +126,9 @@ package ctrl_pkg;
 
         virtual function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)
+            if (!uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)) begin
+                `uvm_fatal("MNT", "interface not found")
+            end
         endfunction
         
         task run_phase(uvm_phase phase);
@@ -138,6 +142,7 @@ package ctrl_pkg;
                     trans.rdata = ctrl_if.cb.rdata;
                     trans.wdata = ctrl_if.cb.wdata;
                     analysis_port.write(trans);
+                    `uvm_info("MNT", trans.convert2string(), UVM_HIGH)
                 end
             end
         endtask
@@ -146,7 +151,6 @@ package ctrl_pkg;
 
     class ctrl_sequencer extends uvm_sequencer #(ctrl_input_transaction);
         `uvm_component_utils(ctrl_sequencer)
-
     endclass
 
     class ctrl_agent extends uvm_agent;
@@ -185,7 +189,7 @@ package ctrl_pkg;
         endfunction
 
         function void write(ctrl_output_transaction trans);
-            $display(trans.convert2string()); // TODO
+            `uvm_info("SCB", trans.convert2string(), UVM_HIGH)
         endfunction
 
     endclass
@@ -228,6 +232,7 @@ package ctrl_pkg;
         endfunction
 
         task body();
+            `uvm_info("SEQ", $sformatf("sequence [DET]: %d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_MEDIUM)
             ctrl_input_transaction trans;
             for (int i = 0; i < num_trans; i++) begin
                 `uvm_do_with(trans, {
@@ -245,6 +250,7 @@ package ctrl_pkg;
                 }) // read
                 seq_item_port.put_item(trans);
             end
+            `uvm_info("SEQ", $sformatf("sequence [DET] done"), UVM_MEDIUM)
         endtask
 
     endclass
@@ -261,6 +267,7 @@ package ctrl_pkg;
         endfunction
 
         task body();
+            `uvm_info("SEQ", $sformatf("sequence [RND]: %d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_MEDIUM)
             ctrl_input_transaction trans;
             repeat (num_trans) begin
                 `uvm_do_with(trans, {
@@ -268,6 +275,7 @@ package ctrl_pkg;
                 })
                 seq_item_port.put_item(trans);
             end
+            `uvm_info("SEQ", $sformatf("sequence [RND] done"), UVM_MEDIUM)
         endtask
 
     endclass
@@ -340,7 +348,7 @@ package ctrl_pkg;
             join
             phase.drop_objection(this);
         endtask
-        
+
     endclass
 endpackage
 
