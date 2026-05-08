@@ -28,6 +28,7 @@ package ctrl_pkg;
             input rdata, gnt;
             inout rst_n, addr, wdata, we, req;
         endclocking
+
     endinterface
     
     class ctrl_input_transaction extends uvm_sequence_item;
@@ -44,8 +45,12 @@ package ctrl_pkg;
         endfunction
 
         function string convert2string();
-            return $sformatf( "M: [%0s] Addr=%0h Data=%0h Delay=%0d", (we ? "WR" : "RD"), addr, data, delay_cycles );
+            return $sformatf(
+                "M: [%0s] Addr=%0h Data=%0h Delay=%0d", 
+                (we ? "WR" : "RD"), addr, data, delay_cycles
+            );
         endfunction
+
     endclass
 
     class ctrl_output_transaction extends uvm_sequence_item;
@@ -61,8 +66,12 @@ package ctrl_pkg;
         endfunction
 
         function string convert2string();
-            return $sformatf( "M: [%0s] Addr=%0h Wdata=%0h Rdata=%0h", (we ? "WR" : "RD"), addr, wdata, rdata);
+            return $sformatf(
+                "M: [%0s] Addr=%0h Wdata=%0h Rdata=%0h",
+                (we ? "WR" : "RD"), addr, wdata, rdata
+            );
         endfunction
+
     endclass
 
     class ctrl_driver extends uvm_driver #(ctrl_input_transaction);
@@ -79,22 +88,19 @@ package ctrl_pkg;
             uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)
         endfunction
 
-        task reset_interface();
-        endtask
-
         task apply(ctrl_input_transaction trans);
-            repeat (trans.delay_cycles) @(posedge ctrl_if.clk);
+            repeat (trans.delay_cycles) @(posedge ctrl_if.clk); // apply delay
             ctrl_if.cb.req      <= 1'b1;
             ctrl_if.cb.we       <= trans.we;
             ctrl_if.cb.addr     <= trans.addr;
             ctrl_if.cb.wdata    <= trans.wdata;
             @(posedge ctrl_if.clk);
-            wait (ctrl_if.cb.gnt === 1'b1);
-            ctrl_if.cb.req      <= 1'b0;
+            wait (ctrl_if.cb.gnt);
+            ctrl_if.cb.req      <= 1'b0; // release
         endtask
 
         task run_phase(uvm_phase phase);
-            ctrl_if.cb.req   <= 1'b0;
+            ctrl_if.cb.req   <= 1'b0; // init
             ctrl_input_transaction trans;
             forever begin
                 seq_item_port.get_next_item(trans);
@@ -102,6 +108,7 @@ package ctrl_pkg;
                 seq_item_port.item_done();
             end
         endtask
+
     endclass
 
     class ctrl_monitor extends uvm_monitor;
@@ -134,13 +141,17 @@ package ctrl_pkg;
                 end
             end
         endtask
+
     endclass
 
     class ctrl_sequencer extends uvm_sequencer #(ctrl_input_transaction);
         `uvm_component_utils(ctrl_sequencer)
+
     endclass
 
     class ctrl_agent extends uvm_agent;
+        `uvm_component_utils(ctrl_agent)
+
         uvm_sequencer sqr;
         ctrl_driver   drv;
         ctrl_monitor  mon;
@@ -160,6 +171,7 @@ package ctrl_pkg;
             super.connect_phase(phase);
             drv.seq_item_port.connect(sqr.seq_item_export);
         endfunction
+
     endclass
 
     class ctrl_scoreboard extends uvm_scoreboard;
@@ -175,6 +187,7 @@ package ctrl_pkg;
         function void write(ctrl_output_transaction trans);
             $display(trans.convert2string()); // TODO
         endfunction
+
     endclass
 
     class ctrl_env extends uvm_env;
@@ -190,8 +203,8 @@ package ctrl_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            master0_agent = ctrl_agent::type_id::create("master0_agent", this); 
-            master1_agent = ctrl_agent::type_id::create("master1_agent", this);
+            master0_agent = ctrl_agent::type_id::create("master0_agent", this); // outing the if
+            master1_agent = ctrl_agent::type_id::create("master1_agent", this); // outing the if
             scb = ctrl_scoreboard::type_id::create("scb", this);
         endfunction
 
@@ -200,6 +213,7 @@ package ctrl_pkg;
             master0_agent.sqr.connect(scb.sqr);
             master1_agent.sqr.connect(scb.sqr);
         endfunction
+
     endclass
 
     class ctrl_det_seq extends uvm_sequence #(ctrl_input_transaction);
@@ -216,11 +230,23 @@ package ctrl_pkg;
         task body();
             ctrl_input_transaction trans;
             for (int i = 0; i < num_trans; i++) begin
-                `uvm_do_with(trans, { we == 1; addr == i; wdata == (i * 16) + 100; delay_cycles inside {[min_delay : max_delay]}; }) // write
-                `uvm_do_with(trans, { we == 0; addr == i; wdata == 0;              delay_cycles inside {[min_delay : max_delay]}; }) // read
+                `uvm_do_with(trans, {
+                    we == 1; 
+                    addr == i; 
+                    wdata == (i * 16) + 100; 
+                    delay_cycles inside {[min_delay : max_delay]};
+                }) // write
+                seq_item_port.put_item(trans);
+                `uvm_do_with(trans, {
+                    we == 0; 
+                    addr == i; 
+                    wdata == 0;
+                    delay_cycles inside {[min_delay : max_delay]};
+                }) // read
                 seq_item_port.put_item(trans);
             end
         endtask
+
     endclass
 
     class ctrl_rnd_seq extends uvm_sequence #(ctrl_input_transaction);
@@ -237,10 +263,13 @@ package ctrl_pkg;
         task body();
             ctrl_input_transaction trans;
             repeat (num_trans) begin
-                `uvm_do_with(trans, { delay_cycles inside {[min_delay : max_delay]}; })
+                `uvm_do_with(trans, {
+                    delay_cycles inside {[min_delay : max_delay]};
+                })
                 seq_item_port.put_item(trans);
             end
         endtask
+
     endclass
 
     class ctrl_det_test extends uvm_test;
@@ -278,6 +307,7 @@ package ctrl_pkg;
             join
             phase.drop_objection(this);
         endtask
+
     endclass
 
     class ctrl_rnd_test extends uvm_test;
@@ -310,6 +340,7 @@ package ctrl_pkg;
             join
             phase.drop_objection(this);
         endtask
+        
     endclass
 endpackage
 
@@ -323,15 +354,20 @@ module tb_ctrl;
     ctrl_interface ctrl_master0_If(clk, rst_n);
     ctrl_interface ctrl_master1_If(clk, rst_n);
 
+    initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master0_agent*", "vif", ctrl_master0_If);
+    initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master1_agent*", "vif", ctrl_master1_If);
+
     simple_mem_ctrl dut (
         .clk      (clk),
         .rst_n    (rst_n),
+
         .addr0    (ctrl_master0_If.addr),
         .wdata0   (ctrl_master0_If.wdata),
         .rdata0   (ctrl_master0_If.rdata),
         .we0      (ctrl_master0_If.we),
         .req0     (ctrl_master0_If.req),
         .gnt0     (ctrl_master0_If.gnt),
+
         .addr1    (ctrl_master1_If.addr),
         .wdata1   (ctrl_master1_If.wdata),
         .rdata1   (ctrl_master1_If.rdata),
@@ -348,9 +384,6 @@ module tb_ctrl;
         @(posedge clk);
         rst_n = 1;
         @(posedge clk);
-
-        uvm_config_db#(virtual ctrl_interface)::set(null, "*master0_agent*", "vif", ctrl_master0_If);
-        uvm_config_db#(virtual ctrl_interface)::set(null, "*master1_agent*", "vif", ctrl_master1_If);
 
         run_test("ctrl_det_test");
         // run_test("ctrl_rnd_test");
