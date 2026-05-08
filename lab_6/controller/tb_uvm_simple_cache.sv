@@ -249,6 +249,50 @@ package ctrl_pkg;
             end
         endtask
     endclass
+
+    class fifo_agent extends uvm_agent;
+        uvm_sequencer #(fifo_item) sqr;
+        fifo_driver drv;
+        fifo_monitor mon;
+        
+        function new(string name = "fifo_agent", uvm_component parent);
+            super.new(name, parent);
+        endfunction
+        
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            sqr = uvm_sequencer#(fifo_item)::type_id::create("sqr", this);
+            drv = fifo_driver::type_id::create("drv", this);
+            mon = fifo_monitor::type_id::create("mon", this);
+        endfunction
+        
+        function void connect_phase(uvm_phase phase);
+            super.connect_phase(phase);
+            drv.seq_item_port.connect(sqr.seq_item_export);
+        endfunction
+    endclass
+
+    class ctrl_agent extends uvm_agent;
+        uvm_sequencer sqr;
+        ctrl_driver   drv;
+        ctrl_monitor  mon;
+
+        function new(string name = "ctrl_agent", uvm_component parent);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            sqr = uvm_sequencer::type_id::create("sqr", this);
+            drv = ctrl_driver::type_id::create("drv", this);
+            mon = ctrl_monitor::type_id::create("mon", this);
+        endfunction
+
+        function void connect_phase(uvm_phase phase);
+            super.connect_phase(phase);
+            drv.seq_item_port.connect(sqr.seq_item_export);
+        endfunction
+    endclass
 endpackage
 
 import uvm_pkg::*;
