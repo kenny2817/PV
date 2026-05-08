@@ -250,28 +250,6 @@ package ctrl_pkg;
         endtask
     endclass
 
-    class fifo_agent extends uvm_agent;
-        uvm_sequencer #(fifo_item) sqr;
-        fifo_driver drv;
-        fifo_monitor mon;
-        
-        function new(string name = "fifo_agent", uvm_component parent);
-            super.new(name, parent);
-        endfunction
-        
-        function void build_phase(uvm_phase phase);
-            super.build_phase(phase);
-            sqr = uvm_sequencer#(fifo_item)::type_id::create("sqr", this);
-            drv = fifo_driver::type_id::create("drv", this);
-            mon = fifo_monitor::type_id::create("mon", this);
-        endfunction
-        
-        function void connect_phase(uvm_phase phase);
-            super.connect_phase(phase);
-            drv.seq_item_port.connect(sqr.seq_item_export);
-        endfunction
-    endclass
-
     class ctrl_agent extends uvm_agent;
         uvm_sequencer sqr;
         ctrl_driver   drv;
@@ -291,6 +269,46 @@ package ctrl_pkg;
         function void connect_phase(uvm_phase phase);
             super.connect_phase(phase);
             drv.seq_item_port.connect(sqr.seq_item_export);
+        endfunction
+    endclass
+
+    class ctrl_scoreboard extends uvm_scoreboard;
+        `uvm_component_utils(ctrl_scoreboard)
+
+        uvm_analysis_port #(ctrl_output_transaction) analysis_port;
+
+        function new(string name = "ctrl_scoreboard", uvm_component parent = null);
+            super.new(name, parent);
+            analysis_port = new("analysis_port", this);
+        endfunction
+
+        function void write(ctrl_output_transaction trans);
+            $display(trans.convert2string()); // TODO
+        endfunction
+    endclass
+
+    class ctrl_env extends uvm_env;
+        `uvm_component_utils(ctrl_env)
+
+        ctrl_agent master0_agent;
+        ctrl_agent master1_agent;
+        ctrl_scoreboard scb;
+
+        function new(string name = "ctrl_env", uvm_component parent = null);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            master0_agent = ctrl_agent::type_id::create("master0_agent", this);
+            master1_agent = ctrl_agent::type_id::create("master1_agent", this);
+            scb = ctrl_scoreboard::type_id::create("scb", this);
+        endfunction
+
+        function void connect_phase(uvm_phase phase);
+            super.connect_phase(phase);
+            master0_agent.sqr.connect(scb.sqr);
+            master1_agent.sqr.connect(scb.sqr);
         endfunction
     endclass
 endpackage
