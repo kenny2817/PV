@@ -30,8 +30,8 @@ package ctrl_pkg;
         endclocking
     endinterface
     
-    class ctrl_transaction extends uvm_sequence_item;
-        `uvm_object_utils(ctrl_transaction)
+    class ctrl_input_transaction extends uvm_sequence_item;
+        `uvm_object_utils(ctrl_input_transaction)
         
         rand bit                    we;
         rand logic [ADDR_WIDTH-1:0] addr;
@@ -39,12 +39,29 @@ package ctrl_pkg;
 
         rand int                    delay_cycles;
         
-        function new(string name = "ctrl_transaction");
+        function new(string name = "ctrl_input_transaction");
             super.new(name);
         endfunction
 
         function string convert2string();
             return $sformatf( "M: [%0s] Addr=%0h Data=%0h Delay=%0d", (we ? "WR" : "RD"), addr, data, delay_cycles );
+        endfunction
+    endclass
+
+    class ctrl_output_transaction extends uvm_sequence_item;
+        `uvm_object_utils(ctrl_output_transaction)
+
+        logic                  we;
+        logic [ADDR_WIDTH-1:0] addr;
+        logic [DATA_WIDTH-1:0] rdata;
+        logic [DATA_WIDTH-1:0] wdata;
+
+        function new(string name = "ctrl_output_transaction");
+            super.new(name);
+        endfunction
+
+        function string convert2string();
+            return $sformatf( "M: [%0s] Addr=%0h Wdata=%0h Rdata=%0h", (we ? "WR" : "RD"), addr, wdata, rdata);
         endfunction
     endclass
 
@@ -117,7 +134,7 @@ package ctrl_pkg;
         endtask
     endclass
 
-    class ctrl_det_seq extends uvm_sequence #(ctrl_transaction);
+    class ctrl_det_seq extends uvm_sequence #(ctrl_input_transaction);
         `uvm_object_utils(ctrl_det_seq)
         
         int num_trans = 8;
@@ -129,16 +146,16 @@ package ctrl_pkg;
         endfunction
 
         task body();
-            ctrl_transaction req;
+            ctrl_input_transaction trans;
             for (int i = 0; i < num_trans; i++) begin
-                `uvm_do_with(req, { we == 1; addr == i; wdata == (i * 16) + 100; delay_cycles inside {[min_delay : max_delay]}; }) // write
-                `uvm_do_with(req, { we == 0; addr == i; wdata == 0;              delay_cycles inside {[min_delay : max_delay]}; }) // read
-                seq_item_port.put_item(req);
+                `uvm_do_with(trans, { we == 1; addr == i; wdata == (i * 16) + 100; delay_cycles inside {[min_delay : max_delay]}; }) // write
+                `uvm_do_with(trans, { we == 0; addr == i; wdata == 0;              delay_cycles inside {[min_delay : max_delay]}; }) // read
+                seq_item_port.put_item(trans);
             end
         endtask
     endclass
 
-    class ctrl_rnd_seq extends uvm_sequence #(ctrl_transaction);
+    class ctrl_rnd_seq extends uvm_sequence #(ctrl_input_transaction);
         `uvm_object_utils(ctrl_rnd_seq)
 
         int num_trans = 8;
@@ -150,19 +167,19 @@ package ctrl_pkg;
         endfunction
 
         task body();
-            ctrl_transaction req;
+            ctrl_input_transaction trans;
             repeat (num_trans) begin
-                `uvm_do_with(req, { delay_cycles inside {[min_delay : max_delay]}; })
-                seq_item_port.put_item(req);
+                `uvm_do_with(trans, { delay_cycles inside {[min_delay : max_delay]}; })
+                seq_item_port.put_item(trans);
             end
         endtask
     endclass
 
-    class ctrl_sequencer extends uvm_sequencer #(ctrl_transaction);
+    class ctrl_sequencer extends uvm_sequencer #(ctrl_input_transaction);
         `uvm_component_utils(ctrl_sequencer)
     endclass
 
-    class ctrl_driver extends uvm_driver #(ctrl_transaction);
+    class ctrl_driver extends uvm_driver #(ctrl_input_transaction);
         `uvm_component_utils(ctrl_driver)
 
         virtual ctrl_interface ctrl_if; 
@@ -179,12 +196,12 @@ package ctrl_pkg;
         task reset_interface();
         endtask
 
-        task apply(ctrl_transaction req);
-            repeat (req.delay_cycles) @(posedge ctrl_if.clk);
-            ctrl_if.cb.we       <= req.we;
+        task apply(ctrl_input_transaction trans);
+            repeat (trans.delay_cycles) @(posedge ctrl_if.clk);
             ctrl_if.cb.req      <= 1'b1;
-            ctrl_if.cb.addr     <= req.addr;
-            ctrl_if.cb.wdata    <= req.wdata;
+            ctrl_if.cb.we       <= trans.we;
+            ctrl_if.cb.addr     <= trans.addr;
+            ctrl_if.cb.wdata    <= trans.wdata;
             @(posedge ctrl_if.clk);
             wait (ctrl_if.cb.gnt === 1'b1);
             ctrl_if.cb.req      <= 1'b0;
@@ -192,15 +209,46 @@ package ctrl_pkg;
 
         task run_phase(uvm_phase phase);
             ctrl_if.cb.req   <= 1'b0;
-            ctrl_transaction req;
+            ctrl_input_transaction trans;
             forever begin
-                seq_item_port.get_next_item(req);
-                this.apply(req);
+                seq_item_port.get_next_item(trans);
+                this.apply(trans);
                 seq_item_port.item_done();
             end
         endtask
     endclass
 
+    class ctrl_monitor extends uvm_monitor;
+        `uvm_component_utils(ctrl_monitor)
+
+        virtual ctrl_interface ctrl_if;
+        uvm_analysis_port #(ctrl_output_transaction) analysis_port;
+
+        function new(string name="ctrl_monitor", uvm_component parent=null);
+            super.new(name, parent);
+            analysis_port = new("analysis_port", this);
+        endfunction
+
+        virtual function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)
+        endfunction
+        
+        task run_phase(uvm_phase phase);
+            ctrl_input_transaction trans;
+            forever begin
+                @(posedge ctrl_if.clk);
+                if (ctrl_if.cb.req && ctrl_if.cb.gnt) begin
+                    trans = ctrl_output_transaction::type_id::create("trans");
+                    trans.we    = ctrl_if.cb.we;
+                    trans.addr  = ctrl_if.cb.addr;
+                    trans.rdata = ctrl_if.cb.rdata;
+                    trans.wdata = ctrl_if.cb.wdata;
+                    analysis_port.write(trans);
+                end
+            end
+        endtask
+    endclass
 endpackage
 
 import uvm_pkg::*;
