@@ -3,6 +3,7 @@
 
 package ctrl_const_pkg;
     localparam int ADDR_WIDTH = 8;
+    localparam int MEM_SIZE_WORDS = 1 << ADDR_WIDTH;
     localparam int DATA_WIDTH = 32;
 endpackage
 
@@ -17,7 +18,7 @@ package ctrl_pkg;
     );
         
         logic [ADDR_WIDTH-1:0] addr;
-        logic [DATA_WIDTH-1:0] wdata
+        logic [DATA_WIDTH-1:0] wdata;
         logic [DATA_WIDTH-1:0] rdata;
         logic                  we;
         logic                  req;
@@ -47,7 +48,7 @@ package ctrl_pkg;
         function string convert2string();
             return $sformatf(
                 "M: [%0s] Addr=%0h Data=%0h Delay=%0d", 
-                (we ? "WR" : "RD"), addr, data, delay_cycles
+                (we ? "WR" : "RD"), addr, wdata, delay_cycles
             );
         endfunction
 
@@ -102,12 +103,27 @@ package ctrl_pkg;
         endtask
 
         task run_phase(uvm_phase phase);
-            ctrl_if.cb.req   <= 1'b0; // init
             ctrl_input_transaction trans;
             forever begin
-                seq_item_port.get_next_item(trans);
-                this.apply(trans);
-                seq_item_port.item_done();
+                wait(!ctrl_if.rst_n); 
+                ctrl_if.cb.req   <= 1'b0;
+                `uvm_info("DRV", "[RESET ON]", UVM_MEDIUM)
+                wait(ctrl_if.rst_n);
+                `uvm_info("DRV", " [RESET OFF]", UVM_MEDIUM)
+                fork
+                    begin
+                        forever begin
+                            seq_item_port.get_next_item(trans);
+                            this.apply(trans);
+                            seq_item_port.item_done();
+                        end
+                    end
+                    
+                    begin
+                        wait(!ctrl_if.rst_n); 
+                    end
+                join_any 
+                disable fork; 
             end
         endtask
 
@@ -117,11 +133,11 @@ package ctrl_pkg;
         `uvm_component_utils(ctrl_monitor)
 
         virtual ctrl_interface ctrl_if;
-        uvm_analysis_port #(ctrl_output_transaction) analysis_port;
+        uvm_ap #(ctrl_output_transaction) ap;
 
         function new(string name="ctrl_monitor", uvm_component parent=null);
             super.new(name, parent);
-            analysis_port = new("analysis_port", this);
+            ap = new("ap", this);
         endfunction
 
         virtual function void build_phase(uvm_phase phase);
@@ -141,7 +157,7 @@ package ctrl_pkg;
                     trans.addr  = ctrl_if.cb.addr;
                     trans.rdata = ctrl_if.cb.rdata;
                     trans.wdata = ctrl_if.cb.wdata;
-                    analysis_port.write(trans);
+                    ap.write(trans);
                     `uvm_info("MNT", trans.convert2string(), UVM_HIGH)
                 end
             end
@@ -168,7 +184,7 @@ package ctrl_pkg;
             super.build_phase(phase);
             sqr = ctrl_sequencer::type_id::create("sqr", this);
             drv = ctrl_driver::type_id::create("drv", this);
-            mon = ctrl_monitor::type_id::create("mon", this);
+            mnt = ctrl_monitor::type_id::create("mon", this);
         endfunction
 
         function void connect_phase(uvm_phase phase);
@@ -181,15 +197,35 @@ package ctrl_pkg;
     class ctrl_scoreboard extends uvm_scoreboard;
         `uvm_component_utils(ctrl_scoreboard)
 
-        uvm_analysis_port #(ctrl_output_transaction) analysis_port;
+        int success, fail;
+        bit [DATA_WIDTH-1:0] mem [MEM_SIZE_WORDS];
+        uvm_analysis_imp #(ctrl_output_transaction, ctrl_scoreboard) ap;
 
         function new(string name = "ctrl_scoreboard", uvm_component parent = null);
             super.new(name, parent);
-            analysis_port = new("analysis_port", this);
+            ap = new("ap", this);
+            for (int i = 0; i < MEM_SIZE_WORDS; i++) begin
+                mem[i] = '0;
+            end
+            success = 0;
+            fail = 0;
         endfunction
 
         function void write(ctrl_output_transaction trans);
-            `uvm_info("SCB", trans.convert2string(), UVM_HIGH)
+            if (trans.we) begin
+                mem[trans.addr] <= trans.wdata;
+            end else assert(mem[trans.addr] === trans.rdata) begin
+                success += 1;
+                `uvm_info("SCB", $sformat("[READ OK] exp %d got %d", trans.wdata, trans.rdata), UVM_HIGH)
+            end else begin
+                fail += 1;
+                `uvm_error("SCB", $sformat("[READ FAIL] exp %d got %d", mem[trans.addr], trans.rdata))
+            end
+        endfunction
+
+        virtual function void report_phase(uvm_phase phase);
+            super.report_phase(phase);
+            `uvm_info("SCB", $sformatf("Test Complete! Succes: %0d, FAil: %0d", success, fail), UVM_NONE)
         endfunction
 
     endclass
@@ -207,15 +243,15 @@ package ctrl_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            master0_agent = ctrl_agent::type_id::create("master0_agent", this); // outing the if
-            master1_agent = ctrl_agent::type_id::create("master1_agent", this); // outing the if
+            master0_agent = ctrl_agent::type_id::create("master0_agent", this);
+            master1_agent = ctrl_agent::type_id::create("master1_agent", this);
             scb = ctrl_scoreboard::type_id::create("scb", this);
         endfunction
 
         function void connect_phase(uvm_phase phase);
             super.connect_phase(phase);
-            master0_agent.sqr.connect(scb.sqr);
-            master1_agent.sqr.connect(scb.sqr);
+            master0_agent.mnt.ap.connect(scb.ap);
+            master1_agent.mnt.ap.connect(scb.ap);
         endfunction
 
     endclass
@@ -241,14 +277,12 @@ package ctrl_pkg;
                     wdata == (i * 16) + 100; 
                     delay_cycles inside {[min_delay : max_delay]};
                 }) // write
-                seq_item_port.put_item(trans);
                 `uvm_do_with(trans, {
                     we == 0; 
                     addr == i; 
                     wdata == 0;
                     delay_cycles inside {[min_delay : max_delay]};
                 }) // read
-                seq_item_port.put_item(trans);
             end
             `uvm_info("SEQ", $sformatf("sequence [DET] done"), UVM_MEDIUM)
         endtask
@@ -273,7 +307,6 @@ package ctrl_pkg;
                 `uvm_do_with(trans, {
                     delay_cycles inside {[min_delay : max_delay]};
                 })
-                seq_item_port.put_item(trans);
             end
             `uvm_info("SEQ", $sformatf("sequence [RND] done"), UVM_MEDIUM)
         endtask
@@ -353,15 +386,24 @@ package ctrl_pkg;
 endpackage
 
 import uvm_pkg::*;
-import controller_pkg::*;
+import ctrl_pkg::*;
 
 module tb_ctrl;
 
-    logic clk, rst_n;
+    logic clk;
+    initial clk = 0;
+    always #5 clk = ~clk;
+    
+    logic rst_n;
+    initial begin
+        rst_n = 0;
+        @(posedge clk);
+        rst_n = 1;
+        @(posedge clk);
+    end
 
     ctrl_interface ctrl_master0_If(clk, rst_n);
     ctrl_interface ctrl_master1_If(clk, rst_n);
-
     initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master0_agent*", "vif", ctrl_master0_If);
     initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master1_agent*", "vif", ctrl_master1_If);
 
@@ -387,17 +429,6 @@ module tb_ctrl;
         .gnt1     (ctrl_master1_If.gnt)
     );
 
-    always #5 clk = ~clk;
-
-    initial begin
-        clk = 0;
-        rst_n = 0;
-        @(posedge clk);
-        rst_n = 1;
-        @(posedge clk);
-
-        run_test("ctrl_det_test");
-        // run_test("ctrl_rnd_test");
-    end
+    initial run_test("ctrl_det_test");
 
 endmodule
