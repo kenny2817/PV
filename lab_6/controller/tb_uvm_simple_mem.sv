@@ -75,6 +75,15 @@ package ctrl_pkg;
 
     endclass
 
+    class ctrl_rst_transaction extends uvm_sequence_item;
+        `uvm_object_utils(ctrl_rst_transaction)
+        
+        function new(string name="ctrl_rst_transaction");
+            super.new(name);
+        endfunction
+
+    endclass
+
     class ctrl_driver extends uvm_driver #(ctrl_input_transaction);
         `uvm_component_utils(ctrl_driver)
 
@@ -87,7 +96,7 @@ package ctrl_pkg;
         virtual function void build_phase(uvm_phase phase);
             super.build_phase(phase);
             if (!uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)) begin
-                `uvm_fatal("DRV", "interface not found")
+                `uvm_fatal("DRV", "Interface not found")
             end
         endfunction
 
@@ -107,9 +116,7 @@ package ctrl_pkg;
             forever begin
                 wait(!ctrl_if.rst_n); 
                 ctrl_if.cb.req   <= 1'b0;
-                `uvm_info("DRV", "[RESET ON]", UVM_MEDIUM)
                 wait(ctrl_if.rst_n);
-                `uvm_info("DRV", " [RESET OFF]", UVM_MEDIUM)
                 fork
                     begin
                         forever begin
@@ -133,17 +140,17 @@ package ctrl_pkg;
         `uvm_component_utils(ctrl_monitor)
 
         virtual ctrl_interface ctrl_if;
-        uvm_ap #(ctrl_output_transaction) ap;
+        uvm_ap #(ctrl_output_transaction) exit_port;
 
         function new(string name="ctrl_monitor", uvm_component parent=null);
             super.new(name, parent);
-            ap = new("ap", this);
+            exit_port = new("exit_port", this);
         endfunction
 
         virtual function void build_phase(uvm_phase phase);
             super.build_phase(phase);
             if (!uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if)) begin
-                `uvm_fatal("MNT", "interface not found")
+                `uvm_fatal("MNT", "Interface not found")
             end
         endfunction
         
@@ -157,12 +164,42 @@ package ctrl_pkg;
                     trans.addr  = ctrl_if.cb.addr;
                     trans.rdata = ctrl_if.cb.rdata;
                     trans.wdata = ctrl_if.cb.wdata;
-                    ap.write(trans);
+                    exit_port.write(trans);
                     `uvm_info("MNT", trans.convert2string(), UVM_HIGH)
                 end
             end
         endtask
 
+    endclass
+
+    class ctrl_rst_monitor extends uvm_monitor;
+        `uvm_component_utils(ctrl_rst_monitor)
+
+        virtual ctrl_interface ctrl_if;
+        uvm_analysis_port #(ctrl_rst_transaction) exit_port;
+
+        function new(string name="ctrl_rst_monitor", uvm_component parent=null);
+            super.new(name, parent);
+            exit_port = new("exit_port", this);
+        endfunction
+
+        virtual function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            if (!uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if))
+                `uvm_fatal("RST_MON", "Interface not found")
+        endfunction
+
+        task run_phase(uvm_phase phase);
+            ctrl_rst_transaction trans;
+            forever begin
+                @(negedge ctrl_if.rst_n); // Wait for the drop
+                `uvm_info("RST", "[ON]", UVM_MEDIUM)
+                exit_port.write(ctrl_rst_transaction::type_id::create("trans"));
+                @(posedge ctrl_if.rst_n);
+                `uvm_info("RST", "[OFF]", UVM_MEDIUM)
+            end
+        endtask
+        
     endclass
 
     class ctrl_sequencer extends uvm_sequencer #(ctrl_input_transaction);
@@ -194,16 +231,21 @@ package ctrl_pkg;
 
     endclass
 
+    `uvm_analysis_imp_decl(_trans)
+    `uvm_analysis_imp_decl(_rst)
+
     class ctrl_scoreboard extends uvm_scoreboard;
         `uvm_component_utils(ctrl_scoreboard)
 
         int success, fail;
         bit [DATA_WIDTH-1:0] mem [MEM_SIZE_WORDS];
-        uvm_analysis_imp #(ctrl_output_transaction, ctrl_scoreboard) ap;
+        uvm_analysis_imp_trans #(ctrl_output_transaction, ctrl_scoreboard) entry_port_trans;
+        uvm_analysis_imp_rst   #(ctrl_rst_transaction,    ctrl_scoreboard) entry_port_rst;
 
         function new(string name = "ctrl_scoreboard", uvm_component parent = null);
             super.new(name, parent);
-            ap = new("ap", this);
+            entry_port_trans = new("entry_port_trans", this);
+            entry_port_rst   = new("entry_posrt_rst",  this);
             for (int i = 0; i < MEM_SIZE_WORDS; i++) begin
                 mem[i] = '0;
             end
@@ -211,15 +253,23 @@ package ctrl_pkg;
             fail = 0;
         endfunction
 
-        function void write(ctrl_output_transaction trans);
+        function void write_trans(ctrl_output_transaction trans);
             if (trans.we) begin
                 mem[trans.addr] <= trans.wdata;
+                `uvm_info("SCB", $sformat("[WRITE] addr %d data %d", trans.addr, trans.wdata), UVM_HIGH)
             end else assert(mem[trans.addr] === trans.rdata) begin
                 success += 1;
                 `uvm_info("SCB", $sformat("[READ OK] exp %d got %d", trans.wdata, trans.rdata), UVM_HIGH)
             end else begin
                 fail += 1;
                 `uvm_error("SCB", $sformat("[READ FAIL] exp %d got %d", mem[trans.addr], trans.rdata))
+            end
+        endfunction
+
+        function void write_rst(ctr_rst_transaction trans);
+            `uvm_info("SCB", "[RST] golden model reset", UVM_HIGH)
+            for (int i = 0; i < MEM_SIZE_WORDS; i++) begin
+                mem[i] = '0;
             end
         endfunction
 
@@ -245,13 +295,15 @@ package ctrl_pkg;
             super.build_phase(phase);
             master0_agent = ctrl_agent::type_id::create("master0_agent", this);
             master1_agent = ctrl_agent::type_id::create("master1_agent", this);
+            mnt_rst = ctrl_rst_monitor::type_id::create("ctrl_rst_monitor", this);
             scb = ctrl_scoreboard::type_id::create("scb", this);
         endfunction
 
         function void connect_phase(uvm_phase phase);
             super.connect_phase(phase);
-            master0_agent.mnt.ap.connect(scb.ap);
-            master1_agent.mnt.ap.connect(scb.ap);
+            mnt_rst.exit_port.connect(scb.entry_port_rst);
+            master0_agent.mnt.exit_port.connect(scb.entry_port_trans);
+            master1_agent.mnt.exit_port.connect(scb.entry_port_trans);
         endfunction
 
     endclass
