@@ -280,12 +280,49 @@ package ctrl_pkg;
 
     endclass
 
+    class ctrl_cov_controller extends uvm_subscriber #(ctrl_output_transaction);
+        `uvm_component_utils(ctrl_cov_controller)
+
+        bit mem_written_tracker [MEM_SIZE_WORDS];
+
+        covergroup ctrl_cov with function sample(
+            logic [ADDR_WIDTH-1:0] addr, 
+            bit raw
+        );
+            cp_addr: coverpoint addr {
+                option.weight = 0;
+            };
+            cp_raw:  coverpoint raw { 
+                bins hit = {1};
+                option.weight = 0;
+            }
+            cross_raw: cross cp_addr, cp_raw;
+        endgroup
+
+        function new(string name="ctrl_cov_controller", uvm_component parent=null);
+            super.new(name, parent);
+            ctrl_cov = new();
+            foreach(mem_written_tracker[i]) begin
+                mem_written_tracker[i] = '0;
+            end
+        endfunction
+
+        virtual function void write(ctrl_output_transaction trans);
+            ctrl_cov.sample(trans.addr, mem_written_tracker[trans.addr] && !trans.we);
+            mem_written_tracker[trans.addr] += trans.we;
+        endfunction
+
+    endclass
+
     class ctrl_env extends uvm_env;
         `uvm_component_utils(ctrl_env)
 
         ctrl_agent master0_agent;
         ctrl_agent master1_agent;
+        ctrl_rst_monitor mnt_rst;
         ctrl_scoreboard scb;
+        ctrl_cov_controller cov;
+
 
         function new(string name = "ctrl_env", uvm_component parent = null);
             super.new(name, parent);
@@ -295,15 +332,18 @@ package ctrl_pkg;
             super.build_phase(phase);
             master0_agent = ctrl_agent::type_id::create("master0_agent", this);
             master1_agent = ctrl_agent::type_id::create("master1_agent", this);
-            mnt_rst = ctrl_rst_monitor::type_id::create("ctrl_rst_monitor", this);
+            mnt_rst = ctrl_rst_monitor::type_id::create("mnt_rst", this);
             scb = ctrl_scoreboard::type_id::create("scb", this);
+            cov = ctrl_cov_controller::type_id::create("cov", this);
         endfunction
 
         function void connect_phase(uvm_phase phase);
             super.connect_phase(phase);
-            mnt_rst.exit_port.connect(scb.entry_port_rst);
             master0_agent.mnt.exit_port.connect(scb.entry_port_trans);
             master1_agent.mnt.exit_port.connect(scb.entry_port_trans);
+            mnt_rst.exit_port.connect(scb.entry_port_rst);
+            master0_agent.mnt.exit_port.connect(cov.analysis_export);
+            master1_agent.mnt.exit_port.connect(cov.analysis_export);
         endfunction
 
     endclass
