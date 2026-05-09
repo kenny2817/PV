@@ -166,7 +166,7 @@ package ctrl_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            sqr = uvm_sequencer::type_id::create("sqr", this);
+            sqr = ctrl_sequencer::type_id::create("sqr", this);
             drv = ctrl_driver::type_id::create("drv", this);
             mon = ctrl_monitor::type_id::create("mon", this);
         endfunction
@@ -353,7 +353,7 @@ package ctrl_pkg;
 endpackage
 
 import uvm_pkg::*;
-import controller_pkg::*;// Parameters must match DUTparameterADDR_WIDTH = 8;parameterDATA_WIDTH = 32;...endmodule: tb_uvm_simple_mem_ctrl
+import controller_pkg::*;
 
 module tb_ctrl;
 
@@ -365,7 +365,10 @@ module tb_ctrl;
     initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master0_agent*", "vif", ctrl_master0_If);
     initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master1_agent*", "vif", ctrl_master1_If);
 
-    simple_mem_ctrl dut (
+    simple_mem_ctrl dut #(
+        .ADDR_WIDTH(ADDR_WIDTH),
+        .DATA_WIDTH(DATA_WIDTH)
+    ) (
         .clk      (clk),
         .rst_n    (rst_n),
 
@@ -396,4 +399,5 @@ module tb_ctrl;
         run_test("ctrl_det_test");
         // run_test("ctrl_rnd_test");
     end
+
 endmodule
