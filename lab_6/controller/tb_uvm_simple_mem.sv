@@ -211,7 +211,7 @@ package ctrl_pkg;
 
         uvm_sequencer sqr;
         ctrl_driver   drv;
-        ctrl_monitor  mon;
+        ctrl_monitor  mnt;
 
         function new(string name = "ctrl_agent", uvm_component parent);
             super.new(name, parent);
@@ -221,7 +221,7 @@ package ctrl_pkg;
             super.build_phase(phase);
             sqr = ctrl_sequencer::type_id::create("sqr", this);
             drv = ctrl_driver::type_id::create("drv", this);
-            mnt = ctrl_monitor::type_id::create("mon", this);
+            mnt = ctrl_monitor::type_id::create("mnt", this);
         endfunction
 
         function void connect_phase(uvm_phase phase);
@@ -245,7 +245,7 @@ package ctrl_pkg;
         function new(string name = "ctrl_scoreboard", uvm_component parent = null);
             super.new(name, parent);
             entry_port_trans = new("entry_port_trans", this);
-            entry_port_rst   = new("entry_posrt_rst",  this);
+            entry_port_rst   = new("entry_port_rst",  this);
             for (int i = 0; i < MEM_SIZE_WORDS; i++) begin
                 mem[i] = '0;
             end
@@ -266,7 +266,7 @@ package ctrl_pkg;
             end
         endfunction
 
-        function void write_rst(ctr_rst_transaction trans);
+        function void write_rst(ctrl_rst_transaction trans);
             `uvm_info("SCB", "[RST] golden model reset", UVM_HIGH)
             for (int i = 0; i < MEM_SIZE_WORDS; i++) begin
                 mem[i] = '0;
@@ -480,6 +480,89 @@ endpackage
 import uvm_pkg::*;
 import ctrl_pkg::*;
 
+module ctrl_checker (
+    input logic clk,
+    input logic rst_n,
+
+    input logic req0,
+    input logic gnt0,
+
+    input logic req1,
+    input logic gnt1
+);
+
+    localparam int CHK_CHECKS = 3;
+    int success_count[CHK_CHECKS] = '{default:0};
+    int error_count  [CHK_CHECKS] = '{default:0};
+
+    property p_req0;
+        @(posedge clk) disable iff (!rst_n)
+        req0 == gnt0;
+    endproperty
+
+    property p_req1;
+        @(posedge clk) disable iff (!rst_n)
+        (req1 && !req0) == gnt1;
+    endproperty
+
+    property p_no_both_gnt;
+        @(posedge clk) disable iff (!rst_n)
+        !(gnt0 && gnt1)
+    endproperty
+
+    assert property (p_req0) begin
+        success_count[0] += 1;
+    end else begin
+        error_count[0] += 1;
+        `uvm_error("CHK", "[MASTER PRIORITY] req0 != gnt0")
+    end
+
+    assert property (p_req1) begin
+        success_count[1] += 1;
+    end else begin
+        error_count[1] += 1;
+        `uvm_error("CHK", "[MASTER PRIORITY] (req1 && !req0) != gnt1")
+    end
+
+    assert property (p_no_both_gnt) begin
+        success_count[2] += 1;
+    end else begin
+        error_count[2] += 1;
+        `uvm_error("CHK", "[BOTH GNT] gnt0 && gnt1")
+    end
+
+endmodule
+
+module ctrl_cov (
+    input logic clk,
+    input logic rst_n,
+
+    input logic req0,
+    input logic req1
+);
+
+    c_req_00: cover property (
+        @(posedge clk) disable iff (!rst_n) 
+        (!req0 && !req1)
+    );
+
+    c_req_10: cover property (
+        @(posedge clk) disable iff (!rst_n) 
+        (req0 && !req1)
+    );
+
+    c_req_01: cover property (
+        @(posedge clk) disable iff (!rst_n) 
+        (!req0 && req1)
+    );
+
+    c_req_11: cover property (
+        @(posedge clk) disable iff (!rst_n) 
+        (req0 && req1)
+    );
+
+endmodule
+
 module tb_ctrl;
 
     logic clk;
@@ -519,6 +602,22 @@ module tb_ctrl;
         .we1      (ctrl_master1_If.we),
         .req1     (ctrl_master1_If.req),
         .gnt1     (ctrl_master1_If.gnt)
+    );
+
+    bind simple_mem_ctrl ctrl_checker check(
+        .clk      (clk),
+        .rst_n    (rst_n),
+        .req0     (req0),
+        .gnt0     (gnt0),
+        .req1     (req1),
+        .gnt1     (gnt1)
+    );
+
+    bind simple_mem_ctrl ctrl_cov cov(
+        .clk      (clk),
+        .rst_n    (rst_n),
+        .req0     (req0),
+        .req1     (req1)
     );
 
     initial run_test("ctrl_det_test");
