@@ -187,7 +187,7 @@ package ctrl_pkg;
         virtual function void build_phase(uvm_phase phase);
             super.build_phase(phase);
             if (!uvm_config_db#(virtual ctrl_interface)::get(this, "", "vif", ctrl_if))
-                `uvm_fatal("RST_MON", "Interface not found")
+                `uvm_fatal("RST", "Interface not found")
         endfunction
 
         task run_phase(uvm_phase phase);
@@ -209,7 +209,7 @@ package ctrl_pkg;
         function new(string name="ctrl_sequencer", uvm_component parent=null);
             super.new(name, parent);
         endfunction
-        
+
     endclass
 
     class ctrl_agent extends uvm_agent;
@@ -587,7 +587,8 @@ module tb_ctrl;
     ctrl_interface ctrl_master1_If(clk, rst_n);
     initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master0_agent*", "vif", ctrl_master0_If);
     initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master1_agent*", "vif", ctrl_master1_If);
-
+    initial uvm_config_db#(virtual ctrl_interface)::set(null, "*mnt_rst*", "vif", ctrl_master0_If);
+    
     simple_mem_ctrl #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH)
