@@ -205,12 +205,17 @@ package ctrl_pkg;
 
     class ctrl_sequencer extends uvm_sequencer #(ctrl_input_transaction);
         `uvm_component_utils(ctrl_sequencer)
+
+        function new(string name="ctrl_sequencer", uvm_component parent=null);
+            super.new(name, parent);
+        endfunction
+        
     endclass
 
     class ctrl_agent extends uvm_agent;
         `uvm_component_utils(ctrl_agent)
 
-        uvm_sequencer sqr;
+        ctrl_sequencer sqr;
         ctrl_driver   drv;
         ctrl_monitor  mnt;
 
