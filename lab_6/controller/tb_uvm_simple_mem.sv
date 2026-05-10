@@ -31,6 +31,7 @@ endinterface
 
 package ctrl_pkg; 
     import uvm_pkg::*;
+    import ctrl_const_pkg::*;
     
     class ctrl_input_transaction extends uvm_sequence_item;
         `uvm_object_utils(ctrl_input_transaction)
