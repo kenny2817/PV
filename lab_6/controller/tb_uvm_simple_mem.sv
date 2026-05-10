@@ -243,6 +243,7 @@ package ctrl_pkg;
     class ctrl_scoreboard extends uvm_scoreboard;
         `uvm_component_utils(ctrl_scoreboard)
 
+        int expected_trans = 0;
         int success, fail;
         bit [DATA_WIDTH-1:0] mem [MEM_SIZE_WORDS];
         uvm_analysis_imp_trans #(ctrl_output_transaction, ctrl_scoreboard) entry_port_trans;
@@ -257,6 +258,27 @@ package ctrl_pkg;
             end
             success = 0;
             fail = 0;
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            if (!uvm_config_db#(int)::get(this, "", "expected_trans", expected_trans)) begin
+                `uvm_info("SCB", "No target set. SCB will not hold objections.", UVM_MEDIUM)
+            end
+        endfunction
+
+        task run_phase(uvm_phase phase);
+            if (expected_trans > 0) begin
+                phase.raise_objection(this); 
+                wait((success + fail) == expected_trans);
+                `uvm_info("SCB", "All expected transactions checked! Releasing lock.", UVM_MEDIUM)
+                phase.drop_objection(this);
+            end
+        endtask
+
+        virtual function void report_phase(uvm_phase phase);
+            super.report_phase(phase);
+            `uvm_info("SCB", $sformatf("Test Complete! Succes: %0d, FAil: %0d", success, fail), UVM_NONE)
         endfunction
 
         function void write_trans(ctrl_output_transaction trans);
@@ -277,11 +299,6 @@ package ctrl_pkg;
             for (int i = 0; i < MEM_SIZE_WORDS; i++) begin
                 mem[i] = '0;
             end
-        endfunction
-
-        virtual function void report_phase(uvm_phase phase);
-            super.report_phase(phase);
-            `uvm_info("SCB", $sformatf("Test Complete! Succes: %0d, FAil: %0d", success, fail), UVM_NONE)
         endfunction
 
     endclass
@@ -423,6 +440,7 @@ package ctrl_pkg;
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
             env = ctrl_env::type_id::create("env", this);
+            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", 8 + 8 + 16); 
         endfunction
 
         task run_phase(uvm_phase phase);
@@ -461,6 +479,7 @@ package ctrl_pkg;
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
             env = ctrl_env::type_id::create("env", this);
+            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", 20 + 20); 
         endfunction
 
         task run_phase(uvm_phase phase);
