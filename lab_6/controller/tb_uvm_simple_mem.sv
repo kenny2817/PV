@@ -271,6 +271,7 @@ package ctrl_pkg;
         task run_phase(uvm_phase phase);
             if (expected_trans > 0) begin
                 phase.raise_objection(this); 
+                `uvm_info("SCB", $sformatf("expected: %d", expected_trans), UVM_MEDIUM)
                 wait((success + fail) == expected_trans);
                 `uvm_info("SCB", "All expected transactions checked! Releasing lock.", UVM_MEDIUM)
                 phase.drop_objection(this);
@@ -285,13 +286,14 @@ package ctrl_pkg;
         function void write_trans(ctrl_output_transaction trans);
             if (trans.we) begin
                 mem[trans.addr] <= trans.wdata;
-                `uvm_info("SCB", $sformatf("[WRITE] addr %d data %d", trans.addr, trans.wdata), UVM_HIGH)
-            end else assert(mem[trans.addr] === trans.rdata) begin
                 success += 1;
-                `uvm_info("SCB", $sformatf("[READ OK] exp %d got %d", trans.wdata, trans.rdata), UVM_HIGH)
+                `uvm_info("SCB", $sformatf("[WRITE] addr %d data %h", trans.addr, trans.wdata), UVM_HIGH)
+            end else if (mem[trans.addr] === trans.rdata) begin
+                success += 1;
+                `uvm_info("SCB", $sformatf("[READ OK] exp %h got %h", mem[trans.addr], trans.rdata), UVM_HIGH)
             end else begin
                 fail += 1;
-                `uvm_error("SCB", $sformatf("[READ FAIL] exp %d got %d", mem[trans.addr], trans.rdata))
+                `uvm_error("SCB", $sformatf("[READ FAIL] exp %h got %h", mem[trans.addr], trans.rdata))
             end
         endfunction
 
