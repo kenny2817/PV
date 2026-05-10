@@ -107,8 +107,9 @@ package ctrl_pkg;
             ctrl_if.cb.we       <= trans.we;
             ctrl_if.cb.addr     <= trans.addr;
             ctrl_if.cb.wdata    <= trans.wdata;
-            wait (ctrl_if.cb.gnt);
-            @(posedge ctrl_if.clk);
+            do begin
+                @(posedge ctrl_if.clk);
+            end while (ctrl_if.cb.gnt !== 1'b1);
             ctrl_if.cb.req      <= 1'b0; // release
         endtask
 
