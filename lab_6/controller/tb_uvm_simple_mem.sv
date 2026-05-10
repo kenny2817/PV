@@ -287,10 +287,10 @@ package ctrl_pkg;
             if (trans.we) begin
                 mem[trans.addr] <= trans.wdata;
                 success += 1;
-                `uvm_info("SCB", $sformatf("[WRITE] addr %d data %h", trans.addr, trans.wdata), UVM_HIGH)
+                `uvm_info("SCB", $sformatf("[WRITE] addr %h data %h", trans.addr, trans.wdata), UVM_HIGH)
             end else if (mem[trans.addr] === trans.rdata) begin
                 success += 1;
-                `uvm_info("SCB", $sformatf("[READ OK] exp %h got %h", mem[trans.addr], trans.rdata), UVM_HIGH)
+                `uvm_info("SCB", $sformatf("[READ OK] addr %h | exp %h got %h", trans.addr, mem[trans.addr], trans.rdata), UVM_HIGH)
             end else begin
                 fail += 1;
                 `uvm_error("SCB", $sformatf("[READ FAIL] exp %h got %h", mem[trans.addr], trans.rdata))
