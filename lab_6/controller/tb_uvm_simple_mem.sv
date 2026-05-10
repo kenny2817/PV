@@ -9,28 +9,28 @@ endpackage
 
 import ctrl_const_pkg::*;
 
+interface ctrl_interface (
+    input logic clk,
+    input logic rst_n
+);
+    
+    logic [ADDR_WIDTH-1:0] addr;
+    logic [DATA_WIDTH-1:0] wdata;
+    logic [DATA_WIDTH-1:0] rdata;
+    logic                  we;
+    logic                  req;
+    logic                  gnt;
+    
+    clocking cb @(posedge clk);
+        default input #1step output #0;
+        input rdata, gnt;
+        inout rst_n, addr, wdata, we, req;
+    endclocking
+
+endinterface
+
 package ctrl_pkg; 
     import uvm_pkg::*;
-
-    interface ctrl_interface (
-        input logic clk,
-        input logic rst_n
-    );
-        
-        logic [ADDR_WIDTH-1:0] addr;
-        logic [DATA_WIDTH-1:0] wdata;
-        logic [DATA_WIDTH-1:0] rdata;
-        logic                  we;
-        logic                  req;
-        logic                  gnt;
-        
-        clocking cb @(posedge clk);
-            default input #1step output #0;
-            input rdata, gnt;
-            inout rst_n, addr, wdata, we, req;
-        endclocking
-
-    endinterface
     
     class ctrl_input_transaction extends uvm_sequence_item;
         `uvm_object_utils(ctrl_input_transaction)
@@ -106,8 +106,8 @@ package ctrl_pkg;
             ctrl_if.cb.we       <= trans.we;
             ctrl_if.cb.addr     <= trans.addr;
             ctrl_if.cb.wdata    <= trans.wdata;
-            @(posedge ctrl_if.clk);
             wait (ctrl_if.cb.gnt);
+            @(posedge ctrl_if.clk);
             ctrl_if.cb.req      <= 1'b0; // release
         endtask
 
@@ -140,7 +140,7 @@ package ctrl_pkg;
         `uvm_component_utils(ctrl_monitor)
 
         virtual ctrl_interface ctrl_if;
-        uvm_ap #(ctrl_output_transaction) exit_port;
+        uvm_analysis_port #(ctrl_output_transaction) exit_port;
 
         function new(string name="ctrl_monitor", uvm_component parent=null);
             super.new(name, parent);
@@ -155,7 +155,7 @@ package ctrl_pkg;
         endfunction
         
         task run_phase(uvm_phase phase);
-            ctrl_input_transaction trans;
+            ctrl_output_transaction trans;
             forever begin
                 @(posedge ctrl_if.clk);
                 if (ctrl_if.cb.req && ctrl_if.cb.gnt) begin
@@ -256,13 +256,13 @@ package ctrl_pkg;
         function void write_trans(ctrl_output_transaction trans);
             if (trans.we) begin
                 mem[trans.addr] <= trans.wdata;
-                `uvm_info("SCB", $sformat("[WRITE] addr %d data %d", trans.addr, trans.wdata), UVM_HIGH)
+                `uvm_info("SCB", $sformatf("[WRITE] addr %d data %d", trans.addr, trans.wdata), UVM_HIGH)
             end else assert(mem[trans.addr] === trans.rdata) begin
                 success += 1;
-                `uvm_info("SCB", $sformat("[READ OK] exp %d got %d", trans.wdata, trans.rdata), UVM_HIGH)
+                `uvm_info("SCB", $sformatf("[READ OK] exp %d got %d", trans.wdata, trans.rdata), UVM_HIGH)
             end else begin
                 fail += 1;
-                `uvm_error("SCB", $sformat("[READ FAIL] exp %d got %d", mem[trans.addr], trans.rdata))
+                `uvm_error("SCB", $sformatf("[READ FAIL] exp %d got %d", mem[trans.addr], trans.rdata))
             end
         endfunction
 
@@ -291,7 +291,7 @@ package ctrl_pkg;
         );
             cp_addr: coverpoint addr {
                 option.weight = 0;
-            };
+            }
             cp_raw:  coverpoint raw { 
                 bins hit = {1};
                 option.weight = 0;
@@ -307,9 +307,9 @@ package ctrl_pkg;
             end
         endfunction
 
-        virtual function void write(ctrl_output_transaction trans);
-            ctrl_cov.sample(trans.addr, mem_written_tracker[trans.addr] && !trans.we);
-            mem_written_tracker[trans.addr] += trans.we;
+        virtual function void write(ctrl_output_transaction t);
+            ctrl_cov.sample(t.addr, mem_written_tracker[t.addr] && !t.we);
+            mem_written_tracker[t.addr] += t.we;
         endfunction
 
     endclass
@@ -360,8 +360,8 @@ package ctrl_pkg;
         endfunction
 
         task body();
-            `uvm_info("SEQ", $sformatf("sequence [DET]: %d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_MEDIUM)
             ctrl_input_transaction trans;
+            `uvm_info("SEQ", $sformatf("sequence [DET]: %d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_MEDIUM)
             for (int i = 0; i < num_trans; i++) begin
                 `uvm_do_with(trans, {
                     we == 1; 
@@ -393,8 +393,8 @@ package ctrl_pkg;
         endfunction
 
         task body();
-            `uvm_info("SEQ", $sformatf("sequence [RND]: %d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_MEDIUM)
             ctrl_input_transaction trans;
+            `uvm_info("SEQ", $sformatf("sequence [RND]: %d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_MEDIUM)
             repeat (num_trans) begin
                 `uvm_do_with(trans, {
                     delay_cycles inside {[min_delay : max_delay]};
@@ -582,10 +582,10 @@ module tb_ctrl;
     initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master0_agent*", "vif", ctrl_master0_If);
     initial uvm_config_db#(virtual ctrl_interface)::set(null, "*master1_agent*", "vif", ctrl_master1_If);
 
-    simple_mem_ctrl dut #(
+    simple_mem_ctrl #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH)
-    ) (
+    ) dut (
         .clk      (clk),
         .rst_n    (rst_n),
 
