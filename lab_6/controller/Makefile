@@ -24,7 +24,7 @@ comp:
 # Step 2: Simulation (Console / Batch Mode)
 # ----------------------------------------------------------------------------
 sim:
-	vsim -c -do "run -all; exit" \
+	vsim -voptargs="+acc" -c -do "run -all; exit" \
 		-sv_seed $(SEED) \
 		+UVM_TESTNAME=$(TEST) \
 		+UVM_VERBOSITY=$(VERBOSITY) \
