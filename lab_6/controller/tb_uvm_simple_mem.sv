@@ -102,15 +102,15 @@ package ctrl_pkg;
         endfunction
 
         task apply(ctrl_input_transaction trans);
-            ctrl_if.cb.req      <= 1'b0; // release
             repeat (trans.delay_cycles) @(posedge ctrl_if.clk); // apply delay
             ctrl_if.cb.req      <= 1'b1;
             ctrl_if.cb.we       <= trans.we;
             ctrl_if.cb.addr     <= trans.addr;
             ctrl_if.cb.wdata    <= trans.wdata;
-            do begin
+            while (ctrl_if.cb.gnt !== 1'b1) begin
                 @(posedge ctrl_if.clk);
-            end while (ctrl_if.cb.gnt !== 1'b1);
+            end 
+            ctrl_if.cb.req      <= 1'b0; // release
         endtask
 
         task run_phase(uvm_phase phase);
@@ -534,7 +534,7 @@ module ctrl_checker (
     endproperty
 
     property p_no_both_gnt;
-        @(posedge clk) disable iff (!rst_n || $isunknown(gnt0) || $isunknown(gnt1)
+        @(posedge clk) disable iff (!rst_n || $isunknown(gnt0) || $isunknown(gnt1))
         !(gnt0 && gnt1)
     endproperty
 
