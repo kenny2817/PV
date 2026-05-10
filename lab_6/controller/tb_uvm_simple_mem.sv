@@ -651,4 +651,9 @@ module tb_ctrl;
 
     initial run_test("ctrl_det_test");
 
+    initial begin
+        $dumpfile("waves.vcd"); 
+        $dumpvars(0, tb_ctrl);  
+    end
+
 endmodule
