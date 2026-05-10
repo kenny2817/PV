@@ -102,6 +102,7 @@ package ctrl_pkg;
         endfunction
 
         task apply(ctrl_input_transaction trans);
+            ctrl_if.cb.req      <= 1'b0; // release
             repeat (trans.delay_cycles) @(posedge ctrl_if.clk); // apply delay
             ctrl_if.cb.req      <= 1'b1;
             ctrl_if.cb.we       <= trans.we;
@@ -110,7 +111,6 @@ package ctrl_pkg;
             do begin
                 @(posedge ctrl_if.clk);
             end while (ctrl_if.cb.gnt !== 1'b1);
-            ctrl_if.cb.req      <= 1'b0; // release
         endtask
 
         task run_phase(uvm_phase phase);
@@ -443,7 +443,7 @@ package ctrl_pkg;
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
             env = ctrl_env::type_id::create("env", this);
-            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", 8 + 8 + 16); 
+            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", 2*(8 + 8 + 16)); 
         endfunction
 
         task run_phase(uvm_phase phase);
@@ -524,17 +524,17 @@ module ctrl_checker (
     int error_count  [CHK_CHECKS] = '{default:0};
 
     property p_req0;
-        @(posedge clk) disable iff (!rst_n)
+        @(posedge clk) disable iff (!rst_n || $isunknown(req0) || $isunknown(gnt0))
         req0 == gnt0;
     endproperty
 
     property p_req1;
-        @(posedge clk) disable iff (!rst_n)
+        @(posedge clk) disable iff (!rst_n || $isunknown(req0) || $isunknown(req1) || $isunknown(gnt1))
         (req1 && !req0) == gnt1;
     endproperty
 
     property p_no_both_gnt;
-        @(posedge clk) disable iff (!rst_n)
+        @(posedge clk) disable iff (!rst_n || $isunknown(gnt0) || $isunknown(gnt1)
         !(gnt0 && gnt1)
     endproperty
 
