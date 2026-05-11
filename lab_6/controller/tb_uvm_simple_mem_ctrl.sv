@@ -504,6 +504,51 @@ package ctrl_pkg;
         endtask
 
     endclass
+
+    class ctrl_combined_test extends uvm_test;
+        `uvm_component_utils(ctrl_combined_test)
+
+        ctrl_env env;
+
+        function new(string name = "ctrl_combined_test", uvm_component parent = null);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            env = ctrl_env::type_id::create("env", this);
+            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", 72); 
+        endfunction
+
+        task run_phase(uvm_phase phase);
+            ctrl_det_seq det_seq0, det_seq1;
+            ctrl_rnd_seq rnd_seq0, rnd_seq1;
+
+            phase.raise_objection(this);
+
+            det_seq0 = ctrl_det_seq::type_id::create("det_seq0");
+            det_seq1 = ctrl_det_seq::type_id::create("det_seq1");
+            rnd_seq0 = ctrl_rnd_seq::type_id::create("rnd_seq0");
+            rnd_seq1 = ctrl_rnd_seq::type_id::create("rnd_seq1");
+
+            det_seq0.num_trans = 8;  det_seq1.num_trans = 8;
+            rnd_seq0.num_trans = 20; rnd_seq1.num_trans = 20;
+            
+            fork
+                det_seq0.start(env.master0_agent.sqr);
+                det_seq1.start(env.master1_agent.sqr); 
+            join
+
+            fork
+                rnd_seq0.start(env.master0_agent.sqr);
+                rnd_seq1.start(env.master1_agent.sqr);
+            join
+
+            phase.drop_objection(this);
+        endtask
+
+    endclass
+
 endpackage
 
 import uvm_pkg::*;
