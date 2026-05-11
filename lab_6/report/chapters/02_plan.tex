@@ -1,0 +1,16 @@
+% ------------------------------------------------------------------------------
+% Chapter 2
+% ------------------------------------------------------------------------------
+\chapter{Plan} 
+\label{cha:plan}
+
+The main points that have been followed to reach the final design are:
+
+\begin{enumerate}
+    \item Having too many signals make debugging extremely slow and burdensome, so I would change those into a compact and reusable interface.
+    \item Introducing a clocking block will surely make the timing management more easy and less prone to errors.
+    \item The transaction has too many not needed signals and wraps both masters. I will separate the masters and use strictly useful signals, leaving simulation control to UVM.
+    \item Instead of a long and repetitive generator, I will make simple building blocks that can be reused across tests and make the creation of new test fast and easy.
+    \item After making the timing management automatic, dividing the agents into two separate ones should be easy and make the structure extremely scalable.
+    \item I will introduce the concept of coverage and hardware checking.
+\end{enumerate}

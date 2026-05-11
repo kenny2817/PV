@@ -1,0 +1,43 @@
+% ------------------------------------------------------------------------------
+% Chapter 3
+% ------------------------------------------------------------------------------
+\chapter{Diagram} 
+\label{cha:diagram}
+
+For simplicity, the main diagram (figure \ref{fig:diagram}) has the main structural pieces separated, while they follow a hierarchical structure.
+That structure is shown in figure \ref{fig:hierarchy}.
+
+\begin{figure}[htb]
+  \centering
+  \includesvg[width=\textwidth, inkscapelatex=false]{../diagram.drawio.svg}
+  \caption{Diagram of the structure of the testbench}
+  \label{fig:diagram}
+\end{figure}
+
+There are multiple sequences to improve the modularity of the system: random sequence and deterministic write + read.
+
+The green arrows represent the communication that is handled by the UVM ports.
+The subscriber uses the green rectangle to make the "man in the middle" attack to that communication.
+
+Each interface is connected to its own driver and the pins to a single master in the \texttt{DUT}.
+This improves modularity, but creates a second problem: the concurrence information is lost in this communication.
+The scoreboard can not see if 2 consecutive transactions have been executed together.
+
+Both the \texttt{checker} and the \texttt{coverage} modules are connected to the \texttt{DUT} through a binding.
+This connection means that they are not actually connected to the interface, but incorporated to the module itself, but for simplicity they were connected to the interface here.
+These two modules are in charge of the concurrent behavior of the two masters connected to the \texttt{DUT}.
+
+
+\begin{enumerate}
+    \item \texttt{Testbench}: This component simply wraps around every component and build the final machine.
+    \item \texttt{Top}: This component instantiates the \texttt{DUT}, its interfaces the test to be executed and the non UVM modules such as checker and cover.
+    \item \texttt{Test}: This component is responsible for the creation of sequences and the very environment that will perform all UVM transactions.
+    \item \texttt{Environment}: This component is the core of the UVM structure. Here there are the agents (sequencer, driver, and monitor), and the scoreboard. 
+\end{enumerate}
+
+\begin{figure}[h!]
+  \centering
+  \includesvg{../hierarchy.svg}
+  \caption{Hierarchy of the testbench components}
+  \label{fig:hierarchy}
+\end{figure}

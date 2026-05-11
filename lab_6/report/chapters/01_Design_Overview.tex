@@ -18,9 +18,28 @@ There are two parameters to this dut:
     \item \texttt{DATA\_WIDTH} : data width.
 \end{itemize}
 
+\subsection{Functional Description}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Condition}      & \textbf{Behavior}                                                                                 \\ \hline
+        Only one master valid   & That master is serviced immediately                                                               \\ \hline
+        Both masters valid      & Master 0 is serviced (priority). Master 1 is not granted until Master 0 de-asserts \texttt{req0}  \\ \hline
+        No master valid         & Controller idle                                                                                   \\ \hline
+    \end{tabular}
+    \caption{Controller Behavior}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Reads}: 0 clock cycles (combinational —immediate once address \& grant are stable).
+    \item \textbf{Writes}: 1 clock cycle (synchronous —update happens on next rising edge when grant \& we are true).
+\end{itemize}
+
 \subsection{Interface}
 
-\begin{table}[h!]
+\begin{table}[H]
     \centering
     \begin{tabular}{|l|c|c|l|}
         \hline
@@ -43,22 +62,3 @@ There are two parameters to this dut:
     \caption{Controller signals}
 
 \end{table}
-
-\subsection{Functional Description}
-
-\begin{table}[h!]
-    \centering
-    \begin{tabular}{|l|l|}
-        \hline
-        \textbf{Condition}      & \textbf{Behavior}                                                                                 \\ \hline
-        Only one master valid   & That master is serviced immediately                                                               \\ \hline
-        Both masters valid      & Master 0 is serviced (priority). Master 1 is not granted until Master 0 de-asserts \texttt{req0}  \\ \hline
-        No master valid         & Controller idle                                                                                   \\ \hline
-    \end{tabular}
-    \caption{Controller Behavior}
-\end{table}
-
-\begin{itemize}
-    \item \textbf{Reads}: 0 clock cycles (combinational —immediate once address \& grant are stable).
-    \item \textbf{Writes}: 1 clock cycle (synchronous —update happens on next rising edge when grant \& we are true).
-\end{itemize}

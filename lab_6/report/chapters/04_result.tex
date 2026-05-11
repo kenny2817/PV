@@ -1,0 +1,88 @@
+% ------------------------------------------------------------------------------
+% Chapter 4
+% ------------------------------------------------------------------------------
+\chapter{Result} 
+\label{cha:result}
+
+To covert the classical testbench into a UVM one we modified the general structure of some modules, created new ones, introduced the coverage and added some features to make testing smooth.
+
+\section{Changes}
+
+Here we will introduce all the logic changes from the classical testbench to the UVM one.
+The changes will be explored in the following subsections.
+
+\subsection*{Transaction (sequence item)}
+
+The transaction used in the initial testbench wraps both masters and some unuseful signals such as \texttt{use\_m*} and \texttt{is\_end}.
+These informations will be handled by the UVM structure and the driver idle state.
+The final product is in charge of only one master and leaves the burden of the two masters conflicts to the sequences.
+There is a second (outputs) and third (reset) transactions that handle the communication between monitors and scoreboard.
+
+\subsection*{Virtual Interface \& Clocking Block}
+
+Signals will be abstracted into an \texttt{interface} and synchronized with a clocking block (\texttt{cb}).
+Following the transaction division of signals into masters, the \texttt{interface} abstract the control of a single master, this will lead to a clearer communication between UVM components.
+This element is instantiated in the top module, and distributed through the \texttt{uvm\_config\_db}.
+
+\lstinputlisting[
+    style=svlog, 
+    linerange={12 - 30}, 
+    firstnumber=12
+]{controller/tb_uvm_simple_mem_ctrl.sv}
+
+\subsection*{Generation (sequence / sequencer)}
+
+The generation of transaction was handled with a repetitive function, hard to scale and to verify.
+Following the UVM architecture this will be handled by sequences that are easy to use, and to change if necessary.
+Furthermore, the clocking collisions are handled by the UVM sequencer of each agent, so no manual debugging will be necessary.
+There are two main tests:
+
+\begin{itemize}
+    \item \textbf{Deterministic} tests are known before the execution and are used to test a specific feature:
+    \begin{itemize}
+        \item \textbf{Single master write + read}
+        \item \textbf{Contention tests} where both masters request the memory at the same time
+    \end{itemize}
+    \item \textbf{Random} tests are used to test the DUT with some general behaviors
+\end{itemize}
+
+\subsection*{Driver}
+
+The original module took care of both master at the same time, added clock delays and applied the transactions to the DUT signals.
+The new driver is compartmentalized to only one master and does not wait useless cycles that would make back to back instruction impossible.
+It also handles reset sequences to not lose transactions.
+
+The key element of this structure is the \texttt{apply} task.
+This function applies the delay of each transaction, wait for the ack signal, and leaves the enable signal low in case there is no next instruction to be executed.
+This last feature is a key feature to make the two masters driver work simultaneously without creation of false commands and spin locks.
+
+\lstinputlisting[
+    style=svlog, 
+    linerange={105 - 115}, 
+    firstnumber=105
+]{controller/tb_uvm_simple_mem_ctrl.sv}
+
+\subsection*{Monitor}
+
+The key difference in the monitors is the use of a specialized transaction that made communication straight forward.
+Having multiple monitors (one for each master + one for the reset) added complexity to the scoreboard model but UVM structures made this a minor problem.
+
+\subsection*{Scoreboard}
+
+In terms of implementation there is a big difference, but the main logic stayed the same.
+The only real difference is the ability to manage the reset signal and the duty to stop the simulation when the last transaction is processed.
+
+\section{Added}
+
+After changing what was already there the UVM architecture needed some other structural blocks and to get a complete testbench some new features were added.
+The added component will be explored in the following subsections.
+
+\subsection*{Test, Environment, Agent}
+
+To complete the structure of UVM these structures were added, they are the node of the tree of modules that connect all the other components.
+This creates a modular code that enables easy changes if necessary, and makes adding new features fast and uncomplicated.
+
+\subsection*{Coverage + Checking}
+
+To complete the testbench all the necessary coverage points have been added: from the hardware coverage to the scoreboard coverage.
+A checker was also added to check the hardware wires behavior.

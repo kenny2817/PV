@@ -18,7 +18,7 @@ comp:
 	vmap work work
 	vlog -work work -sv -timescale "1ns/1ps" +incdir+. \
 		simple_mem_ctrl.sv \
-		tb_uvm_simple_mem.sv
+		tb_uvm_simple_mem_ctrl.sv
 
 # ----------------------------------------------------------------------------
 # Step 2: Simulation (Console / Batch Mode)
@@ -38,7 +38,7 @@ gui:
 		-sv_seed $(SEED) \
 		+UVM_TESTNAME=$(TEST) \
 		+UVM_VERBOSITY=$(VERBOSITY) \
-		work.tb_top
+		work.tb_ctrl
 
 # ----------------------------------------------------------------------------
 # Cleanup

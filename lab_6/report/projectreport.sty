@@ -24,6 +24,7 @@
 \usepackage{tabularx}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
+\usepackage[inkscapepath=build/svg]{svg}
 
 % ------------------------------------------------------------------------------
 % Page setup
@@ -93,7 +94,8 @@
                   typedef, assign, assert, property, sequence, 
                   virtual, local, protected, package, import, export,
 				  covergroup, coverpoint, endgroup, illegal_bins, 
-				  bins, ignore_bins, endproperty, iff, repeat},
+				  bins, ignore_bins, endproperty, iff, repeat, 
+				  clocking, endclocking},
     frame=single,
     tabsize=2,
 }

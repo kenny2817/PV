@@ -1,2 +1,5 @@
 dut
 svlog
+testbench
+DUT
+Testbench
