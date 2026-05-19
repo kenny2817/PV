@@ -103,16 +103,16 @@ package ctrl_pkg;
         endfunction
 
         task apply(ctrl_input_transaction trans);
-            repeat (trans.delay_cycles) @(posedge ctrl_if.clk); // apply delay
+            repeat (trans.delay_cycles) @(posedge ctrl_if.clk);// apply delay
             ctrl_if.cb.req      <= 1'b1;
             ctrl_if.cb.we       <= trans.we;
             ctrl_if.cb.addr     <= trans.addr;
             ctrl_if.cb.wdata    <= trans.wdata;
-            @(posedge ctrl_if.clk);
+            @(posedge ctrl_if.clk);                            // apply signals
             while (ctrl_if.gnt !== 1'b1) begin
                 @(posedge ctrl_if.clk);
             end
-            ctrl_if.cb.req      <= 1'b0; // release
+            ctrl_if.cb.req      <= 1'b0;                       // release req
         endtask
 
         task run_phase(uvm_phase phase);

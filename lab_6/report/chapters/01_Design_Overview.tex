@@ -24,10 +24,10 @@ There are two parameters to this dut:
     \centering
     \begin{tabular}{|l|l|}
         \hline
-        \textbf{Condition}      & \textbf{Behavior}                                                                                 \\ \hline
-        Only one master valid   & That master is serviced immediately                                                               \\ \hline
-        Both masters valid      & Master 0 is serviced (priority). Master 1 is not granted until Master 0 de-asserts \texttt{req0}  \\ \hline
-        No master valid         & Controller idle                                                                                   \\ \hline
+        \textbf{Condition}      & \textbf{Behavior}                                         \\ \hline
+        Only one master valid   & That master is serviced immediately                       \\ \hline
+        Both masters valid      & Master 0 is serviced (priority). Master 1 is not granted  \\ \hline
+        No master valid         & Controller idle                                           \\ \hline
     \end{tabular}
     \caption{Controller Behavior}
 \end{table}
