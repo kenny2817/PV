@@ -1,0 +1,33 @@
+% ------------------------------------------------------------------------------
+% Chapter 5
+% ------------------------------------------------------------------------------
+\chapter{Commands} 
+\label{cha:commands}
+
+A Makefile has been used to make the compilation and execution of the testbench.
+
+\section{Compilation}
+
+\texttt{comp} was used to make the compilation.
+
+\lstinputlisting[
+    style=mkfile, 
+    linerange={9 - 14}, 
+    firstnumber=9
+]{controller/Makefile}
+
+\section{Run}
+
+\texttt{sim} was used to make the simulation and was configured using 3 parameters.
+
+\begin{itemize}
+    \item \texttt{TEST} the name of the test to perform [ctrl\_det\_test, ctrl\_rnd\_test, ctrl\_combined\_test]
+    \item \texttt{VERBOSITY} the verbosity level of the log [UVM\_LOW, UVM\_MEDIUM, UVM\_HIGH]
+    \item \texttt{SEED} the seed of the simulation [random, seed]
+\end{itemize}
+
+\lstinputlisting[
+    style=mkfile, 
+    linerange={16 - 21}, 
+    firstnumber=16
+]{controller/Makefile}

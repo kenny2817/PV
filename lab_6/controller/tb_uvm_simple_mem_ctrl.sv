@@ -108,6 +108,7 @@ package ctrl_pkg;
             ctrl_if.cb.we       <= trans.we;
             ctrl_if.cb.addr     <= trans.addr;
             ctrl_if.cb.wdata    <= trans.wdata;
+            @(posedge ctrl_if.clk);
             while (ctrl_if.gnt !== 1'b1) begin
                 @(posedge ctrl_if.clk);
             end
@@ -168,7 +169,7 @@ package ctrl_pkg;
                     trans.rdata = ctrl_if.cb.rdata;
                     trans.wdata = ctrl_if.cb.wdata;
                     exit_port.write(trans);
-                    `uvm_info("MNT", trans.convert2string(), UVM_HIGH)
+                    `uvm_info("MNT", trans.convert2string(), UVM_DEBUG)
                 end
             end
         endtask

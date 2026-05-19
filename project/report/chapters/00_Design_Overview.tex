@@ -1,0 +1,34 @@
+% ------------------------------------------------------------------------------
+% Chapter 1
+% ------------------------------------------------------------------------------
+\chapter{Design Overview} 
+\label{cha:design_overview}
+
+The gcd module computes the Greatest Common Divisor of two unsigned integers using the subtractive Euclidean algorithm.
+It processes one input pair at a time and communicates through two independent ready/valid handshake channels.
+
+\section{Parameters}
+
+There is one parameter to this dut:
+
+\begin{itemize}
+    \item \texttt{WIDTH} : data operands width, must be grater than 1.
+\end{itemize}
+
+\section{Signals}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|l|}
+        \hline
+        \textbf{Signal}     & \textbf{Direction} & \textbf{Width} & \textbf{Description}            \\ \hline
+        \texttt{clk}        & Input              & 1              & Clock signal                    \\ \hline
+        \texttt{rst\_n}     & Input              & 1              & Active-low synchronous reset    \\ \hline
+        
+        \texttt{in_valid}   & Input              & 1              & Asserted by the producer when \texttt{a_in} and \texttt{b_in} hold valid data \\ \hline
+        \texttt{in_ready}   & Input              & 1              & 
+
+    \end{tabular}
+    \caption{gcd signals}
+    \label{tbl:gcd_signals}
+\end{table}
