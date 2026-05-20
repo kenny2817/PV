@@ -4,31 +4,114 @@
 \chapter{Design Overview} 
 \label{cha:design_overview}
 
-The gcd module computes the Greatest Common Divisor of two unsigned integers using the subtractive Euclidean algorithm.
-It processes one input pair at a time and communicates through two independent ready/valid handshake channels.
+\section{Overview}
+
+The \texttt{gcd} module computes the Greatest Common Divisor of two unsigned integers using the subtractive Euclidean algorithm. It processes one input pair at a time and communicates through two independent ready/valid handshake channels.
+
+\subsection*{Mathematical Definition}
+For unsigned operands $A$ and $B$:
+\begin{align*}
+    \gcd(A, 0) &= A \\
+    \gcd(0, B) &= B \\
+    \gcd(0, 0) &= 0 \quad \text{(covers both above)} \\
+    \gcd(A, A) &= A \\
+    \gcd(A, B) &= \gcd(A - B, B) \quad \text{when } A > B \\
+    \gcd(A, B) &= \gcd(A, B - A) \quad \text{when } B > A
+\end{align*}
+
+\subsection*{Operation Sequence}
+\begin{enumerate}
+    \item \textbf{IDLE:} The module waits in the \texttt{IDLE} state, asserting \texttt{in\_ready = 1}.
+    \item \textbf{Handshake \& RUN:} On the input handshake, operands are latched. The result is determined immediately for zero or equal operands; otherwise, iterative subtraction begins in the \texttt{RUN} state.
+    \item \textbf{DONE:} When convergence is reached, the result is latched into the output register and the module enters the \texttt{DONE} state, asserting \texttt{out\_valid = 1}.
+    \item \textbf{Return:} After the output handshake completes, the module returns to \texttt{IDLE}.
+\end{enumerate}
 
 \section{Parameters}
-
-There is one parameter to this dut:
-
-\begin{itemize}
-    \item \texttt{WIDTH} : data operands width, must be grater than 1.
-\end{itemize}
-
-\section{Signals}
-
 \begin{table}[H]
     \centering
-    \begin{tabular}{|l|c|c|l|}
-        \hline
-        \textbf{Signal}     & \textbf{Direction} & \textbf{Width} & \textbf{Description}            \\ \hline
-        \texttt{clk}        & Input              & 1              & Clock signal                    \\ \hline
-        \texttt{rst\_n}     & Input              & 1              & Active-low synchronous reset    \\ \hline
-        
-        \texttt{in_valid}   & Input              & 1              & Asserted by the producer when \texttt{a_in} and \texttt{b_in} hold valid data \\ \hline
-        \texttt{in_ready}   & Input              & 1              & 
-
+    \begin{tabular}{llp{8cm}}
+        \toprule
+        \textbf{Parameter} & \textbf{Default} & \textbf{Description} \\
+        \midrule
+        \texttt{WIDTH} & 16 (must be $\geq 1$) & Width of the data operands \\
+        \bottomrule
     \end{tabular}
-    \caption{gcd signals}
-    \label{tbl:gcd_signals}
+    \caption{Module Parameters}
 \end{table}
+
+\section{Top-Level Interface}
+
+\subsection*{Clock and Reset}
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{l l c X}
+        \toprule
+        \textbf{Signal} & \textbf{Direction} & \textbf{Width} & \textbf{Description} \\
+        \midrule
+        \texttt{clk} & Input & 1 & Clock signal \\
+        \texttt{rst\_n} & Input & 1 & Active-low sync reset \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection*{Input Channel}
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{l l c X}
+        \toprule
+        \textbf{Signal} & \textbf{Direction} & \textbf{Width} & \textbf{Description} \\
+        \midrule
+        \texttt{in\_valid} & Input & 1 & Asserted by the producer when \texttt{a\_in} and \texttt{b\_in} hold valid data \\
+        \texttt{in\_ready} & Output & 1 & Asserted by the module when it can accept a new transaction. High only in the \texttt{IDLE} state. \\
+        \texttt{a\_in} & Input & \texttt{WIDTH} & First operand \\
+        \texttt{b\_in} & Input & \texttt{WIDTH} & Second operand \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection*{Output Channel}
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{l l c X}
+        \toprule
+        \textbf{Signal} & \textbf{Direction} & \textbf{Width} & \textbf{Description} \\
+        \midrule
+        \texttt{out\_valid} & Output & 1 & Asserted by the module when \texttt{gcd\_out} holds a valid result. High for the entire \texttt{DONE} state. \\
+        \texttt{out\_ready} & Input & 1 & Asserted by the consumer when it is ready to accept the result. \\
+        \texttt{gcd\_out} & Output & \texttt{WIDTH} & GCD result. Valid and stable for the entire period that \texttt{out\_valid} is asserted. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\section{Functional Description}
+The behavior of the \texttt{gcd} module is driven by a Finite State Machine (FSM) comprising three states:
+
+\subsection*{FSM States}
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{l c c X}
+        \toprule
+        \textbf{State} & \textbf{\texttt{in\_ready}} & \textbf{\texttt{out\_valid}} & \textbf{Description} \\
+        \midrule
+        \texttt{IDLE} & 1 & 0 & Waiting for input. Ready to accept a new transaction. \\
+        \texttt{RUN}  & 0 & 0 & Iterative subtraction in progress. No new input accepted. \\
+        \texttt{DONE} & 0 & 1 & Result ready. Waiting for the consumer to accept it. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection*{Algorithm Execution (\texttt{RUN} State)}
+Each clock cycle while in the \texttt{RUN} state, the working registers are updated combinatorially for the next cycle:
+\begin{itemize}
+    \item \textbf{If} \texttt{a\_reg > b\_reg}: \texttt{a\_next = a\_reg - b\_reg} and \texttt{b\_next = b\_reg}.
+    \item \textbf{Else if} \texttt{b\_reg > a\_reg}: \texttt{b\_next = b\_reg - a\_reg} and \texttt{a\_next = a\_reg}.
+\end{itemize}
+
+\subsection*{State Transitions}
+\begin{description}
+    \item[\texttt{IDLE} $\rightarrow$ \texttt{DONE}:] Triggered by an input handshake \textbf{AND} (\texttt{a\_in == 0 OR b\_in == 0 OR a\_in == b\_in}). The result is known immediately, making this a 1-cycle transition.
+    \item[\texttt{IDLE} $\rightarrow$ \texttt{RUN}:] Triggered by an input handshake \textbf{AND} (\texttt{a\_in != 0 AND b\_in != 0 AND a\_in != b\_in}).
+    \item[\texttt{RUN} $\rightarrow$ \texttt{DONE}:] Triggered when the next-cycle values of the working registers are equal (\texttt{a\_next == b\_next}). This evaluates against the combinatorial \textit{next-cycle} values, firing on the same clock edge as the final subtraction step.
+    \item[\texttt{DONE} $\rightarrow$ \texttt{IDLE}:] Triggered by a successful output handshake (\texttt{out\_valid == 1 AND out\_ready == 1}).
+\end{description}
