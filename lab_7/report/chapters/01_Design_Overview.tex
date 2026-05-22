@@ -1,0 +1,61 @@
+% ------------------------------------------------------------------------------
+% Chapter 1
+% ------------------------------------------------------------------------------
+\chapter{Design Overview} 
+\label{cha:design_overview}
+
+
+\section{Overview}
+The \texttt{packet} module implements a synchronous Finite State Machine (FSM) that models the reception of a data packet through successive processing stages: header, payload, checksum, and completion. It generates status flags (\texttt{valid\_pkt}, \texttt{error\_pkt}) to indicate whether a packet was successfully received or failed due to checksum errors.
+
+\section{Module Interface}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{@{} l l X @{}}
+        \toprule
+        \textbf{Signal Name} & \textbf{Direction} & \textbf{Description} \\
+        \midrule
+        \texttt{clk}            & Input     & System clock. All state transitions occur on the rising edge. \\
+        \texttt{reset}          & Input     & Synchronous active-high reset. Forces the FSM to IDLE.        \\
+        \texttt{start\_pkt}     & Input     & Initiates packet reception (valid in IDLE).                   \\
+        \texttt{hdr\_done}      & Input     & Signals completion of header processing.                      \\
+        \texttt{payload\_done}  & Input     & Signals completion of payload processing.                     \\
+        \texttt{chk\_ok}        & Input     & Indicates checksum verification passed.                       \\
+        \texttt{chk\_fail}      & Input     & Indicates checksum verification failed.                       \\
+        \texttt{abort}          & Input     & Aborts reception at any stage, forcing FSM to IDLE.           \\
+        \texttt{valid\_pkt}     & Output    & Pulses high when a packet is successfully received.           \\
+        \texttt{error\_pkt}     & Output    & Pulses high when checksum fails.                              \\
+        \texttt{state[2:0]}     & Output    & Current encoded state of the FSM.                             \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+\section{State Machine Design}
+The FSM consists of five states. An asynchronous \texttt{abort} signal can transition the system back to \texttt{IDLE} from any active state. 
+
+\subsection*{State Diagram}
+Every nameless arrow implies that all inputs that have not been specified translate in that state.
+\begin{figure}[htbp]
+  \centering
+  \includesvg[width=0.5\textwidth, inkscapelatex=false]{diagram.svg}
+  \caption{svg image}
+\end{figure}
+
+\subsection*{State Descriptions}
+\begin{itemize}
+    \item \textbf{IDLE (3'b000):} The default state. Waits for \texttt{start\_pkt} to begin processing. Outputs are cleared.
+    \item \textbf{HEADER (3'b001):} Processing the packet header. Holds state until \texttt{hdr\_done} is asserted.
+    \item \textbf{PAYLOAD (3'b010):} Processing the packet payload. Holds state until \texttt{payload\_done} is asserted.
+    \item \textbf{CHECKSUM (3'b011):} Verifying data integrity. Branches based on \texttt{chk\_ok} or \texttt{chk\_fail}. Assumes both cannot be asserted simultaneously.
+    \item \textbf{DONE (3'b100):} Asserts \texttt{valid\_pkt} and automatically returns to \texttt{IDLE} on the next clock cycle.
+\end{itemize}
+
+\section{Formal Verification (SVA)}
+To ensure the robustness of the RTL implementation, the design has been bounded-model checked using \textbf{EBMC} and SystemVerilog Assertions (SVA). Key formal properties include:
+\begin{enumerate}
+    \item \textbf{State Reachability \& Hold:} Guarantees that the FSM only transitions on valid signals and holds its state otherwise.
+    \item \textbf{Spurious Output Prevention:} Uses the \texttt{\$past()} operator to ensure \texttt{valid\_pkt} and \texttt{error\_pkt} only pulse high immediately following the correct checksum evaluation.
+    \item \textbf{Reset \& Abort Compliance:} Proves that a reset or abort strictly clears outputs and returns the state space to \texttt{IDLE}, overriding any active transitions.
+\end{enumerate}

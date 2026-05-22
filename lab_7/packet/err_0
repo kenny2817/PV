@@ -1,0 +1,274 @@
+Parsing packet.sv
+Converting
+Type-checking Verilog::packet
+Generating Decision Problem
+Using MiniSAT 2.2.1 with simplifier
+Properties
+Solving with propositional reduction
+SAT checker: instance is SATISFIABLE
+SAT: path found
+SAT checker: instance is UNSATISFIABLE
+UNSAT: No path found within bound
+
+** Results:
+[packet.initial_reset] always (!packet.past_valid |-> packet.reset): ASSUMED
+[packet.exclusive_outcome] always !packet.chk_ok || !packet.chk_fail: ASSUMED
+[packet._reset] always (packet.reset |=> packet.state == packet.IDLE && !packet.valid_pkt && !packet.error_pkt): PROVED up to bound 20
+[packet._abort] always (disable iff (packet.reset) packet.abort |=> packet.state == packet.IDLE && !packet.valid_pkt && !packet.error_pkt): PROVED up to bound 20
+[packet._state] always (disable iff (packet.reset) packet.state == packet.IDLE || packet.state == packet.HEADER || packet.state == packet.PAYLOAD || packet.state == packet.CHECKSUM || packet.state == packet.DONE): PROVED up to bound 20
+[packet.idle_header] always (disable iff (packet.reset) packet.state == packet.IDLE && packet.start_pkt && !packet.abort |=> packet.state == packet.HEADER): PROVED up to bound 20
+[packet.idle_idle] always (disable iff (packet.reset) packet.state == packet.IDLE && !packet.start_pkt && !packet.abort |=> packet.state == packet.IDLE): PROVED up to bound 20
+[packet.header_payload] always (disable iff (packet.reset) packet.state == packet.HEADER && packet.hdr_done && !packet.abort |=> packet.state == packet.PAYLOAD): PROVED up to bound 20
+[packet.header_header] always (disable iff (packet.reset) packet.state == packet.HEADER && !packet.hdr_done && !packet.abort |=> packet.state == packet.HEADER): PROVED up to bound 20
+[packet.payload_checksum] always (disable iff (packet.reset) packet.state == packet.PAYLOAD && packet.payload_done && !packet.abort |=> packet.state == packet.CHECKSUM): PROVED up to bound 20
+[packet.payload_payload] always (disable iff (packet.reset) packet.state == packet.PAYLOAD && !packet.payload_done && !packet.abort |=> packet.state == packet.PAYLOAD): PROVED up to bound 20
+[packet.checkusm_done] always (disable iff (packet.reset) packet.state == packet.CHECKSUM && packet.chk_ok && !packet.abort |=> packet.state == packet.DONE && packet.valid_pkt): PROVED up to bound 20
+[packet.checksum_idle] always (disable iff (packet.reset) packet.state == packet.CHECKSUM && packet.chk_fail && !packet.abort |=> packet.state == packet.IDLE && packet.error_pkt): REFUTED
+Counterexample:
+
+Transition system state 0
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 1
+  packet.start_pkt = 1
+  packet.hdr_done = 1
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 1
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b111 (111)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b0
+
+Transition system state 1
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 1
+  packet.hdr_done = 0
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 0
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b000 (000)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 2
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 0
+  packet.hdr_done = 1
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 1
+  packet.abort = 1
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b001 (001)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 3
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 1
+  packet.hdr_done = 0
+  packet.payload_done = 0
+  packet.chk_ok = 1
+  packet.chk_fail = 0
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b000 (000)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 4
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 0
+  packet.hdr_done = 1
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 0
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b001 (001)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 5
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 0
+  packet.hdr_done = 0
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 0
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b010 (010)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 6
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 0
+  packet.hdr_done = 0
+  packet.payload_done = 1
+  packet.chk_ok = 0
+  packet.chk_fail = 1
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b010 (010)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 7
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 0
+  packet.hdr_done = 1
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 0
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b011 (011)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 8
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 0
+  packet.hdr_done = 0
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 0
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b011 (011)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 9
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 0
+  packet.hdr_done = 0
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 0
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b011 (011)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 10
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 0
+  packet.hdr_done = 0
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 1
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 0
+  packet.state = 3'b011 (011)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+Transition system state 11
+----------------------------------------------------
+  packet.clk = ?
+  packet.reset = 0
+  packet.start_pkt = 0
+  packet.hdr_done = 1
+  packet.payload_done = 0
+  packet.chk_ok = 0
+  packet.chk_fail = 0
+  packet.abort = 0
+  packet.valid_pkt = 0
+  packet.error_pkt = 1
+  packet.state = 3'b100 (100)
+  packet.IDLE = 3'b000 (000)
+  packet.HEADER = 3'b001 (001)
+  packet.PAYLOAD = 3'b010 (010)
+  packet.CHECKSUM = 3'b011 (011)
+  packet.DONE = 3'b100 (100)
+  packet.past_valid = 1'b1
+
+[packet.checksum_checksum] always (disable iff (packet.reset) packet.state == packet.CHECKSUM && !packet.chk_ok && !packet.chk_fail && !packet.abort |=> packet.state == packet.CHECKSUM && !packet.valid_pkt && !packet.error_pkt): PROVED up to bound 20
+[packet.done_idle] always (disable iff (packet.reset) packet.state == packet.DONE && !packet.abort |=> packet.state == packet.IDLE): PROVED up to bound 20
+[packet.pulse_error_pkt] always (disable iff (packet.reset) packet.past_valid && packet.error_pkt |-> !$past(packet.error_pkt)): PROVED up to bound 20
+[packet.safe_error_pkt] always (disable iff (packet.reset) packet.past_valid && packet.error_pkt |-> $past(packet.state) == packet.CHECKSUM && $past(packet.chk_fail) && !$past(packet.abort)): PROVED up to bound 20
+[packet.pulse_valid_pkt] always (disable iff (packet.reset) packet.past_valid && packet.valid_pkt |-> !$past(packet.valid_pkt)): PROVED up to bound 20
+[packet.safe_valid_pkt] always (disable iff (packet.reset) packet.past_valid && packet.valid_pkt |-> $past(packet.state) == packet.CHECKSUM && $past(packet.chk_ok) && !$past(packet.abort)): PROVED up to bound 20
