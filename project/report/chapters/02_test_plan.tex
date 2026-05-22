@@ -1,0 +1,25 @@
+% ------------------------------------------------------------------------------
+% Chapter 2
+% ------------------------------------------------------------------------------
+\chapter{Test Plan}
+\label{cha:test_plan}
+
+\section{Features Under Test}
+
+The features to be tested are divided into tree groups.
+The idea is to test both normal execution and edge cases for each group.
+
+\begin{itemize}
+    \item \textbf{[C] Control dependent (Consumer/Producer)} Reset behavior, Input ready/valid handshake, Output ready/valid handshake, illegal condition handling.
+    \item \textbf{[D] Data dependent (Input/output)} Standard GCD calculations, early exits (zero operands, equal operands).
+    \item \textbf{[S] State machine} Transitions between \texttt{IDLE}, \texttt{RUN}, and \texttt{DONE}, along with their cycle timings.
+\end{itemize}
+
+\section{Traceability Matrix}
+
+
+
+\section{Stimulus}
+
+The stimulus is divided into multiple tests that tackle different scenarios.
+
