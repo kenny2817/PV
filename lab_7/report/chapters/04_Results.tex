@@ -1,10 +1,29 @@
 % ------------------------------------------------------------------------------
 % Chapter 4
 % ------------------------------------------------------------------------------
-\chapter{Bug} 
-\label{cha:bug}
+\chapter{Results} 
+\label{cha:results}
 
-Here we will introduce some bugs to test the architecture. The complete outputs can be retrieved in the appendix and will be linked promptly. [cite: 167, 168]
+Here we will test the base architecture, and introduce some bugs to test failure as well.
+The complete outputs can be retrieved in the appendix and will be linked promptly.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{@{}lllc@{}}
+        \toprule
+        \textbf{Experiment} & \textbf{Injected Bug}                                 & \textbf{Failed Properties}            & \textbf{Counterexamples}  \\ \midrule
+        \textbf{Base}       & None                                                  & None                                  & None                      \\
+        \textbf{Bug 0}      & \texttt{DONE} state instead of \texttt{IDLE}          & \texttt{checksum\_idle}               & 1                         \\
+        \textbf{Bug 1}      & Invalid state \texttt{3'd5} instead of \texttt{IDLE}  & \texttt{\_abort}, \texttt{\_state}    & 2                         \\ \bottomrule
+    \end{tabular}
+    \caption{Summary of bugs and resulting property violations}
+    \label{tab:bug_summary}
+\end{table}
+
+\section{Base}
+The execution is flawless and very fast.
+
+The trace can be reviewed in the appendix \ref{out:base}.
 
 \section{Bug 0}
 We used the \texttt{DONE} state instead of \texttt{IDLE} after a failing packet.
@@ -14,7 +33,7 @@ We used the \texttt{DONE} state instead of \texttt{IDLE} after a failing packet.
     \item[Bugged:]   \lstinline[style=svlog]|state <= DONE;|
 \end{description}
 
-The trace can be reviewed in the appendix \ref{out:bug_0}.
+The trace and the waveform can be reviewed in the appendix \ref{out:bug_0}.
 
 \subsection*{Analysis}
 The tool \textbf{REFUTE} the \texttt{checksum\_idle} property.
@@ -29,7 +48,7 @@ Here we changed the \texttt{abort} state into a non-existent one: \texttt{3'd5}.
     \item[Bugged:]   \lstinline[style=svlog]|state <= 3'd5;|
 \end{description}
 
-The trace can be reviewed in the appendix \ref{out:bug_1}.
+The trace and the waveform can be reviewed in the appendix \ref{out:bug_1}.
 
 \subsection*{Analysis}
 The tool \textbf{REFUTE} two separate properties simultaneously: \texttt{\_abort} and \texttt{\_state}.
@@ -37,17 +56,3 @@ Two distinct counterexample traces were generated, one for each property, but th
 In state 9 the FSM is in the unknown state (101), this is a violation of both properties.
 On one hand, the inputs that led the dut to the violation, should have returned a \texttt{DONE} state. 
 On the other hand, that state does not even exist.
-
-\begin{table}[h]
-    \centering
-    \begin{tabular}{@{}lllc@{}}
-        \toprule
-        \textbf{Experiment} & \textbf{Injected Bug} & \textbf{Failed Properties} & \textbf{Counterexamples} \\
-        \midrule
-        \textbf{Bug 0} & \texttt{DONE} state instead of \texttt{IDLE} & \texttt{checksum\_idle} & 1 \\
-        \textbf{Bug 1} & Invalid state \texttt{3'd5} instead of \texttt{IDLE} & \texttt{\_abort}, \texttt{\_state} & 2 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Summary of bugs and resulting property violations}
-    \label{tab:bug_summary}
-\end{table}

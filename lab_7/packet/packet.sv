@@ -91,34 +91,16 @@ module packet (
             |=> (state == HEADER)
     );
 
-    idle_idle: assert property (
-        @(posedge clk) disable iff (reset)
-        (state == IDLE) && !start_pkt && !abort
-            |=> (state == IDLE)
-    );
-
     header_payload: assert property (
         @(posedge clk) disable iff (reset)
         (state == HEADER) && hdr_done && !abort
             |=> (state == PAYLOAD)
     );
 
-    header_header: assert property (
-        @(posedge clk) disable iff (reset)
-        (state == HEADER) && !hdr_done && !abort
-            |=> (state == HEADER)
-    );
-
     payload_checksum: assert property (
         @(posedge clk) disable iff (reset)
         (state == PAYLOAD) && payload_done && !abort
             |=> (state == CHECKSUM)
-    );
-
-    payload_payload: assert property (
-        @(posedge clk) disable iff (reset)
-        (state == PAYLOAD) && !payload_done && !abort
-            |=> state == PAYLOAD
     );
 
     checkusm_done: assert property (
@@ -133,16 +115,50 @@ module packet (
             |=> (state == IDLE) && error_pkt
     );
 
+    done_idle: assert property (
+        @(posedge clk) disable iff (reset)
+        (state == DONE) && !abort
+            |=> (state == IDLE)
+    );
+
+    idle_idle: assert property (
+        @(posedge clk) disable iff (reset)
+        (state == IDLE) && !start_pkt && !abort
+            |=> (state == IDLE)
+    );
+
+    header_header: assert property (
+        @(posedge clk) disable iff (reset)
+        (state == HEADER) && !hdr_done && !abort
+            |=> (state == HEADER)
+    );
+
+    payload_payload: assert property (
+        @(posedge clk) disable iff (reset)
+        (state == PAYLOAD) && !payload_done && !abort
+            |=> (state == PAYLOAD)
+    );
+
     checksum_checksum: assert property (
         @(posedge clk) disable iff (reset)
         (state == CHECKSUM) && !chk_ok && !chk_fail && !abort
             |=> (state == CHECKSUM) && !valid_pkt && !error_pkt
     );
 
-    done_idle: assert property (
+    safe_error_pkt: assert property (
         @(posedge clk) disable iff (reset)
-        (state == DONE) && !abort
-            |=> (state == IDLE)
+        past_valid && error_pkt
+            |-> ($past(state) == CHECKSUM)  &&
+                 $past(chk_fail)            &&
+                !$past(abort)
+    );
+
+    safe_valid_pkt: assert property (
+        @(posedge clk) disable iff (reset)
+        past_valid && valid_pkt
+            |-> ($past(state) == CHECKSUM)  && 
+                 $past(chk_ok)              && 
+                !$past(abort)
     );
 
     pulse_error_pkt: assert property (
@@ -151,22 +167,10 @@ module packet (
             |-> !$past(error_pkt)
     );
 
-    safe_error_pkt: assert property (
-        @(posedge clk) disable iff (reset)
-        past_valid && error_pkt
-            |-> ($past(state) == CHECKSUM) && $past(chk_fail) && !$past(abort)
-    );
-
     pulse_valid_pkt: assert property (
         @(posedge clk) disable iff (reset)
         past_valid && valid_pkt
             |-> !$past(valid_pkt)
-    );
-
-    safe_valid_pkt: assert property (
-        @(posedge clk) disable iff (reset)
-        past_valid && valid_pkt
-            |-> ($past(state) == CHECKSUM) && $past(chk_ok) && !$past(abort)
     );
 
 `endif

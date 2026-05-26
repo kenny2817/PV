@@ -13,28 +13,75 @@ Here we will introduce some useful logic followed by each statement, starting fr
         It safely gates properties that evaluate historical data via the \texttt{\$past()} operator, preventing tool errors on cycle zero.
 \end{description}
 
+\lstinputlisting[
+    style=svlog, 
+    linerange={58 - 59}, 
+    firstnumber=58
+]{packet/packet.sv}
+
 \section{Assumptions}
 \begin{description}
     \item[\texttt{initial\_reset}] 
         Forces the \texttt{reset} signal to be active during the very first clock cycle (when \texttt{past\_valid} is 0) to ensure the FSM initializes cleanly.
+    \lstinputlisting[
+        style=svlog, 
+        linerange={61 - 63}, 
+        firstnumber=61
+    ]{packet/packet.sv}
     \item[\texttt{exclusive\_outcome}]
         Constrains the solver so that \texttt{chk\_ok} and \texttt{chk\_fail} are mutually exclusive and never asserted simultaneously.
         This could have been transformed into an assertion, but it would have tested the input instead of the dut itself.
+    \lstinputlisting[
+        style=svlog, 
+        linerange={65 - 67}, 
+        firstnumber=65
+    ]{packet/packet.sv}
 \end{description}
 
 \section{Assertions}
 \begin{description}
     \item[\texttt{\_reset} \& \texttt{\_abort}]
         Verify that asserting a reset or an abort unconditionally forces the FSM back to the \texttt{IDLE} state on the next cycle with both output flags cleared.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={69 - 77}, 
+            firstnumber=69
+        ]{packet/packet.sv}
     \item[\texttt{\_state}]
         Guarantees the FSM is mathematically restricted to the five valid encoded states, proving no illegal states can be reached.
-    \item[State Progression] (\texttt{idle\_header}, \texttt{header\_payload}, \texttt{payload\_checksum}, \texttt{checkusm\_done}, \texttt{checksum\_idle}, \texttt{done\_idle}):
-        Prove that the FSM correctly transitions to the next expected state when the appropriate progression flag is asserted.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={79 - 86}, 
+            firstnumber=79
+        ]{packet/packet.sv}
     \item[State Hold] (\texttt{idle\_idle}, \texttt{header\_header}, \texttt{payload\_payload}, \texttt{checksum\_checksum}):
         Guarantee that the FSM retains its current state when no progression signal or abort is asserted.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={124 - 146}, 
+            firstnumber=124
+        ]{packet/packet.sv}
+        \newpage
+    \item[State Progression] (\texttt{idle\_header}, \texttt{header\_payload}, \texttt{payload\_checksum}, \texttt{checkusm\_done}, \texttt{checksum\_idle}, \texttt{done\_idle}):
+        Prove that the FSM correctly transitions to the next expected state when the appropriate progression flag is asserted.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={88 - 122}, 
+            firstnumber=88
+        ]{packet/packet.sv}
     \item[Output Safety] (\texttt{safe\_valid\_pkt}, \texttt{safe\_error\_pkt}):
         Prove that the output flags are never asserted spuriously.
         They only pulse high if the FSM was actively in the \texttt{CHECKSUM} state during the previous cycle with the correct outcome flag.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={148 - 162}, 
+            firstnumber=148
+        ]{packet/packet.sv}
     \item[Output Pulse] (\texttt{pulse\_valid\_pkt}, \texttt{pulse\_error\_pkt}):
         Verify that the output flags remain asserted for exactly one clock cycle, preventing it from a pulse behavior.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={164 - 174}, 
+            firstnumber=164
+        ]{packet/packet.sv}
 \end{description}
