@@ -128,7 +128,10 @@ package gcd_pkg;
             gcd_input_transaction trans;
             forever begin
                 @(posedge gcd_if.clk);
-                if (gcd_if.cb.in_ready && gcd_if.cb.out_valid) begin
+                if (gcd_if.cb.in_ready && gcd_if.cb.in_valid) begin
+                    if ($isunknown(gcd_if.cb.a_in) || $isunknown(gcd_if.cb.b_in)) begin
+                        `uvm_error("MNT", "(X/Z) value detected")
+                    end
                     trans = gcd_input_transaction::type_id::create("trans");
                     trans.a = gcd_if.cb.a_in;
                     trans.b = gcd_if.cb.b_in;
@@ -255,7 +258,10 @@ package gcd_pkg;
             gcd_output_transaction trans;
             forever begin
                 @(posedge gcd_if.clk);
-                if (gcd_if.cb.out_ready && gcd_if.cb.in_ready) begin
+                if (gcd_if.cb.out_ready && gcd_if.cb.out_ready) begin
+                    if ($isunknown(gcd_if.cb.gcd_out)) begin
+                        `uvm_error("MNT", "(X/Z) value detected")
+                    end
                     trans = gcd_output_transaction::type_id::create("trans");
                     trans.gcd = gcd_if.cb.gcd_out;
                     exit_port.write(trans);
@@ -422,35 +428,6 @@ package gcd_pkg;
         uvm_analysis_imp_in  #(gcd_input_transaction,  gcd_cov_controller) entry_port_in;
         uvm_analysis_imp_out #(gcd_output_transaction, gcd_cov_controller) entry_port_out;
 
-        covergroup cov_in with function sample(
-            bit [DATA_WIDTH -1 : 0] a, 
-            bit [DATA_WIDTH -1 : 0] b
-        );
-            cp_zero_a:      coverpoint (a == 0) {
-                option.weight = 0;
-            };
-            cp_zero_b:      coverpoint (b == 0) {
-                option.weight = 0;
-            };
-            cp_equal:       coverpoint (a != 0 && b != 0 && a == b) {
-                bins hit = {1}; 
-            }
-            cp_different:   coverpoint (a != 0 && b != 0 && a != b) {
-                bins hit = {1};
-            }
-            cross_zero:     cross cp_zero_a, cp_zero_b;
-        endgroup
-
-        covergroup cov_out with function sample(
-            bit [DATA_WIDTH -1 : 0] gcd
-        );
-            cp_gcd: coverpoint gcd {
-                bins 
-                bins prime = {1};
-
-            }
-        endgroup
-
         function new(string name="gcd_cov_controller", uvm_component parent=null);
             super.new(name, parent);
             entry_port_in  = new("entry_port_in",  this);
@@ -459,16 +436,93 @@ package gcd_pkg;
             cov_out = new();
         endfunction
 
+        covergroup cov_in with function sample(
+            bit [DATA_WIDTH -1 : 0] a, 
+            bit [DATA_WIDTH -1 : 0] b
+        );
+            
+            cp_equal:   coverpoint (a != 0 && b != 0 && a == b) {
+                bins hit = {1}; 
+            }
+            cp_a_gt_b:  coverpoint (a > b) {
+                bins hit = {1};
+            }
+            cp_b_gt_a:  coverpoint (b > a) {
+                bins hit = {1};
+            }
+
+            cp_a:       coverpoint a {
+                bins zero  = {0};
+                bins full  = {'1};
+                bins other = default;
+            }
+            cp_b:       coverpoint b {
+                bins zero  = {0};
+                bins full  = {'1};
+                bins other = default;
+            }
+
+            cross_a_b:     cross cp_a, cp_b {
+                bins zero  = binsof(cp_a.zero ) && binsof(cp_b.zero );
+                bins full  = binsof(cp_a.full ) && binsof(cp_b.full );
+                bins other = binsof(cp_a.other) && binsof(cp_b.other);
+
+                ignore_bins ignored = default; 
+            };
+        endgroup
+
         virtual function void write_in(gcd_input_transaction t);
             cov_in.sample(t.a, t.b);
         endfunction
         
+        covergroup cov_out with function sample(
+            bit [DATA_WIDTH -1 : 0] gcd
+        );
+            cp_gcd: coverpoint gcd {
+                bins zero  = {0};
+                bins prime = {1};
+                bins other = default;
+            }
+        endgroup
+
         virtual function void write_out(gcd_output_transaction t);
             cov_out.sample(t.gcd);
         endfunction
 
     endclass
 
+    class gcd_env extends uvm_env;
+        `uvm_component_utils(gcd_env)
+
+        gcd_input_agent  input_agent;
+        gcd_output_agent output_agent;
+        gcd_rst_monitor  mnt_rst;
+        gcd_scoreboard   scb;
+        gcd_cov_controller cov;
+
+        function new(string name = "gcd_env", uvm_component parent);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            input_agent = gcd_input_agent::type_id::create("input_agent", this);
+            output_agent = gcd_output_agent::type_id::create("output_agent", this);
+            mnt_rst = gcd_rst_monitor::type_id::create("mnt_rst", this);
+            scb = gcd_scoreboard::type_id::create("scb", this);
+            cov = gcd_cov_controller::type_id::create("cov", this);
+        endfunction
+
+        function void connect_phase(uvm_phase phase);
+            super.connect_phase(phase);
+            input_agent.mnt.exit_port.connect(scb.entry_port_in);
+            output_agent.mnt.exit_port.connect(scb.entry_port_out);
+            mnt_rst.exit_port.connect(scb.entry_port_rst);
+            scb.entry_port_in.connect(cov.analysis_export);
+            scb.entry_port_out.connect(cov.analysis_export);
+        endfunction
+
+    endclass
 
 
 endpackage
