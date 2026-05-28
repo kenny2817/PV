@@ -3,7 +3,7 @@
 `include "uvm_macros.svh" 
 
 package gcd_const_pkg;
-    localparam int DATA_WIDTH = 32;
+    localparam int unsigned DATA_WIDTH = 32;
 endpackage
 
 import gcd_const_pkg::*;
@@ -170,7 +170,7 @@ package gcd_pkg;
         `uvm_object_utils(gcd_output_transaction)
 
         bit [DATA_WIDTH -1 : 0] gcd;
-        int delay_cycles;
+        int unisigned delay_cycles;
 
         function new(string name = "gcd_output_transaction");
             super.new(name);
@@ -343,8 +343,8 @@ package gcd_pkg;
         `uvm_component_utils(gcd_scoreboard)
 
         bit running;
-        int expected_trans;
-        int success, fail;
+        int unsigned expected_trans;
+        int unsigned success, fail;
         bit [DATA_WIDTH -1 : 0] expected_out;
         uvm_analysis_imp_in  #(gcd_input_transaction,  gcd_scoreboard) entry_port_in;
         uvm_analysis_imp_out #(gcd_output_transaction, gcd_scoreboard) entry_port_out;
@@ -363,7 +363,7 @@ package gcd_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            if (!uvm_config_db#(int)::get(this, "", "expected_trans", expected_trans)) begin
+            if (!uvm_config_db#(int unsigned)::get(this, "", "expected_trans", expected_trans)) begin
                 `uvm_info("SCB", "No target set. SCB will not hold objections.", UVM_MEDIUM)
             end
         endfunction
@@ -524,6 +524,198 @@ package gcd_pkg;
 
     endclass
 
+    class gcd_det_in_seq extends uvm_sequence #(gcd_input_transaction);
+        `uvm_object_utils(gcd_det_in_seq)
+
+        int unsigned predefined_a[]     = '{15, 0, 25, '1, 12};
+        int unsigned predefined_b[]     = '{5, 10, 25, '1, 18};
+        int unsigned predefined_delay[] = '{0,  0,  0,  0,  0};
+
+        function new(string name="gcd_det_in_seq");
+            super.new(name);
+        endfunction
+
+        task body();
+            if (predefined_a.size() != predefined_b.size() || predefined_a.size() != predefined_delay.size()) begin
+                'uvm_error("SEQ", "input sizes do not match")
+            end
+            gcd_input_transaction trans;
+            int unsigned num_trans = predefined_a.size();
+            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_MEDIUM)
+            for (int unsigned i = 0; i < num_trans; i++) begin
+                start_item(trans);
+                trans.a            = predefined_a[i];
+                trans.b            = predefined_b[i];
+                trans.delay_cycles = predefined_delay[i];
+                finish_item(trans);
+            end
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
+        endtask
+
+    endclass
+
+    class gcd_det_out_seq extends uvm_sequence #(gcd_output_transaction);
+        `uvm_object_utils(gcd_det_out_seq)
+
+        int unsigned predefined_delay[] = '{0,  0,  0,  0,  0};
+        
+        function new(string name="gcd_det_out_seq");
+            super.new(name);
+        endfunction
+
+        task body();
+            gcd_output_transaction trans;
+            int unsigned num_trans = predefined_delay.size();
+            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_MEDIUM)
+            for (int unsigned i = 0; i < num_trans; i++) begin
+                start_item(trans);
+                trans.gcd          = 0;
+                trans.delay_cycles = predefined_delay[i];
+                finish_item(trans);
+            end
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
+        endtask
+
+    endclass
+
+    class gcd_det_vseq extends uvm_sequence;
+        `uvm_object_utils(gcd_det_vseq)
+
+        int unsigned predefined_a[]         = '{15, 6};
+        int unsigned predefined_b[]         = '{5, 10};
+        int unsigned predefined_delay_in[]  = '{0,  0};
+        int unsigned predefined_delay_out[] = '{0,  1};
+
+        uvm_sequencer #(gcd_input_transaction)  p_in_sqr;
+        uvm_sequencer #(gcd_output_transaction) p_out_sqr;
+
+        function new(string name="gcd_det_vseq");
+            super.new(name);
+        endfunction
+
+        task body();
+            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", num_trans); 
+            
+            gcd_det_in_seq  in_seq;
+            gcd_det_out_seq out_seq;
+            in_seq  = gcd_det_in_seq::type_id::create("in_seq");
+            out_seq = gcd_det_out_seq::type_id::create("out_seq");
+
+            in_seq.predefined_a     = predefined_a;
+            in_seq.predefined_b     = predefined_b;
+            in_seq.predefined_delay = predefined_delay_in;
+
+            out_seq.predefined_delay = predefined_delay_out;
+
+            `uvm_info("VSEQ", "Starting deterministic input and output sequences...", UVM_LOW)
+
+            fork
+                in_seq.start(p_in_sqr);
+                out_seq.start(p_out_sqr);
+            join
+            
+            `uvm_info("VSEQ", "All deterministic transactions completed.", UVM_LOW)
+        endtask
+
+    endclass
+
+
+    class gcd_rnd_in_seq extends uvm_sequence #(gcd_input_transaction);
+        `uvm_object_utils(gcd_rnd_in_seq)
+
+        int unsigned num_trans = 10;
+        int unsigned min_a     = 0, max_a     = 0;
+        int unsigned min_b     = 0, max_b     = 0;
+        int unsigned min_delay = 0, max_delay = 0;
+
+        function new(string name="gcd_rnd_in_seq");
+            super.new(name);
+        endfunction
+
+        task body();
+            gcd_input_transaction trans;
+            `uvm_info("SEQ", $sformatf("%d transactions, a [%d:%d], b [%d:%d], delay [%d:%d]", num_trans, min_a, max_a, min_b, max_b, min_delay, max_delay), UVM_MEDIUM)
+            repeat (num_trans) begin
+                `uvm_do_with(trans, {
+                    a            inside {[min_a : max_a]};
+                    b            inside {[min_b : max_b]};
+                    delay_cycles inside {[min_delay : max_delay]};
+                })
+            end
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
+        endtask
+
+    endclass
+
+    class gcd_rnd_out_seq extends uvm_sequence #(gcd_output_transaction);
+        `uvm_object_utils(gcd_rnd_out_seq)
+
+        int unsigned num_trans = 10;
+        int unsigned min_delay   = 0, max_delay   = 0;
+
+        function new(string name="gcd_rnd_out_seq");
+            super.new(name);
+        endfunction
+
+        task body();
+            gcd_output_transaction trans;
+            `uvm_info("SEQ", $sformatf("%d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_MEDIUM)
+            repeat (num_trans) begin
+                `uvm_do_with(trans, {
+                    delay_cycles inside {[min_delay : max_delay]};
+                })
+            end
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
+        endtask
+    
+    endclass
+
+    class gcd_random_vseq extends uvm_sequence;
+        `uvm_object_utils(gcd_random_vseq)
+
+        int unsigned num_trans;
+        int unsigned min_a, max_a;
+        int unsigned min_b, max_b;
+        int unsigned min_delay_in, max_delay_in;
+        int unsigned min_delay_out, max_delay_out;
+
+        uvm_sequencer #(gcd_input_transaction)  p_in_sqr;
+        uvm_sequencer #(gcd_output_transaction) p_out_sqr;
+
+        function new(string name="gcd_random_vseq");
+            super.new(name);
+        endfunction
+
+        task body();
+            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", num_trans); 
+
+            gcd_rnd_in_seq  in_seq;
+            gcd_rnd_out_seq out_seq;
+            in_seq  = gcd_rnd_in_seq::type_id::create("in_seq");
+            out_seq = gcd_rnd_out_seq::type_id::create("out_seq");
+
+            in_seq.num_trans  = num_trans;
+            in_seq.min_a     = min_a;
+            in_seq.max_a     = max_a;
+            in_seq.min_b     = min_b;
+            in_seq.max_b     = max_b;
+            in_seq.min_delay = min_delay_in;
+            in_seq.max_delay = max_delay_in;
+
+            out_seq.num_trans  = num_trans;
+            out_seq.min_delay = min_delay_out;
+            out_seq.max_delay = max_delay_out;
+
+            `uvm_info("VSEQ", "Starting randomized input and output sequences...", UVM_LOW)
+
+            fork
+                in_seq.start(p_in_sqr);
+                out_seq.start(p_out_sqr);
+            join
+            
+            `uvm_info("VSEQ", "All random transactions completed.", UVM_LOW)
+        endtask
+    endclass
 
 endpackage
 
