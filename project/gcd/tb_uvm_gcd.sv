@@ -772,6 +772,7 @@ module gcd_top;
     end
 
     gcd_interface gcd_if(clk, rst_n);
+    initial uvm_config_db#(gcd_interface)::set(gcd_if, "", "vif", gcd_if);
 
     gcd #(
         .WIDTH(WIDTH)
