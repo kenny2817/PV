@@ -166,6 +166,7 @@ package gcd_pkg;
 
     endclass
 
+
     class gcd_output_transaction extends uvm_sequence_item;
         `uvm_object_utils(gcd_output_transaction)
 
@@ -295,6 +296,7 @@ package gcd_pkg;
 
     endclass
 
+
     class gcd_rst_transaction extends uvm_sequence_item;
         `uvm_object_utils(gcd_rst_transaction)
 
@@ -334,6 +336,7 @@ package gcd_pkg;
         endtask
         
     endclass
+
 
     `uvm_analysis_imp_decl(_in)
     `uvm_analysis_imp_decl(_out)
@@ -491,6 +494,7 @@ package gcd_pkg;
 
     endclass
 
+
     class gcd_env extends uvm_env;
         `uvm_component_utils(gcd_env)
 
@@ -523,6 +527,7 @@ package gcd_pkg;
         endfunction
 
     endclass
+
 
     class gcd_det_in_seq extends uvm_sequence #(gcd_input_transaction);
         `uvm_object_utils(gcd_det_in_seq)
@@ -594,7 +599,7 @@ package gcd_pkg;
         endfunction
 
         task body();
-            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", num_trans); 
+            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", predefined_a.size()); 
             
             gcd_det_in_seq  in_seq;
             gcd_det_out_seq out_seq;
@@ -670,7 +675,7 @@ package gcd_pkg;
     
     endclass
 
-    class gcd_random_vseq extends uvm_sequence;
+    class gcd_rnd_vseq extends uvm_sequence;
         `uvm_object_utils(gcd_random_vseq)
 
         int unsigned num_trans;
@@ -717,6 +722,36 @@ package gcd_pkg;
         endtask
     endclass
 
+    class gcd_bringup_test extends uvm_test;
+        `uvm_component_utils(gcd_bringup_test)
+
+        gcd_env env;
+
+        function new(string name = "gcd_bringup_test", uvm_component parent);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            env = gcd_env::type_id::create("env", this);
+        endfunction
+
+        task run_phase(uvm_phase phase);
+            gcd_det_vseq det_seq;
+            phase.raise_objection(this);
+            det_seq = gcd_det_vseq::type_id::create("det_seq");
+            det_seq.predefined_a         = {15, 6};
+            det_seq.predefined_b         = {5, 10};
+            det_seq.predefined_delay_in  = {0,  0};
+            det_seq.predefined_delay_out = {0,  1};
+            det_seq.p_in_sqr  = env.input_agent.sqr;
+            det_seq.p_out_sqr = env.output_agent.sqr;
+            det_seq.start(null);
+            phase.drop_objection(this);
+        endtask
+
+    endclass
+            
 endpackage
 
 import uvm_pkg::*;
@@ -737,6 +772,26 @@ module gcd_top;
     end
 
     gcd_interface gcd_if(clk, rst_n);
-    
+
+    gcd #(
+        .WIDTH(WIDTH)
+    ) dut (
+        .clk        (clk),
+        .rst_n      (rst_n),
+        .in_valid   (gcd_if.in_valid),
+        .in_ready   (gcd_if.in_ready),
+        .a_in       (gcd_if.a_in),
+        .b_in       (gcd_if.b_in),
+        .out_valid  (gcd_if.out_valid),
+        .out_ready  (gcd_if.out_ready),
+        .gcd_out    (gcd_if.gcd_out)
+    );
+
+    initial run_test();    
+
+    initial begin
+        $dumpfile("waves.vcd"); 
+        $dumpvars(0, gcd_top);  
+    end
 
 endmodule
