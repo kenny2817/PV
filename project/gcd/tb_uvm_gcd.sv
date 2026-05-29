@@ -128,6 +128,7 @@ package gcd_pkg;
                 gcd_if.cb.a_in     <= 0;
                 gcd_if.cb.b_in     <= 0;
                 wait(gcd_if.rst_n);
+                @(posedge gcd_if.cb);
                 fork
                     begin
                         forever begin
@@ -258,6 +259,7 @@ package gcd_pkg;
                 wait(!gcd_if.rst_n);
                 gcd_if.cb.out_ready <= 1'b0;
                 wait(gcd_if.rst_n);
+                @(posedge gcd_if.cb);
                 fork
                     begin
                         forever begin
