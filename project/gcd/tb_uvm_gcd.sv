@@ -186,8 +186,9 @@ package gcd_pkg;
     class gcd_input_agent extends uvm_agent;
         `uvm_component_utils(gcd_input_agent)
 
-        gcd_input_driver  drv;
-        gcd_input_monitor mnt;
+        uvm_sequencer #(gcd_input_transaction)  sqr;
+        gcd_input_driver                        drv;
+        gcd_input_monitor                       mnt;
 
         function new(string name = "gcd_input_agent", uvm_component parent);
             super.new(name, parent);
@@ -316,8 +317,9 @@ package gcd_pkg;
     class gcd_output_agent extends uvm_agent;
         `uvm_component_utils(gcd_output_agent)
 
-        gcd_ouput_driver  drv;
-        gcd_output_monitor mnt;
+        uvm_sequencer #(gcd_output_transaction) sqr;
+        gcd_ouput_driver                        drv;
+        gcd_output_monitor                      mnt;
 
         function new(string name = "gcd_output_agent", uvm_component parent);
             super.new(name, parent);
@@ -640,7 +642,7 @@ package gcd_pkg;
         endfunction
 
         task body();
-            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", predefined_a.size()); 
+            uvm_config_db#(int unsigned)::set(this, "*scb*", "expected_trans", predefined_a.size()); 
             
             gcd_det_in_seq  in_seq;
             gcd_det_out_seq out_seq;
@@ -717,7 +719,7 @@ package gcd_pkg;
     endclass
 
     class gcd_rnd_vseq extends uvm_sequence;
-        `uvm_object_utils(gcd_random_vseq)
+        `uvm_object_utils(gcd_rnd_vseq)
 
         int unsigned num_trans;
         int unsigned min_a, max_a;
@@ -733,7 +735,7 @@ package gcd_pkg;
         endfunction
 
         task body();
-            uvm_config_db#(int)::set(this, "*scb*", "expected_trans", num_trans); 
+            uvm_config_db#(int unsigned)::set(this, "*scb*", "expected_trans", num_trans); 
 
             gcd_rnd_in_seq  in_seq;
             gcd_rnd_out_seq out_seq;
@@ -782,10 +784,10 @@ package gcd_pkg;
             gcd_det_vseq det_seq;
             phase.raise_objection(this);
             det_seq = gcd_det_vseq::type_id::create("det_seq");
-            det_seq.predefined_a         = {15, 6};
-            det_seq.predefined_b         = {5, 10};
-            det_seq.predefined_delay_in  = {0,  0};
-            det_seq.predefined_delay_out = {0,  1};
+            det_seq.predefined_a         = '{15, 6};
+            det_seq.predefined_b         = '{5, 10};
+            det_seq.predefined_delay_in  = '{0,  0};
+            det_seq.predefined_delay_out = '{0,  1};
             det_seq.p_in_sqr  = env.input_agent.sqr;
             det_seq.p_out_sqr = env.output_agent.sqr;
             det_seq.start(null);
@@ -814,7 +816,7 @@ module gcd_top;
     end
 
     gcd_interface gcd_if(clk, rst_n);
-    initial uvm_config_db#(gcd_interface)::set(gcd_if, "", "vif", gcd_if);
+    initial uvm_config_db#(virtual gcd_interface)::set(gcd_if, "", "vif", gcd_if);
 
     gcd #(
         .DATA_WIDTH(DATA_WIDTH)
