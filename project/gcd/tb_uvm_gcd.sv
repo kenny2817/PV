@@ -499,11 +499,11 @@ package gcd_pkg;
             }
 
             cross_a_b:     cross cp_a, cp_b {
+                option.cross_auto_bin_max = 0;
+
                 bins zero  = binsof(cp_a.zero ) && binsof(cp_b.zero );
                 bins full  = binsof(cp_a.full ) && binsof(cp_b.full );
                 bins other = binsof(cp_a.other) && binsof(cp_b.other);
-
-                ignore_bins ignored = default; 
             };
         endgroup
 
