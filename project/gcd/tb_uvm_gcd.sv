@@ -779,12 +779,12 @@ package gcd_pkg;
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
             env = gcd_env::type_id::create("env", this);
+            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", 2); 
         endfunction
 
         task run_phase(uvm_phase phase);
             gcd_det_vseq det_seq;
             phase.raise_objection(this);
-            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", 2); 
             det_seq = gcd_det_vseq::type_id::create("det_seq");
             det_seq.predefined_a         = '{15, 6};
             det_seq.predefined_b         = '{5, 10};
