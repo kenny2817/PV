@@ -6,7 +6,7 @@ package gcd_const_pkg;
     localparam int unsigned DATA_WIDTH = 32;
 endpackage
 
-    import gcd_const_pkg::*;
+import gcd_const_pkg::*;
 
 interface gcd_interface (
     input logic clk,
@@ -565,8 +565,8 @@ package gcd_pkg;
             input_agent.mnt.exit_port.connect(scb.entry_port_in);
             output_agent.mnt.exit_port.connect(scb.entry_port_out);
             mnt_rst.exit_port.connect(scb.entry_port_rst);
-            scb.entry_port_in.connect(cov.analysis_export);
-            scb.entry_port_out.connect(cov.analysis_export);
+            scb.entry_port_in.connect(cov.analysis_export_in);
+            scb.entry_port_out.connect(cov.analysis_export_out);
         endfunction
 
     endclass
