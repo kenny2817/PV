@@ -443,7 +443,7 @@ package gcd_pkg;
         function void write_in(gcd_input_transaction t);
             entry_port_in.write(t);
             `uvm_info("SCB", $sformatf("[IN] A %d B %d", t.a, t.b), UVM_HIGH)
-            expected_out = GCD(t.a, t.b);
+            expected_out = compute_gcd(t.a, t.b);
             running = 1;
         endfunction
 
