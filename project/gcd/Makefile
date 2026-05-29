@@ -21,7 +21,7 @@ sim:
 		work.gcd_top
 
 formal:
-	ebmc gcd.sv -D FORMAL --top gcd --bound 20 --systemverilog --trace --waveform --vcd packet.vcd > formal.log
+	ebmc gcd.sv -D FORMAL --top gcd --bound 20 --systemverilog --trace --waveform --vcd waves.vcd > formal.log
 
 clean:
 	# Removes all compiled files and logs to give you a fresh start

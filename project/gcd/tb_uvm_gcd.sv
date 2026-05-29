@@ -115,7 +115,7 @@ package gcd_pkg;
             gcd_if.cb.a_in      <= trans.a;
             gcd_if.cb.b_in      <= trans.b;
             @(posedge gcd_if.clk);
-            while (gcd_if.cb.in_ready !== 1'b1) begin
+            while (!gcd_if.cb.in_ready) begin
                 @(posedge gcd_if.clk);
             end
             gcd_if.cb.in_valid  <= 1'b0;
@@ -241,16 +241,16 @@ package gcd_pkg;
         endfunction
 
         task apply(gcd_output_transaction trans);
-            while (gcd_if.cb.out_ready !== 1'b1) begin
+            while (!gcd_if.cb.out_valid) begin
                 @(posedge gcd_if.clk);
             end
             repeat (trans.delay_cycles) @(posedge gcd_if.clk);
-            gcd_if.cb.out_valid <= 1'b1;
+            gcd_if.cb.out_ready <= 1'b1;
             @(posedge gcd_if.clk);
-            while (gcd_if.cb.out_ready !== 1'b1) begin
+            while (!gcd_if.cb.out_valid) begin
                 @(posedge gcd_if.clk);
             end
-            gcd_if.cb.out_valid <= 1'b0;
+            gcd_if.cb.out_ready <= 1'b0;
         endtask
 
         task run_phase(uvm_phase phase);
@@ -471,6 +471,8 @@ package gcd_pkg;
     class gcd_cov_controller extends uvm_component;
         `uvm_component_utils(gcd_cov_controller)
 
+        localparam bit [DATA_WIDTH-1:0] MAX_VAL = '1;
+
         uvm_analysis_imp_in  #(gcd_input_transaction,  gcd_cov_controller) entry_port_in;
         uvm_analysis_imp_out #(gcd_output_transaction, gcd_cov_controller) entry_port_out;
 
@@ -489,18 +491,16 @@ package gcd_pkg;
                 bins hit = {1};
             }
 
-            localparam bit [DATA_WIDTH-1:0] MAX_VAL = '1;
-
             cp_a: coverpoint a {
-                bins zero   = {0};
-                bins full   = {MAX_VAL};
-                bins others = {[1 : MAX_VAL-1]}; 
+                bins zero  = {0};
+                bins full  = {MAX_VAL};
+                bins other = {[1 : MAX_VAL-1]}; 
             }
 
             cp_b: coverpoint b {
-                bins zero   = {0};
-                bins full   = {MAX_VAL};
-                bins others = {[1 : MAX_VAL-1]}; 
+                bins zero  = {0};
+                bins full  = {MAX_VAL};
+                bins other = {[1 : MAX_VAL-1]}; 
             }
 
             cross_a_b:     cross cp_a, cp_b {
