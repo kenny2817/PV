@@ -134,4 +134,109 @@ module gcd #(
     // gcd_out is combinatorial from result_reg.
     assign gcd_out   = result_reg;
 
+`ifdef FORMAL
+
+    logic past_valid = 0'b0;
+    always @(posedge clk) past_valid <= 1'b1;
+    
+    initial_reset: assume property (
+        @(posedge clk) 
+        !past_valid |-> 
+            !rst_n
+    );
+
+    inputs: assume property (
+        @(posedge clk) disable iff (!rst_n)
+        in_valid && !in_ready |=>
+            in_valid && $stable(a_in) && $stable(b_in)
+    );
+
+
+    _reset: assert property (
+        @(posedge clk) 
+        !rst_n |=> 
+            (state == IDLE) && 
+            (a_reg == '0) && 
+            (b_reg == '0) && 
+            (result_reg == '0)
+    );
+
+    _state: assert property (
+        @(posedge clk)  disable iff(!rst_n)
+        (state == IDLE) ||
+        (state == RUN)  ||
+        (state == DONE)
+    );
+
+    idle_idle: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == IDLE) && !(in_ready && in_valid) |=>
+            (state == IDLE)
+    );
+
+    idle_done: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == IDLE) && in_ready && in_valid && 
+        (a_in == 0 || b_in == 0 || a_in == b_in) |=>
+            (state == DONE)
+    );
+
+    idle_run: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == IDLE) && in_ready && in_valid && 
+        !(a_in == 0 || b_in == 0 || a_in == b_in) |=>
+            (state == RUN)
+    );
+    
+    run_run: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == RUN) && !(a_next == b_next) |=>
+            (state == RUN)
+    );
+
+    run_done: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == RUN) && (a_next == b_next) |=>
+            (state == DONE)
+    );
+    
+    done_done: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == DONE) && !(out_ready && out_valid) |=>
+            (state == DONE)
+    );
+
+    done_idle: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == DONE) && out_ready && out_valid |=>
+            (state == IDLE)
+    );
+
+    _out_valid: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == DONE) |-> 
+            out_valid
+    );
+
+    _in_ready: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == IDLE) |-> 
+            in_ready
+    );
+
+    outputs: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        out_valid |=>
+            $stable(gcd_out)
+    );
+
+    // unfortunately bounded formal verification always fail this assertion
+    // liveness: assert property (
+    //     @(posedge clk) disable iff (!rst_n)
+    //     (state == IDLE) && in_valid && in_ready |=> 
+    //         s_eventually (state == DONE)
+    // );
+
+`endif
+
 endmodule

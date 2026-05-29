@@ -722,6 +722,7 @@ package gcd_pkg;
         endtask
     endclass
 
+
     class gcd_bringup_test extends uvm_test;
         `uvm_component_utils(gcd_bringup_test)
 
@@ -775,7 +776,7 @@ module gcd_top;
     initial uvm_config_db#(gcd_interface)::set(gcd_if, "", "vif", gcd_if);
 
     gcd #(
-        .WIDTH(WIDTH)
+        .WIDTH(DATA_WIDTH)
     ) dut (
         .clk        (clk),
         .rst_n      (rst_n),

@@ -1,6 +1,7 @@
 .vscode/
 *.vv
 *.vcd
+*.log
 
 build/
 software/

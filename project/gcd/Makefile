@@ -20,6 +20,9 @@ sim:
 		+UVM_VERBOSITY=$(VERBOSITY) \
 		work.gcd_top
 
+formal:
+	ebmc gcd.sv -D FORMAL --top gcd --bound 20 --systemverilog --trace --waveform --vcd packet.vcd > formal.log
+
 clean:
 	# Removes all compiled files and logs to give you a fresh start
 	rm -rf work transcript vsim.wlf modelsim.ini wlft* waves.vcd
