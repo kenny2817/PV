@@ -81,7 +81,7 @@ package gcd_pkg;
         `uvm_object_utils(gcd_input_transaction)
 
         bit [DATA_WIDTH -1 : 0] a, b;
-        int delay_cycles;
+        int unsigned delay_cycles;
 
         function new(string name = "gcd_input_transaction");
             super.new(name);
@@ -211,7 +211,7 @@ package gcd_pkg;
         `uvm_object_utils(gcd_output_transaction)
 
         bit [DATA_WIDTH -1 : 0] gcd;
-        int unisigned delay_cycles;
+        int unsigned delay_cycles;
 
         function new(string name = "gcd_output_transaction");
             super.new(name);
