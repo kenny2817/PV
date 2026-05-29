@@ -371,10 +371,10 @@ package gcd_pkg;
             gcd_rst_transaction trans;
             forever begin
                 @(negedge gcd_if.rst_n); // Wait for the drop
-                `uvm_info("RST", "[ON]", UVM_MEDIUM)
+                `uvm_info("RST", "[ON]", UVM_LOW)
                 exit_port.write(gcd_rst_transaction::type_id::create("trans"));
                 @(posedge gcd_if.rst_n);
-                `uvm_info("RST", "[OFF]", UVM_MEDIUM)
+                `uvm_info("RST", "[OFF]", UVM_LOW)
             end
         endtask
         
@@ -410,7 +410,7 @@ package gcd_pkg;
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
             if (!uvm_config_db#(int unsigned)::get(this, "", "expected_trans", expected_trans)) begin
-                `uvm_info("SCB", "No target set. SCB will not hold objections.", UVM_MEDIUM)
+                `uvm_info("SCB", "No target set. SCB will not hold objections.", UVM_LOW)
             end
         endfunction
 
@@ -442,7 +442,7 @@ package gcd_pkg;
         endfunction
 
         function void write_in(gcd_input_transaction t);
-            `uvm_info("SCB", $sformatf("[IN] A %d B %d", t.a, t.b), UVM_MEDIUM)
+            `uvm_info("SCB", $sformatf("[IN] A %d B %d", t.a, t.b), UVM_HIGH)
             expected_out = compute_gcd(t.a, t.b);
             running = 1;
         endfunction
@@ -450,7 +450,7 @@ package gcd_pkg;
         function void write_out(gcd_output_transaction t);
             if (t.gcd == expected_out) begin
                 success += 1;
-                `uvm_info("SCB", $sformatf("[OUT] CORRECT"), UVM_MEDIUM)
+                `uvm_info("SCB", $sformatf("[OUT] CORRECT"), UVM_HIGH)
             end else begin
                 fail += 1;
                 `uvm_error("SCB", $sformatf("[OUT] exp %d got %d", expected_out, t.gcd))
@@ -459,7 +459,7 @@ package gcd_pkg;
         endfunction
 
         function void write_rst(gcd_rst_transaction t);
-            `uvm_info("SCB", "[RST] golden model reset", UVM_MEDIUM)
+            `uvm_info("SCB", "[RST] golden model reset", UVM_HIGH)
             success += running;
             running = 0;
         endfunction
@@ -890,6 +890,13 @@ module gcd_top;
 
     gcd_interface gcd_if(clk, rst_n);
     initial uvm_config_db#(virtual gcd_interface)::set(null, "*", "vif", gcd_if);
+
+    always @(posedge clk) begin
+        `uvm_info("TOP", $sformatf(
+            "[TIME] %0d [A] %h [B] %h [in_v] %b [in_r] %b [out_v] %b [out_r] %b [GCD] %h", 
+            $time(), gcd_if.cb.a_in, gcd_if.cb.b_in, gcd_if.cb.in_valid, gcd_if.cb.in_ready,
+            gcd_if.cb.out_valid, gcd_if.cb.out_ready, gcd_if.cb.gcd_out), UVM_HIGH)
+    end
 
     gcd #(
         .WIDTH(DATA_WIDTH)
