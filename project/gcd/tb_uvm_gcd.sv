@@ -823,9 +823,10 @@ module gcd_top;
     always @(posedge clk) begin
         `uvm_info(
             "TOP", $sformatf("[TIME] %d [IN_V] %b [IN_R] %b [A] %h [B] %h [OUT_V] %b [OUT_R] %b [GCD] %h",
-            $time, gcd_if.cb.in_valid, gcd_if.cb.in_ready, gcd_if.cb.a_in, gcd_if.cb.out_valid, gcd_if.cb.out_ready, gcd_if.cb.gcd_out), UVM_MEDIUM)
+            $time, gcd_if.cb.in_valid, gcd_if.cb.in_ready, gcd_if.cb.a_in, gcd_if.cb.b_in,
+            gcd_if.cb.out_valid, gcd_if.cb.out_ready, gcd_if.cb.gcd_out), UVM_MEDIUM)
     end
-    inital begin
+    initial begin
         repeat(20) @(posedge clk);
         $finish();
     end
