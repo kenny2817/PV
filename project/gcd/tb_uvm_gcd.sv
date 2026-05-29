@@ -202,7 +202,7 @@ package gcd_pkg;
 
         function void connect_phase(uvm_phase phase);
             super.connect_phase(phase);
-            drv.seq_item_export.connect(mnt.exit_port);
+            drv.seq_item_port.connect(sqr.seq_item_export);
         endfunction
 
     endclass
@@ -819,7 +819,7 @@ module gcd_top;
     initial uvm_config_db#(virtual gcd_interface)::set(gcd_if, "", "vif", gcd_if);
 
     gcd #(
-        .DATA_WIDTH(DATA_WIDTH)
+        .WIDTH(DATA_WIDTH)
     ) dut (
         .clk        (clk),
         .rst_n      (rst_n),
