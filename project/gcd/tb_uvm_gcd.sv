@@ -115,7 +115,7 @@ package gcd_pkg;
             gcd_if.cb.a_in      <= trans.a;
             gcd_if.cb.b_in      <= trans.b;
             @(posedge gcd_if.clk);
-            while (!gcd_if.cb.in_ready) begin
+            while (gcd_if.cb.in_ready !== 1'b1) begin
                 @(posedge gcd_if.clk);
             end
             gcd_if.cb.in_valid  <= 1'b0;
@@ -242,7 +242,7 @@ package gcd_pkg;
         endfunction
 
         task apply(gcd_output_transaction trans);
-            while (!gcd_if.cb.out_valid) begin
+            while (gcd_if.cb.out_valid !== 1'b1) begin
                 @(posedge gcd_if.clk);
             end
             repeat (trans.delay_cycles) @(posedge gcd_if.clk);
@@ -822,7 +822,7 @@ module gcd_top;
 
     always @(posedge clk) begin
         `uvm_info(
-            "TOP", $sformatf("[TIME] %d [IN_V] %b [IN_R] %b [A] %h [B] %h [OUT_V] %b [OUT_R] %b [GCD] %h",
+            "TOP", $sformatf("[TIME] %3d [IN_V] %b [IN_R] %b [A] %h [B] %h [OUT_V] %b [OUT_R] %b [GCD] %h",
             $time, gcd_if.cb.in_valid, gcd_if.cb.in_ready, gcd_if.cb.a_in, gcd_if.cb.b_in,
             gcd_if.cb.out_valid, gcd_if.cb.out_ready, gcd_if.cb.gcd_out), UVM_MEDIUM)
     end
