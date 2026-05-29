@@ -24,11 +24,51 @@ interface gcd_interface (
     logic                   out_ready;
     logic [DATA_WIDTH-1:0]  gcd_out;
     
+    // clocking
     clocking cb @(posedge clk);
         default input #1step output #0;
         input in_ready, out_valid, gcd_out;
         inout in_valid, a_in, b_in, out_ready;
     endclocking
+
+    // protocol checking
+    property p_valid_no_drop(valid, ready);
+        @(posedge clk) disable iff (!rst_n)
+        valid && !ready |=> valid;
+    endproperty
+
+    property p_data_stable(valid, ready, data);
+        @(posedge clk) disable iff (!rst_n)
+        valid && !ready |=> $stable(data);
+    endproperty
+
+    property p_control_known(sig);
+        @(posedge clk) disable iff (!rst_n)
+        !$isunknown(sig);
+    endproperty
+
+    // inputs
+    chk_in_valid_no_drop: assert property(p_valid_no_drop(in_valid, in_ready))
+        else `uvm_error("SVA", "Input Protocol Violation: in_valid dropped without in_ready!")
+        
+    chk_in_data_stable_a: assert property(p_data_stable(in_valid, in_ready, a_in))
+        else `uvm_error("SVA", "Input Protocol Violation: a_in changed while stalled!")
+        
+    chk_in_data_stable_b: assert property(p_data_stable(in_valid, in_ready, b_in))
+        else `uvm_error("SVA", "Input Protocol Violation: b_in changed while stalled!")
+
+    // outputs
+    chk_out_valid_no_drop: assert property(p_valid_no_drop(out_valid, out_ready))
+        else `uvm_error("SVA", "Output Protocol Violation: out_valid dropped without out_ready!")
+        
+    chk_out_data_stable: assert property(p_data_stable(out_valid, out_ready, gcd_out))
+        else `uvm_error("SVA", "Output Protocol Violation: gcd_out changed while stalled!")
+
+    // known control
+    chk_in_valid_known:  assert property(p_control_known(in_valid));
+    chk_in_ready_known:  assert property(p_control_known(in_ready));
+    chk_out_valid_known: assert property(p_control_known(out_valid));
+    chk_out_ready_known: assert property(p_control_known(out_ready));
 
 endinterface
 
@@ -37,6 +77,7 @@ package gcd_pkg;
     import uvm_pkg::*;
     import gcd_const_pkg::*;
     
+    // input agent
     class gcd_input_transaction extends uvm_sequence_item;
         `uvm_object_utils(gcd_input_transaction)
 
@@ -166,7 +207,7 @@ package gcd_pkg;
 
     endclass
 
-
+    // output agent
     class gcd_output_transaction extends uvm_sequence_item;
         `uvm_object_utils(gcd_output_transaction)
 
@@ -296,7 +337,7 @@ package gcd_pkg;
 
     endclass
 
-
+    // rst agent
     class gcd_rst_transaction extends uvm_sequence_item;
         `uvm_object_utils(gcd_rst_transaction)
 
@@ -337,7 +378,7 @@ package gcd_pkg;
         
     endclass
 
-
+    // scoreboard
     `uvm_analysis_imp_decl(_in)
     `uvm_analysis_imp_decl(_out)
     `uvm_analysis_imp_decl(_rst)
@@ -425,6 +466,7 @@ package gcd_pkg;
 
     endclass
 
+    // coverage controller
     class gcd_cov_controller extends uvm_component;
         `uvm_component_utils(gcd_cov_controller)
 
@@ -494,7 +536,7 @@ package gcd_pkg;
 
     endclass
 
-
+    // environment
     class gcd_env extends uvm_env;
         `uvm_component_utils(gcd_env)
 
@@ -528,7 +570,7 @@ package gcd_pkg;
 
     endclass
 
-
+    // deterministic sequences
     class gcd_det_in_seq extends uvm_sequence #(gcd_input_transaction);
         `uvm_object_utils(gcd_det_in_seq)
 
@@ -624,7 +666,7 @@ package gcd_pkg;
 
     endclass
 
-
+    // random sequences
     class gcd_rnd_in_seq extends uvm_sequence #(gcd_input_transaction);
         `uvm_object_utils(gcd_rnd_in_seq)
 
@@ -722,7 +764,7 @@ package gcd_pkg;
         endtask
     endclass
 
-
+    // bring up test
     class gcd_bringup_test extends uvm_test;
         `uvm_component_utils(gcd_bringup_test)
 
