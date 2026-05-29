@@ -504,7 +504,7 @@ package gcd_pkg;
                 bins zero  = binsof(cp_a.zero ) && binsof(cp_b.zero );
                 bins full  = binsof(cp_a.full ) && binsof(cp_b.full );
                 bins other = binsof(cp_a.other) && binsof(cp_b.other);
-            };
+            }
         endgroup
 
         virtual function void write_in(gcd_input_transaction t);
@@ -583,7 +583,7 @@ package gcd_pkg;
 
         task body();
             if (predefined_a.size() != predefined_b.size() || predefined_a.size() != predefined_delay.size()) begin
-                'uvm_error("SEQ", "input sizes do not match")
+                `uvm_error("SEQ", "input sizes do not match")
             end
             gcd_input_transaction trans;
             int unsigned num_trans = predefined_a.size();
@@ -740,7 +740,7 @@ package gcd_pkg;
             in_seq  = gcd_rnd_in_seq::type_id::create("in_seq");
             out_seq = gcd_rnd_out_seq::type_id::create("out_seq");
 
-            in_seq.num_trans  = num_trans;
+            in_seq.num_trans = num_trans;
             in_seq.min_a     = min_a;
             in_seq.max_a     = max_a;
             in_seq.min_b     = min_b;
@@ -748,7 +748,7 @@ package gcd_pkg;
             in_seq.min_delay = min_delay_in;
             in_seq.max_delay = max_delay_in;
 
-            out_seq.num_trans  = num_trans;
+            out_seq.num_trans = num_trans;
             out_seq.min_delay = min_delay_out;
             out_seq.max_delay = max_delay_out;
 
