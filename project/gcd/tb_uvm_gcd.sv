@@ -301,7 +301,7 @@ package gcd_pkg;
             gcd_output_transaction trans;
             forever begin
                 @(posedge gcd_if.clk);
-                if (gcd_if.cb.out_ready && gcd_if.cb.out_ready) begin
+                if (gcd_if.cb.out_ready && gcd_if.cb.out_valid) begin
                     if ($isunknown(gcd_if.cb.gcd_out)) begin
                         `uvm_error("MNT", "(X/Z) value detected")
                     end
