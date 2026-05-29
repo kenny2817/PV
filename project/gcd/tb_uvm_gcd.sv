@@ -126,6 +126,8 @@ package gcd_pkg;
             forever begin
                 wait(!gcd_if.rst_n);
                 gcd_if.cb.in_valid <= 1'b0;
+                gcd_if.cb.a_in     <= 0;
+                gcd_if.cb.b_in     <= 0;
                 wait(gcd_if.rst_n);
                 fork
                     begin
@@ -440,7 +442,7 @@ package gcd_pkg;
         endfunction
 
         function void write_in(gcd_input_transaction t);
-            `uvm_info("SCB", $sformatf("[IN] A %d B %d", t.a, t.b), UVM_HIGH)
+            `uvm_info("SCB", $sformatf("[IN] A %d B %d", t.a, t.b), UVM_MEDIUM)
             expected_out = compute_gcd(t.a, t.b);
             running = 1;
         endfunction
@@ -448,7 +450,7 @@ package gcd_pkg;
         function void write_out(gcd_output_transaction t);
             if (t.gcd == expected_out) begin
                 success += 1;
-                `uvm_info("SCB", $sformatf("[OUT] CORRECT"), UVM_HIGH)
+                `uvm_info("SCB", $sformatf("[OUT] CORRECT"), UVM_MEDIUM)
             end else begin
                 fail += 1;
                 `uvm_error("SCB", $sformatf("[OUT] exp %d got %d", expected_out, t.gcd))
@@ -457,7 +459,7 @@ package gcd_pkg;
         endfunction
 
         function void write_rst(gcd_rst_transaction t);
-            `uvm_info("SCB", "[RST] golden model reset", UVM_HIGH)
+            `uvm_info("SCB", "[RST] golden model reset", UVM_MEDIUM)
             success += running;
             running = 0;
         endfunction
@@ -592,7 +594,7 @@ package gcd_pkg;
             if (predefined_a.size() != predefined_b.size() || predefined_a.size() != predefined_delay.size()) begin
                 `uvm_error("SEQ", "input sizes do not match")
             end
-            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_HIGH)
+            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_MEDIUM)
             for (int unsigned i = 0; i < num_trans; i++) begin
                 trans = gcd_input_transaction::type_id::create("trans");
                 start_item(trans);
@@ -601,7 +603,7 @@ package gcd_pkg;
                 trans.delay_cycles = predefined_delay[i];
                 finish_item(trans);
             end
-            `uvm_info("SEQ", $sformatf("DONE"), UVM_HIGH)
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
         endtask
 
     endclass
@@ -618,7 +620,7 @@ package gcd_pkg;
         task body();
             gcd_output_transaction trans;
             int unsigned num_trans = predefined_delay.size();
-            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_HIGH)
+            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_MEDIUM)
             for (int unsigned i = 0; i < num_trans; i++) begin
                 trans = gcd_output_transaction::type_id::create("trans");
                 start_item(trans);
@@ -626,7 +628,7 @@ package gcd_pkg;
                 trans.delay_cycles = predefined_delay[i];
                 finish_item(trans);
             end
-            `uvm_info("SEQ", $sformatf("DONE"), UVM_HIGH)
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
         endtask
 
     endclass
@@ -685,7 +687,7 @@ package gcd_pkg;
 
         task body();
             gcd_input_transaction trans;
-            `uvm_info("SEQ", $sformatf("%d transactions, a [%d:%d], b [%d:%d], delay [%d:%d]", num_trans, min_a, max_a, min_b, max_b, min_delay, max_delay), UVM_HIGH)
+            `uvm_info("SEQ", $sformatf("%d transactions, a [%d:%d], b [%d:%d], delay [%d:%d]", num_trans, min_a, max_a, min_b, max_b, min_delay, max_delay), UVM_MEDIUM)
             repeat (num_trans) begin
                 `uvm_do_with(trans, {
                     a            inside {[min_a : max_a]};
@@ -693,7 +695,7 @@ package gcd_pkg;
                     delay_cycles inside {[min_delay : max_delay]};
                 })
             end
-            `uvm_info("SEQ", $sformatf("DONE"), UVM_HIGH)
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
         endtask
 
     endclass
@@ -710,13 +712,13 @@ package gcd_pkg;
 
         task body();
             gcd_output_transaction trans;
-            `uvm_info("SEQ", $sformatf("%d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_HIGH)
+            `uvm_info("SEQ", $sformatf("%d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_MEDIUM)
             repeat (num_trans) begin
                 `uvm_do_with(trans, {
                     delay_cycles inside {[min_delay : max_delay]};
                 })
             end
-            `uvm_info("SEQ", $sformatf("DONE"), UVM_HIGH)
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
         endtask
     
     endclass
