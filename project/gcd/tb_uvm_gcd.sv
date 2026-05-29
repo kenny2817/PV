@@ -115,7 +115,7 @@ package gcd_pkg;
             gcd_if.cb.a_in      <= trans.a;
             gcd_if.cb.b_in      <= trans.b;
             @(posedge gcd_if.clk);
-            while (gcd_if.cb.in_ready !== 1'b1) begin
+            while (gcd_if.in_ready !== 1'b1) begin
                 @(posedge gcd_if.clk);
             end
             gcd_if.cb.in_valid  <= 1'b0;
@@ -788,18 +788,87 @@ package gcd_pkg;
             gcd_det_vseq det_seq;
             phase.raise_objection(this);
             det_seq = gcd_det_vseq::type_id::create("det_seq");
+            det_seq.p_in_sqr  = env.input_agent.sqr;
+            det_seq.p_out_sqr = env.output_agent.sqr;
             det_seq.predefined_a         = '{15, 6};
             det_seq.predefined_b         = '{5, 10};
             det_seq.predefined_delay_in  = '{0,  0};
             det_seq.predefined_delay_out = '{0,  0};
-            det_seq.p_in_sqr  = env.input_agent.sqr;
-            det_seq.p_out_sqr = env.output_agent.sqr;
             det_seq.start(null);
             phase.drop_objection(this);
         endtask
 
     endclass
-            
+    
+    // determistic test
+    class gcd_det_test extends uvm_test;
+        `uvm_component_utils(gcd_det_test)
+
+        gcd_env env;
+
+        function new(string name = "gcd_det_test", uvm_component parent);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            env = gcd_env::type_id::create("env", this);
+            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", 16); 
+        endfunction
+
+        task run_phase(uvm_phase phase);
+            gcd_det_vseq det_seq;
+            phase.raise_objection(this);
+            det_seq = gcd_det_vseq::type_id::create("det_seq");
+            det_seq.p_in_sqr  = env.input_agent.sqr;
+            det_seq.p_out_sqr = env.output_agent.sqr;
+            det_seq.predefined_a         = '{0, 1, 0, 5, 8, 5, 6,  7, 1, 1, 1, 1, 1, 1, 1, 1};
+            det_seq.predefined_b         = '{0, 0, 1, 6, 3, 5, 2, 28, 1, 1, 1, 1, 1, 1, 1, 1};
+            det_seq.predefined_delay_in  = '{0, 0, 0, 0, 0, 0, 0,  0, 1, 1, 1, 1, 4, 4, 4, 4};
+            det_seq.predefined_delay_out = '{0, 0, 0, 0, 0, 0, 0,  0, 4, 4, 4, 4, 1, 1, 1, 1};
+            det_seq.start(null);
+            phase.drop_objection(this);
+        endtask
+
+    endclass
+
+    // randomized test
+    class gcd_rnd_test extends uvm_test;
+        `uvm_component_utils(gcd_rnd_test)
+
+        gcd_env env;
+
+        function new(string name = "gcd_rnd_test", uvm_component parent);
+            super.new(name, parent);
+        endfunction
+
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            env = gcd_env::type_id::create("env", this);
+            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", 100); 
+        endfunction
+
+        task run_phase(uvm_phase phase);
+            gcd_rnd_vseq rnd_seq;
+            phase.raise_objection(this);
+            rnd_seq = gcd_rnd_vseq::type_id::create("rnd_seq");
+            rnd_seq.p_in_sqr  = env.input_agent.sqr;
+            rnd_seq.p_out_sqr = env.output_agent.sqr;
+            rnd_seq.num_trans = 100;
+            rnd_seq.min_a     = 0;
+            rnd_seq.max_a     = 100;
+            rnd_seq.min_b     = 0;
+            rnd_seq.max_b     = 100;
+            rnd_seq.min_delay_in  = 0;
+            rnd_seq.max_delay_in  = 4;
+            rnd_seq.min_delay_out = 0;
+            rnd_seq.max_delay_out = 4;
+            rnd_seq.start(null);
+            phase.drop_objection(this);
+        endtask
+
+    endclass
+
 endpackage
 
 import uvm_pkg::*;
@@ -821,18 +890,6 @@ module gcd_top;
 
     gcd_interface gcd_if(clk, rst_n);
     initial uvm_config_db#(virtual gcd_interface)::set(null, "*", "vif", gcd_if);
-
-    always @(posedge clk) begin
-        `uvm_info(
-            "TOP", $sformatf("[TIME] %3d [IN_V] %b [IN_R] %b [A] %h [B] %h [OUT_V] %b [OUT_R] %b [GCD] %h",
-            $time, gcd_if.cb.in_valid, gcd_if.cb.in_ready, gcd_if.cb.a_in, gcd_if.cb.b_in,
-            gcd_if.cb.out_valid, gcd_if.cb.out_ready, gcd_if.cb.gcd_out), UVM_MEDIUM)
-    end
-    initial begin
-        repeat(20) @(posedge clk);
-        $finish();
-    end
-
 
     gcd #(
         .WIDTH(DATA_WIDTH)
