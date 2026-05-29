@@ -489,15 +489,16 @@ package gcd_pkg;
                 bins hit = {1};
             }
 
-            cp_a:       coverpoint a {
-                bins zero  = {0};
-                bins full  = {'1};
-                bins other = default;
+            cp_a: coverpoint a {
+                bins zero   = {0};
+                bins full   = {'1};
+                bins others = {[1 : $-1]}; 
             }
-            cp_b:       coverpoint b {
-                bins zero  = {0};
-                bins full  = {'1};
-                bins other = default;
+
+            cp_b: coverpoint b {
+                bins zero   = {0};
+                bins full   = {'1};
+                bins others = {[1 : $-1]};
             }
 
             cross_a_b:     cross cp_a, cp_b {
