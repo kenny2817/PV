@@ -489,16 +489,18 @@ package gcd_pkg;
                 bins hit = {1};
             }
 
+            localparam bit [DATA_WIDTH-1:0] MAX_VAL = '1;
+
             cp_a: coverpoint a {
                 bins zero   = {0};
-                bins full   = {'1};
-                bins others = {[1 : $-1]}; 
+                bins full   = {MAX_VAL};
+                bins others = {[1 : MAX_VAL-1]}; 
             }
 
             cp_b: coverpoint b {
                 bins zero   = {0};
-                bins full   = {'1};
-                bins others = {[1 : $-1]};
+                bins full   = {MAX_VAL};
+                bins others = {[1 : MAX_VAL-1]}; 
             }
 
             cross_a_b:     cross cp_a, cp_b {
