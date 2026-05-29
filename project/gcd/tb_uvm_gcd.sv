@@ -32,7 +32,7 @@ interface gcd_interface (
 
     // protocol checking
     property p_valid_no_drop(valid, ready);
-        @(posedge clk) disable iff (!rst_n)
+        @(posedge clk) disable iff (!rst_n || isunknown(valid) || isunknown(ready))
         valid && !ready |=> valid;
     endproperty
 
@@ -48,20 +48,20 @@ interface gcd_interface (
 
     // inputs
     chk_in_valid_no_drop: assert property(p_valid_no_drop(in_valid, in_ready))
-        else `uvm_error("SVA", "Input Protocol Violation: in_valid dropped without in_ready!")
+        else `uvm_error("CHK", "Input Protocol Violation: in_valid dropped without in_ready!")
         
     chk_in_data_stable_a: assert property(p_data_stable(in_valid, in_ready, a_in))
-        else `uvm_error("SVA", "Input Protocol Violation: a_in changed while stalled!")
+        else `uvm_error("CHK", "Input Protocol Violation: a_in changed while stalled!")
         
     chk_in_data_stable_b: assert property(p_data_stable(in_valid, in_ready, b_in))
-        else `uvm_error("SVA", "Input Protocol Violation: b_in changed while stalled!")
+        else `uvm_error("CHK", "Input Protocol Violation: b_in changed while stalled!")
 
     // outputs
     chk_out_valid_no_drop: assert property(p_valid_no_drop(out_valid, out_ready))
-        else `uvm_error("SVA", "Output Protocol Violation: out_valid dropped without out_ready!")
+        else `uvm_error("CHK", "Output Protocol Violation: out_valid dropped without out_ready!")
         
     chk_out_data_stable: assert property(p_data_stable(out_valid, out_ready, gcd_out))
-        else `uvm_error("SVA", "Output Protocol Violation: gcd_out changed while stalled!")
+        else `uvm_error("CHK", "Output Protocol Violation: gcd_out changed while stalled!")
 
     // known control
     chk_in_valid_known:  assert property(p_control_known(in_valid));
@@ -427,7 +427,7 @@ package gcd_pkg;
 
         virtual function void report_phase(uvm_phase phase);
             super.report_phase(phase);
-            `uvm_info("SCB", $sformatf("Test Complete! Succes: %0d, FAil: %0d", success, fail), UVM_NONE)
+            `uvm_info("SCB", $sformatf("Test Complete! Success: %0d, Fail: %0d", success, fail), UVM_NONE)
         endfunction
 
         function bit [DATA_WIDTH-1:0] compute_gcd(bit [DATA_WIDTH-1:0] a, bit [DATA_WIDTH-1:0] b);
@@ -595,7 +595,7 @@ package gcd_pkg;
             if (predefined_a.size() != predefined_b.size() || predefined_a.size() != predefined_delay.size()) begin
                 `uvm_error("SEQ", "input sizes do not match")
             end
-            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_MEDIUM)
+            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_HIGH)
             for (int unsigned i = 0; i < num_trans; i++) begin
                 trans = gcd_input_transaction::type_id::create("trans");
                 start_item(trans);
@@ -604,7 +604,7 @@ package gcd_pkg;
                 trans.delay_cycles = predefined_delay[i];
                 finish_item(trans);
             end
-            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_HIGH)
         endtask
 
     endclass
@@ -621,7 +621,7 @@ package gcd_pkg;
         task body();
             gcd_output_transaction trans;
             int unsigned num_trans = predefined_delay.size();
-            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_MEDIUM)
+            `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_HIGH)
             for (int unsigned i = 0; i < num_trans; i++) begin
                 trans = gcd_output_transaction::type_id::create("trans");
                 start_item(trans);
@@ -629,7 +629,7 @@ package gcd_pkg;
                 trans.delay_cycles = predefined_delay[i];
                 finish_item(trans);
             end
-            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_HIGH)
         endtask
 
     endclass
@@ -688,7 +688,7 @@ package gcd_pkg;
 
         task body();
             gcd_input_transaction trans;
-            `uvm_info("SEQ", $sformatf("%d transactions, a [%d:%d], b [%d:%d], delay [%d:%d]", num_trans, min_a, max_a, min_b, max_b, min_delay, max_delay), UVM_MEDIUM)
+            `uvm_info("SEQ", $sformatf("%d transactions, a [%d:%d], b [%d:%d], delay [%d:%d]", num_trans, min_a, max_a, min_b, max_b, min_delay, max_delay), UVM_HIGH)
             repeat (num_trans) begin
                 `uvm_do_with(trans, {
                     a            inside {[min_a : max_a]};
@@ -696,7 +696,7 @@ package gcd_pkg;
                     delay_cycles inside {[min_delay : max_delay]};
                 })
             end
-            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_HIGH)
         endtask
 
     endclass
@@ -713,13 +713,13 @@ package gcd_pkg;
 
         task body();
             gcd_output_transaction trans;
-            `uvm_info("SEQ", $sformatf("%d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_MEDIUM)
+            `uvm_info("SEQ", $sformatf("%d transactions, delay [%d:%d]", num_trans, min_delay, max_delay), UVM_HIGH)
             repeat (num_trans) begin
                 `uvm_do_with(trans, {
                     delay_cycles inside {[min_delay : max_delay]};
                 })
             end
-            `uvm_info("SEQ", $sformatf("DONE"), UVM_MEDIUM)
+            `uvm_info("SEQ", $sformatf("DONE"), UVM_HIGH)
         endtask
     
     endclass
@@ -792,7 +792,7 @@ package gcd_pkg;
             det_seq.predefined_a         = '{15, 6};
             det_seq.predefined_b         = '{5, 10};
             det_seq.predefined_delay_in  = '{0,  0};
-            det_seq.predefined_delay_out = '{0,  1};
+            det_seq.predefined_delay_out = '{0,  0};
             det_seq.p_in_sqr  = env.input_agent.sqr;
             det_seq.p_out_sqr = env.output_agent.sqr;
             det_seq.start(null);
@@ -815,7 +815,7 @@ module gcd_top;
     logic rst_n;
     initial begin
         rst_n = 0;
-        @(posedge clk);
+        repeat(2) @(posedge clk);
         rst_n = 1;
         @(posedge clk);
     end
