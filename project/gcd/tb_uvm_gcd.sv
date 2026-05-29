@@ -567,11 +567,14 @@ package gcd_pkg;
 
         function void connect_phase(uvm_phase phase);
             super.connect_phase(phase);
+            
             input_agent.mnt.exit_port.connect(scb.entry_port_in);
+            input_agent.mnt.exit_port.connect(cov.entry_port_in);
+            
             output_agent.mnt.exit_port.connect(scb.entry_port_out);
+            output_agent.mnt.exit_port.connect(cov.entry_port_out);
+
             mnt_rst.exit_port.connect(scb.entry_port_rst);
-            scb.entry_port_in.connect(cov.entry_port_in);
-            scb.entry_port_out.connect(cov.entry_port_out);
         endfunction
 
     endclass
