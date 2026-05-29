@@ -196,7 +196,7 @@ package gcd_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            sqr = uvm_sequencer::type_id::create("sqr", this);
+            sqr = uvm_sequencer#(gcd_input_transaction)::type_id::create("sqr", this);
             drv = gcd_input_driver::type_id::create("drv", this);
             mnt = gcd_input_monitor::type_id::create("mnt", this);
         endfunction
@@ -328,7 +328,7 @@ package gcd_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            sqr = uvm_sequencer::type_id::create("sqr", this);
+            sqr = uvm_sequencer#(gcd_output_transaction)::type_id::create("sqr", this);
             drv = gcd_ouput_driver::type_id::create("drv", this);
             mnt = gcd_output_monitor::type_id::create("mnt", this);
         endfunction
