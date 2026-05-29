@@ -816,7 +816,7 @@ module gcd_top;
     end
 
     gcd_interface gcd_if(clk, rst_n);
-    initial uvm_config_db#(virtual gcd_interface)::set(gcd_if, "", "vif", gcd_if);
+    initial uvm_config_db#(virtual gcd_interface)::set(null, "", "vif", gcd_if);
 
     gcd #(
         .WIDTH(DATA_WIDTH)
