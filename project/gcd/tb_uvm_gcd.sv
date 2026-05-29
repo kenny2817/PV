@@ -820,6 +820,12 @@ module gcd_top;
     gcd_interface gcd_if(clk, rst_n);
     initial uvm_config_db#(virtual gcd_interface)::set(null, "*", "vif", gcd_if);
 
+    always @(posedge clk) begin
+        `uvm_info(
+            "TOP", $sformatf("[TIME] %d [IN_V] %b [IN_R] %b [A] %h [B] %h [OUT_V] %b [OUT_R] %b [GCD] %h",
+            $time, gcd_if.cb.in_valid, gcd_if.cb.in_ready, gcd_if.cb.a_in, gcd_if.cb.out_valid, gcd_if.cb.out_ready, gcd_if.cb.gcd_out), UVM_MEDIUM)
+    end
+    
     gcd #(
         .WIDTH(DATA_WIDTH)
     ) dut (
