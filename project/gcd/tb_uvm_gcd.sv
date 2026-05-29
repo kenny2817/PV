@@ -647,7 +647,7 @@ package gcd_pkg;
             in_seq  = gcd_det_in_seq::type_id::create("in_seq");
             out_seq = gcd_det_out_seq::type_id::create("out_seq");
 
-            uvm_config_db#(int unsigned)::set(this, "*scb*", "expected_trans", predefined_a.size()); 
+            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", predefined_a.size()); 
 
             in_seq.predefined_a     = predefined_a;
             in_seq.predefined_b     = predefined_b;
@@ -740,7 +740,7 @@ package gcd_pkg;
             in_seq  = gcd_rnd_in_seq::type_id::create("in_seq");
             out_seq = gcd_rnd_out_seq::type_id::create("out_seq");
             
-            uvm_config_db#(int unsigned)::set(this, "*scb*", "expected_trans", num_trans); 
+            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", num_trans); 
 
             in_seq.num_trans = num_trans;
             in_seq.min_a     = min_a;
