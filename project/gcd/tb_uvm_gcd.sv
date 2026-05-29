@@ -248,9 +248,6 @@ package gcd_pkg;
             repeat (trans.delay_cycles) @(posedge gcd_if.clk);
             gcd_if.cb.out_ready <= 1'b1;
             @(posedge gcd_if.clk);
-            while (!gcd_if.cb.out_valid) begin
-                @(posedge gcd_if.clk);
-            end
             gcd_if.cb.out_ready <= 1'b0;
         endtask
 
@@ -821,7 +818,7 @@ module gcd_top;
     end
 
     gcd_interface gcd_if(clk, rst_n);
-    initial uvm_config_db#(virtual gcd_interface)::set(null, "", "vif", gcd_if);
+    initial uvm_config_db#(virtual gcd_interface)::set(null, "*", "vif", gcd_if);
 
     gcd #(
         .WIDTH(DATA_WIDTH)
