@@ -32,12 +32,12 @@ interface gcd_interface (
 
     // protocol checking
     property p_valid_no_drop(valid, ready);
-        @(posedge clk) disable iff (!rst_n || isunknown(valid) || isunknown(ready))
+        @(posedge clk) disable iff (!rst_n || $isunknown(valid) || $isunknown(ready))
         valid && !ready |=> valid;
     endproperty
 
     property p_data_stable(valid, ready, data);
-        @(posedge clk) disable iff (!rst_n)
+        @(posedge clk) disable iff (!rst_n || $isunknown(valid) || $isunknown(ready) || $isunknown(data))
         valid && !ready |=> $stable(data);
     endproperty
 
