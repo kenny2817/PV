@@ -443,14 +443,12 @@ package gcd_pkg;
         endfunction
 
         function void write_in(gcd_input_transaction t);
-            entry_port_in.write(t);
             `uvm_info("SCB", $sformatf("[IN] A %d B %d", t.a, t.b), UVM_HIGH)
             expected_out = compute_gcd(t.a, t.b);
             running = 1;
         endfunction
 
         function void write_out(gcd_output_transaction t);
-            entry_port_out.write(t);
             if (t.gcd == expected_out) begin
                 success += 1;
                 `uvm_info("SCB", $sformatf("[OUT] CORRECT"), UVM_HIGH)
