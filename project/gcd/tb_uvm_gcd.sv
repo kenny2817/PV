@@ -501,7 +501,7 @@ package gcd_pkg;
             }
 
             cross_a_b:     cross cp_a, cp_b {
-                option.cross_auto_bin_max = 0;
+                type_option.cross_auto_bin_max = 0;
 
                 bins zero  = binsof(cp_a.zero ) && binsof(cp_b.zero );
                 bins full  = binsof(cp_a.full ) && binsof(cp_b.full );
@@ -584,11 +584,11 @@ package gcd_pkg;
         endfunction
 
         task body();
+            gcd_input_transaction trans;
+            int unsigned num_trans = predefined_a.size();
             if (predefined_a.size() != predefined_b.size() || predefined_a.size() != predefined_delay.size()) begin
                 `uvm_error("SEQ", "input sizes do not match")
             end
-            gcd_input_transaction trans;
-            int unsigned num_trans = predefined_a.size();
             `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_MEDIUM)
             for (int unsigned i = 0; i < num_trans; i++) begin
                 start_item(trans);
