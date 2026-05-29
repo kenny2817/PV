@@ -196,6 +196,7 @@ package gcd_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
+            sqr = uvm_sequencer::type_id::create("sqr", this);
             drv = gcd_input_driver::type_id::create("drv", this);
             mnt = gcd_input_monitor::type_id::create("mnt", this);
         endfunction
@@ -257,7 +258,7 @@ package gcd_pkg;
             gcd_output_transaction trans;
             forever begin
                 wait(!gcd_if.rst_n);
-                gcd_if.cb.out_valid <= 1'b0;
+                gcd_if.cb.out_ready <= 1'b0;
                 wait(gcd_if.rst_n);
                 fork
                     begin
@@ -291,7 +292,7 @@ package gcd_pkg;
 
         virtual function void build_phase(uvm_phase phase);
             super.build_phase(phase);
-            if (!uvm_config_db#(virtual gcd_interface)::get(this, "", "vif", gcd_if)); begin
+            if (!uvm_config_db#(virtual gcd_interface)::get(this, "", "vif", gcd_if)) begin
                 `uvm_fatal("MNT", "Interface not found")
             end
         endfunction
@@ -327,6 +328,7 @@ package gcd_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
+            sqr = uvm_sequencer::type_id::create("sqr", this);
             drv = gcd_ouput_driver::type_id::create("drv", this);
             mnt = gcd_output_monitor::type_id::create("mnt", this);
         endfunction
@@ -650,8 +652,6 @@ package gcd_pkg;
             in_seq  = gcd_det_in_seq::type_id::create("in_seq");
             out_seq = gcd_det_out_seq::type_id::create("out_seq");
 
-            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", predefined_a.size()); 
-
             in_seq.predefined_a     = predefined_a;
             in_seq.predefined_b     = predefined_b;
             in_seq.predefined_delay = predefined_delay_in;
@@ -743,8 +743,6 @@ package gcd_pkg;
             in_seq  = gcd_rnd_in_seq::type_id::create("in_seq");
             out_seq = gcd_rnd_out_seq::type_id::create("out_seq");
             
-            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", num_trans); 
-
             in_seq.num_trans = num_trans;
             in_seq.min_a     = min_a;
             in_seq.max_a     = max_a;
@@ -786,6 +784,7 @@ package gcd_pkg;
         task run_phase(uvm_phase phase);
             gcd_det_vseq det_seq;
             phase.raise_objection(this);
+            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", 2); 
             det_seq = gcd_det_vseq::type_id::create("det_seq");
             det_seq.predefined_a         = '{15, 6};
             det_seq.predefined_b         = '{5, 10};
