@@ -6,15 +6,12 @@ package gcd_const_pkg;
     localparam int unsigned DATA_WIDTH = 32;
 endpackage
 
+    import gcd_const_pkg::*;
 
 interface gcd_interface (
     input logic clk,
     input logic rst_n
 );
-
-    import gcd_const_pkg::*;
-    import uvm_pkg::*;
-
     // input interface
     logic                   in_valid;
     logic                   in_ready;
@@ -429,11 +426,11 @@ package gcd_pkg;
             `uvm_info("SCB", $sformatf("Test Complete! Succes: %0d, FAil: %0d", success, fail), UVM_NONE)
         endfunction
 
-        function bit [WIDTH-1:0] compute_gcd(bit [WIDTH-1:0] a, bit [WIDTH-1:0] b);
+        function bit [DATA_WIDTH-1:0] compute_gcd(bit [DATA_WIDTH-1:0] a, bit [DATA_WIDTH-1:0] b);
             if (a == 0 || b == 0) return (a == 0) ? b : a; 
 
             while (b != 0) begin
-                bit [WIDTH-1:0] temp = b;
+                bit [DATA_WIDTH-1:0] temp = b;
                 b = a % b;
                 a = temp;
             end
@@ -820,7 +817,7 @@ module gcd_top;
     initial uvm_config_db#(gcd_interface)::set(gcd_if, "", "vif", gcd_if);
 
     gcd #(
-        .WIDTH(DATA_WIDTH)
+        .DATA_WIDTH(DATA_WIDTH)
     ) dut (
         .clk        (clk),
         .rst_n      (rst_n),
