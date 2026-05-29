@@ -6,12 +6,14 @@ package gcd_const_pkg;
     localparam int unsigned DATA_WIDTH = 32;
 endpackage
 
-import gcd_const_pkg::*;
 
 interface gcd_interface (
     input logic clk,
     input logic rst_n
 );
+
+    import gcd_const_pkg::*;
+    import uvm_pkg::*;
 
     // input interface
     logic                   in_valid;
@@ -151,7 +153,7 @@ package gcd_pkg;
         `uvm_component_utils(gcd_input_monitor)
 
         virtual gcd_interface gcd_if;
-        uvm_analysis_port #(gcd_input_transaction) exit_port
+        uvm_analysis_port #(gcd_input_transaction) exit_port;
 
         function new(string name="gcd_input_monitor", uvm_component parent=null);
             super.new(name, parent);
@@ -185,7 +187,7 @@ package gcd_pkg;
     endclass
 
     class gcd_input_agent extends uvm_agent;
-        `uvm_component_utils(gcd_agent)
+        `uvm_component_utils(gcd_input_agent)
 
         gcd_input_driver  drv;
         gcd_input_monitor mnt;
@@ -282,7 +284,7 @@ package gcd_pkg;
         `uvm_component_utils(gcd_output_monitor)
 
         virtual gcd_interface gcd_if;
-        uvm_analysis_port #(gcd_output_transaction) exit_port
+        uvm_analysis_port #(gcd_output_transaction) exit_port;
 
         function new(string name="gcd_output_monitor", uvm_component parent=null);
             super.new(name, parent);
@@ -351,7 +353,7 @@ package gcd_pkg;
         `uvm_component_utils(gcd_rst_monitor)
 
         virtual gcd_interface gcd_if;
-        uvm_analysis_port #(gcd_rst_transaction) exit_port
+        uvm_analysis_port #(gcd_rst_transaction) exit_port;
 
         function new(string name="gcd_rst_monitor", uvm_component parent=null);
             super.new(name, parent);
@@ -473,14 +475,6 @@ package gcd_pkg;
         uvm_analysis_imp_in  #(gcd_input_transaction,  gcd_cov_controller) entry_port_in;
         uvm_analysis_imp_out #(gcd_output_transaction, gcd_cov_controller) entry_port_out;
 
-        function new(string name="gcd_cov_controller", uvm_component parent=null);
-            super.new(name, parent);
-            entry_port_in  = new("entry_port_in",  this);
-            entry_port_out = new("entry_port_out", this);
-            cov_in  = new();
-            cov_out = new();
-        endfunction
-
         covergroup cov_in with function sample(
             bit [DATA_WIDTH -1 : 0] a, 
             bit [DATA_WIDTH -1 : 0] b
@@ -532,6 +526,14 @@ package gcd_pkg;
 
         virtual function void write_out(gcd_output_transaction t);
             cov_out.sample(t.gcd);
+        endfunction
+
+        function new(string name="gcd_cov_controller", uvm_component parent=null);
+            super.new(name, parent);
+            entry_port_in  = new("entry_port_in",  this);
+            entry_port_out = new("entry_port_out", this);
+            cov_in  = new();
+            cov_out = new();
         endfunction
 
     endclass
@@ -831,7 +833,7 @@ module gcd_top;
         .gcd_out    (gcd_if.gcd_out)
     );
 
-    initial run_test();    
+    initial run_test("gcd_bringup_test");
 
     initial begin
         $dumpfile("waves.vcd"); 
