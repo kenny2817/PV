@@ -333,7 +333,7 @@ package gcd_pkg;
     
         function void connect_phase(uvm_phase phase);
             super.connect_phase(phase);
-            drv.seq_item_export.connect(mnt.exit_port);
+            drv.seq_item_port.connect(sqr.seq_item_export);
         endfunction
 
     endclass
@@ -721,7 +721,7 @@ package gcd_pkg;
     class gcd_rnd_vseq extends uvm_sequence;
         `uvm_object_utils(gcd_rnd_vseq)
 
-        int unsigned num_trans;
+        int unsigned num_trans = 0;
         int unsigned min_a, max_a;
         int unsigned min_b, max_b;
         int unsigned min_delay_in, max_delay_in;
