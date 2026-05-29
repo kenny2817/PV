@@ -110,14 +110,13 @@ package gcd_pkg;
         endfunction
 
         task apply(gcd_input_transaction trans);
-            repeat (trans.delay_cycles) @(posedge gcd_if.clk);
+            repeat (trans.delay_cycles) @(posedge gcd_if.cb);
             gcd_if.cb.in_valid  <= 1'b1;
             gcd_if.cb.a_in      <= trans.a;
             gcd_if.cb.b_in      <= trans.b;
-            @(posedge gcd_if.clk);
-            while (gcd_if.in_ready !== 1'b1) begin
-                @(posedge gcd_if.clk);
-            end
+            do begin
+                @(posedge gcd_if.cb);
+            end while (gcd_if.cb.in_ready !== 1'b1);
             gcd_if.cb.in_valid  <= 1'b0;
         endtask
 
@@ -169,7 +168,7 @@ package gcd_pkg;
         task run_phase(uvm_phase phase);
             gcd_input_transaction trans;
             forever begin
-                @(posedge gcd_if.clk);
+                @(posedge gcd_if.cb);
                 if (gcd_if.cb.in_ready && gcd_if.cb.in_valid) begin
                     if ($isunknown(gcd_if.cb.a_in) || $isunknown(gcd_if.cb.b_in)) begin
                         `uvm_error("MNT", "(X/Z) value detected")
@@ -245,11 +244,11 @@ package gcd_pkg;
 
         task apply(gcd_output_transaction trans);
             while (gcd_if.cb.out_valid !== 1'b1) begin
-                @(posedge gcd_if.clk);
+                @(posedge gcd_if.cb);
             end
-            repeat (trans.delay_cycles) @(posedge gcd_if.clk);
+            repeat (trans.delay_cycles) @(posedge gcd_if.cb);
             gcd_if.cb.out_ready <= 1'b1;
-            @(posedge gcd_if.clk);
+            @(posedge gcd_if.cb);
             gcd_if.cb.out_ready <= 1'b0;
         endtask
 
@@ -299,7 +298,7 @@ package gcd_pkg;
         task run_phase(uvm_phase phase);
             gcd_output_transaction trans;
             forever begin
-                @(posedge gcd_if.clk);
+                @(posedge gcd_if.cb);
                 if (gcd_if.cb.out_ready && gcd_if.cb.out_valid) begin
                     if ($isunknown(gcd_if.cb.gcd_out)) begin
                         `uvm_error("MNT", "(X/Z) value detected")
