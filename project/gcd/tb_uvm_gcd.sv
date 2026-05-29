@@ -501,7 +501,7 @@ package gcd_pkg;
             }
 
             cross_a_b:     cross cp_a, cp_b {
-                type_option.cross_auto_bin_max = 0;
+                option.cross_auto_bin_max = 0;
 
                 bins zero  = binsof(cp_a.zero ) && binsof(cp_b.zero );
                 bins full  = binsof(cp_a.full ) && binsof(cp_b.full );
@@ -565,8 +565,8 @@ package gcd_pkg;
             input_agent.mnt.exit_port.connect(scb.entry_port_in);
             output_agent.mnt.exit_port.connect(scb.entry_port_out);
             mnt_rst.exit_port.connect(scb.entry_port_rst);
-            scb.entry_port_in.connect(cov.analysis_export_in);
-            scb.entry_port_out.connect(cov.analysis_export_out);
+            scb.entry_port_in.connect(cov.entry_port_in);
+            scb.entry_port_out.connect(cov.entry_port_out);
         endfunction
 
     endclass
