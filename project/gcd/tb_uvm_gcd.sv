@@ -599,6 +599,7 @@ package gcd_pkg;
             end
             `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_MEDIUM)
             for (int unsigned i = 0; i < num_trans; i++) begin
+                trans = gcd_input_transaction::type_id::create("trans");
                 start_item(trans);
                 trans.a            = predefined_a[i];
                 trans.b            = predefined_b[i];
@@ -624,6 +625,7 @@ package gcd_pkg;
             int unsigned num_trans = predefined_delay.size();
             `uvm_info("SEQ", $sformatf("%0d transactions", num_trans), UVM_MEDIUM)
             for (int unsigned i = 0; i < num_trans; i++) begin
+                trans = gcd_output_transaction::type_id::create("trans");
                 start_item(trans);
                 trans.gcd          = 0;
                 trans.delay_cycles = predefined_delay[i];
