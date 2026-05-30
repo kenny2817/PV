@@ -133,6 +133,7 @@ package gcd_pkg;
                     begin
                         forever begin
                             seq_item_port.get_next_item(trans);
+                            `uvm_info("DRV", trans.convert2string(), UVM_MEDIUM)
                             this.apply(trans);
                             seq_item_port.item_done();
                         end
@@ -264,6 +265,7 @@ package gcd_pkg;
                     begin
                         forever begin
                             seq_item_port.get_next_item(trans);
+                            `uvm_info("DRV", trans.convert2string(), UVM_MEDIUM)
                             this.apply(trans);
                             seq_item_port.item_done();
                         end
@@ -444,11 +446,13 @@ package gcd_pkg;
 
         function void write_in(gcd_input_transaction t);
             `uvm_info("SCB", $sformatf("[IN] A %d B %d", t.a, t.b), UVM_HIGH)
+            `uvm_info("SCB", $sformatf("[IN] %s - %d", t.convert2string(), success), UVM_MEDIUM)
             expected_out = compute_gcd(t.a, t.b);
             running = 1;
         endfunction
 
         function void write_out(gcd_output_transaction t);
+            `uvm_info("SCB", $sformatf("[OUT] %s - %d", t.convert2string(), success), UVM_MEDIUM)
             if (t.gcd == expected_out) begin
                 success += 1;
                 `uvm_info("SCB", $sformatf("[OUT] CORRECT"), UVM_HIGH)
@@ -823,8 +827,8 @@ package gcd_pkg;
             det_seq = gcd_det_vseq::type_id::create("det_seq");
             det_seq.p_in_sqr  = env.input_agent.sqr;
             det_seq.p_out_sqr = env.output_agent.sqr;
-            det_seq.predefined_a         = '{0, 1, 0, 5, 8, 5, 6,  7, 1, 1, 1, 1, 1, 1, 1, 1};
-            det_seq.predefined_b         = '{0, 0, 1, 6, 3, 5, 2, 28, 1, 1, 1, 1, 1, 1, 1, 1};
+            det_seq.predefined_a         = '{0, 1, 0, 5, 8, 5, 6,  7, 1, 1, 1, 1, 2, 2, 2, 2};
+            det_seq.predefined_b         = '{0, 0, 1, 6, 3, 5, 2, 28, 1, 1, 1, 1, 2, 2, 2, 2};
             det_seq.predefined_delay_in  = '{0, 0, 0, 0, 0, 0, 0,  0, 1, 1, 1, 1, 4, 4, 4, 4};
             det_seq.predefined_delay_out = '{0, 0, 0, 0, 0, 0, 0,  0, 4, 4, 4, 4, 1, 1, 1, 1};
             det_seq.start(null);
@@ -897,6 +901,11 @@ module gcd_top;
             "[TIME] %0d [A] %h [B] %h [in_v] %b [in_r] %b [out_v] %b [out_r] %b [GCD] %h", 
             $time(), gcd_if.cb.a_in, gcd_if.cb.b_in, gcd_if.cb.in_valid, gcd_if.cb.in_ready,
             gcd_if.cb.out_valid, gcd_if.cb.out_ready, gcd_if.cb.gcd_out), UVM_HIGH)
+    end
+
+    initial begin
+        repeat(100) @(posedge clk);
+        $finish();
     end
 
     gcd #(
