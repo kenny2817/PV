@@ -308,6 +308,10 @@ package gcd_pkg;
             gcd_output_transaction trans;
             forever begin
                 @(posedge gcd_if.cb);
+                `uvm_info("TOP", $sformatf(
+                    "[TIME] %0d [A] %h [B] %h [in_v] %b [in_r] %b [out_v] %b [out_r] %b [GCD] %h", 
+                    $time(), gcd_if.cb.a_in, gcd_if.cb.b_in, gcd_if.cb.in_valid, gcd_if.cb.in_ready,
+                    gcd_if.cb.out_valid, gcd_if.cb.out_ready, gcd_if.cb.gcd_out), UVM_HIGH)
                 if (gcd_if.cb.out_ready && gcd_if.cb.out_valid) begin
                     if ($isunknown(gcd_if.cb.gcd_out)) begin
                         `uvm_error("MNT", "(X/Z) value detected")
@@ -898,18 +902,6 @@ module gcd_top;
 
     gcd_interface gcd_if(clk, rst_n);
     initial uvm_config_db#(virtual gcd_interface)::set(null, "*", "vif", gcd_if);
-
-    always @(posedge clk) begin
-        `uvm_info("TOP", $sformatf(
-            "[TIME] %0d [A] %h [B] %h [in_v] %b [in_r] %b [out_v] %b [out_r] %b [GCD] %h", 
-            $time(), gcd_if.cb.a_in, gcd_if.cb.b_in, gcd_if.cb.in_valid, gcd_if.cb.in_ready,
-            gcd_if.cb.out_valid, gcd_if.cb.out_ready, gcd_if.cb.gcd_out), UVM_HIGH)
-    end
-
-    initial begin
-        repeat(100) @(posedge clk);
-        $finish();
-    end
 
     gcd #(
         .WIDTH(DATA_WIDTH)

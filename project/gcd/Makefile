@@ -1,6 +1,7 @@
 TEST      ?= gcd_bringup_test
 VERBOSITY ?= UVM_MEDIUM
 SEED      ?= 0
+TIMEOUT   ?= 10000ns
 
 .PHONY: all comp sim clean
 
@@ -18,6 +19,7 @@ sim:
 		-sv_seed $(SEED) \
 		+UVM_TESTNAME=$(TEST) \
 		+UVM_VERBOSITY=$(VERBOSITY) \
+		+UVM_TIMEOUT=$(TIMEOUT) \
 		work.gcd_top
 
 formal:
