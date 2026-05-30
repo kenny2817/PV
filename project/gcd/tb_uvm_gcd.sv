@@ -136,7 +136,7 @@ package gcd_pkg;
                     begin
                         forever begin
                             seq_item_port.get_next_item(trans);
-                            `uvm_info("DRV", trans.convert2string(), UVM_MEDIUM)
+                            `uvm_info("DRV", trans.convert2string(), UVM_HIGH)
                             this.apply(trans);
                             seq_item_port.item_done();
                         end
@@ -270,7 +270,7 @@ package gcd_pkg;
                     begin
                         forever begin
                             seq_item_port.get_next_item(trans);
-                            `uvm_info("DRV", trans.convert2string(), UVM_MEDIUM)
+                            `uvm_info("DRV", trans.convert2string(), UVM_HIGH)
                             this.apply(trans);
                             seq_item_port.item_done();
                         end
@@ -451,13 +451,11 @@ package gcd_pkg;
 
         function void write_in(gcd_input_transaction t);
             `uvm_info("SCB", $sformatf("[IN] A %d B %d", t.a, t.b), UVM_HIGH)
-            `uvm_info("SCB", $sformatf("[IN] %s - %d", t.convert2string(), success), UVM_MEDIUM)
             expected_out = compute_gcd(t.a, t.b);
             running = 1;
         endfunction
 
         function void write_out(gcd_output_transaction t);
-            `uvm_info("SCB", $sformatf("[OUT] %s - %d", t.convert2string(), success), UVM_MEDIUM)
             if (t.gcd == expected_out) begin
                 success += 1;
                 `uvm_info("SCB", $sformatf("[OUT] CORRECT"), UVM_HIGH)
