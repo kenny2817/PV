@@ -110,6 +110,9 @@ package gcd_pkg;
         endfunction
 
         task apply(gcd_input_transaction trans);
+            while (gcd_if.cb.in_ready !== 1'b1) begin
+                @(posedge gcd_if.cb);
+            end
             repeat (trans.delay_cycles) @(posedge gcd_if.cb);
             gcd_if.cb.in_valid  <= 1'b1;
             gcd_if.cb.a_in      <= trans.a;
@@ -250,7 +253,9 @@ package gcd_pkg;
             end
             repeat (trans.delay_cycles) @(posedge gcd_if.cb);
             gcd_if.cb.out_ready <= 1'b1;
-            @(posedge gcd_if.cb);
+            do begin
+                @(posedge gcd_if.cb);
+            end while (gcd_if.cb.out_valid !== 1'b1);
             gcd_if.cb.out_ready <= 1'b0;
         endtask
 
