@@ -3,9 +3,9 @@ VERBOSITY ?= UVM_MEDIUM
 SEED      ?= 0
 TIMEOUT   ?= 10000ns
 
-.PHONY: all comp sim clean
+.PHONY: all comp sim cov formal clean
 
-all: comp sim cov formal
+all: comp sim cov
 
 comp:
 	vlib work
@@ -15,7 +15,7 @@ comp:
 		tb_uvm_gcd.sv
 
 sim:
-	vsim -voptargs="+acc" -coverage -c -do "coverage save -onexit cov_db.ucb; run -all; exit" \
+	vsim -voptargs="+acc" -coverage -c -do "coverage save -onexit cov_db.ucdb; run -all; exit" \
 		-sv_seed $(SEED) \
 		+UVM_TESTNAME=$(TEST) \
 		+UVM_VERBOSITY=$(VERBOSITY) \
@@ -23,8 +23,8 @@ sim:
 		work.gcd_top
 
 cov:
-	vcover report -details -file coverage_report.txt cov_db.ucdb
-	vcover report -details -html -htmldir cov_html cov_db.ucdb
+	vcover report -details -output coverage_report.txt cov_db.ucdb
+	vcover report -details -html -output cov_html cov_db.ucdb
 
 formal:
 	ebmc gcd.sv -D FORMAL --top gcd --bound 20 --systemverilog --trace --waveform --vcd waves.vcd > formal.log
