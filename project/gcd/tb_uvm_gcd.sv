@@ -851,10 +851,10 @@ package gcd_pkg;
             det_seq = gcd_det_vseq::type_id::create("det_seq");
             det_seq.p_in_sqr  = env.input_agent.sqr;
             det_seq.p_out_sqr = env.output_agent.sqr;
-            det_seq.predefined_a         = '{0, 1, 0, 5, 8, 5, 6,  7, 1, 1, 1, 1, 2, 2, 2, 2};
-            det_seq.predefined_b         = '{0, 0, 1, 6, 3, 5, 2, 28, 1, 1, 1, 1, 2, 2, 2, 2};
-            det_seq.predefined_delay_in  = '{0, 0, 0, 0, 0, 0, 0,  0, 1, 1, 1, 1, 4, 4, 4, 4};
-            det_seq.predefined_delay_out = '{0, 0, 0, 0, 0, 0, 0,  0, 4, 4, 4, 4, 1, 1, 1, 1};
+            det_seq.predefined_a         = '{0, 1, 0, 5, 8, '1, 5, 6,  7, 1, 1, 1, 1, 2, 2, 2, 2};
+            det_seq.predefined_b         = '{0, 0, 1, 6, 3, '1, 5, 2, 28, 1, 1, 1, 1, 2, 2, 2, 2};
+            det_seq.predefined_delay_in  = '{0, 0, 0, 0, 0,  0, 0, 0,  0, 1, 1, 1, 1, 4, 4, 4, 4};
+            det_seq.predefined_delay_out = '{0, 0, 0, 0, 0,  0, 0, 0,  0, 4, 4, 4, 4, 1, 1, 1, 1};
             det_seq.start(null);
             phase.drop_objection(this);
         endtask
