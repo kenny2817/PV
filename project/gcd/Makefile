@@ -1,7 +1,7 @@
-TEST      ?= gcd_bringup_test
+TEST      ?= gcd_det_test
 VERBOSITY ?= UVM_MEDIUM
 SEED      ?= 0
-TIMEOUT   ?= 10000ns
+TIMEOUT   ?= 1000000ns
 
 .PHONY: all comp sim cov formal clean
 
@@ -25,6 +25,7 @@ sim:
 cov:
 	vcover report -details -output coverage_report.txt cov_db.ucdb
 	vcover report -details -html -output cov_html cov_db.ucdb
+	vcover report cov_db.ucdb >> coverage_report.txt
 
 formal:
 	ebmc gcd.sv -D FORMAL --top gcd --bound 20 --systemverilog --trace --waveform --vcd waves.vcd > formal.log

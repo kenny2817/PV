@@ -54,35 +54,30 @@ interface gcd_interface (
     // inputs
     chk_in_valid_no_drop: assert property(p_valid_no_drop(in_valid, in_ready))
         else `uvm_error("CHK", "Input Protocol Violation: in_valid dropped without in_ready!")
-    cov_in_valid_no_drop: cover property(p_valid_no_drop(in_valid, in_ready));
         
     chk_in_data_stable_a: assert property(p_data_stable(in_valid, in_ready, a_in))
         else `uvm_error("CHK", "Input Protocol Violation: a_in changed while stalled!")
-    cov_in_data_stable_a: cover property(p_data_stable(in_valid, in_ready, a_in));
         
     chk_in_data_stable_b: assert property(p_data_stable(in_valid, in_ready, b_in))
         else `uvm_error("CHK", "Input Protocol Violation: b_in changed while stalled!")
-    cov_in_data_stable_b: cover property(p_data_stable(in_valid, in_ready, b_in));
-
-    cov_in_handshake: cover property(p_handshake(in_valid, in_ready));
 
     // outputs
     chk_out_valid_no_drop: assert property(p_valid_no_drop(out_valid, out_ready))
         else `uvm_error("CHK", "Output Protocol Violation: out_valid dropped without out_ready!")
-    cov_out_valid_no_drop: cover property(p_valid_no_drop(out_valid, out_ready));
         
     chk_out_data_stable: assert property(p_data_stable(out_valid, out_ready, gcd_out))
         else `uvm_error("CHK", "Output Protocol Violation: gcd_out changed while stalled!")
-    cov_out_data_stable: cover property(p_data_stable(out_valid, out_ready, gcd_out));
-
-    cov_out_handshake: cover property(p_handshake(out_valid, out_ready));
     
     // known control
-    chk_in_valid_known:  assert property(p_control_known(in_valid));
-    chk_in_ready_known:  assert property(p_control_known(in_ready));
+    chk_in_valid_known:  assert property(p_control_known( in_valid));
+    chk_in_ready_known:  assert property(p_control_known( in_ready));
     chk_out_valid_known: assert property(p_control_known(out_valid));
     chk_out_ready_known: assert property(p_control_known(out_ready));
 
+    // coverage
+    cov_in_handshake:  cover property(p_handshake(in_valid,   in_ready));
+    cov_out_handshake: cover property(p_handshake(out_valid, out_ready));
+    
 endinterface
 
 package gcd_pkg;
@@ -540,7 +535,7 @@ package gcd_pkg;
         endfunction
 
         virtual function void write(gcd_input_transaction t);
-            `uvm_info("COV", t.convert2string(), UVM_MEDIUM)
+            `uvm_info("COV", t.convert2string(), UVM_HIGH)
             cov_in.sample(t.a, t.b);
         endfunction
 
@@ -565,7 +560,7 @@ package gcd_pkg;
         endfunction
 
         virtual function void write(gcd_output_transaction t);
-            `uvm_info("COV", t.convert2string(), UVM_MEDIUM)
+            `uvm_info("COV", t.convert2string(), UVM_HIGH)
             cov_out.sample(t.gcd);
         endfunction
 
