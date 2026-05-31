@@ -492,14 +492,11 @@ package gcd_pkg;
 
     endclass
 
-    // coverage controller
-    class gcd_cov_controller extends uvm_component;
-        `uvm_component_utils(gcd_cov_controller)
+    // coverage controllers
+    class gcd_cov_in extends uvm_subscriber #(gcd_input_transaction);
+        `uvm_component_utils(gcd_cov_in)
 
         localparam bit [DATA_WIDTH-1:0] MAX_VAL = '1;
-
-        uvm_analysis_imp_in  #(gcd_input_transaction,  gcd_cov_controller) entry_port_in;
-        uvm_analysis_imp_out #(gcd_output_transaction, gcd_cov_controller) entry_port_out;
 
         covergroup cov_in with function sample(
             bit [DATA_WIDTH -1 : 0] a, 
@@ -537,11 +534,21 @@ package gcd_pkg;
             }
         endgroup
 
-        virtual function void write_in(gcd_input_transaction t);
+        function new(string name="gcd_cov_in", uvm_component parent=null);
+            super.new(name, parent);
+            cov_in = new();
+        endfunction
+
+        virtual function void write(gcd_input_transaction t);
             `uvm_info("COV", t.convert2string(), UVM_MEDIUM)
             cov_in.sample(t.a, t.b);
         endfunction
-        
+
+    endclass
+
+    class gcd_cov_out extends uvm_subscriber #(gcd_output_transaction);
+        `uvm_component_utils(gcd_cov_out)
+
         covergroup cov_out with function sample(
             bit [DATA_WIDTH -1 : 0] gcd
         );
@@ -552,17 +559,14 @@ package gcd_pkg;
             }
         endgroup
 
-        virtual function void write_out(gcd_output_transaction t);
-            `uvm_info("COV", t.convert2string(), UVM_MEDIUM)
-            cov_out.sample(t.gcd);
+        function new(string name="gcd_cov_out", uvm_component parent=null);
+            super.new(name, parent);
+            cov_out = new();
         endfunction
 
-        function new(string name="gcd_cov_controller", uvm_component parent=null);
-            super.new(name, parent);
-            entry_port_in  = new("entry_port_in",  this);
-            entry_port_out = new("entry_port_out", this);
-            cov_in  = new();
-            cov_out = new();
+        virtual function void write(gcd_output_transaction t);
+            `uvm_info("COV", t.convert2string(), UVM_MEDIUM)
+            cov_out.sample(t.gcd);
         endfunction
 
     endclass
@@ -575,7 +579,8 @@ package gcd_pkg;
         gcd_output_agent output_agent;
         gcd_rst_monitor  mnt_rst;
         gcd_scoreboard   scb;
-        gcd_cov_controller cov;
+        gcd_cov_in      cov_in;
+        gcd_cov_out     cov_out;
 
         function new(string name = "gcd_env", uvm_component parent);
             super.new(name, parent);
@@ -587,17 +592,18 @@ package gcd_pkg;
             output_agent = gcd_output_agent::type_id::create("output_agent", this);
             mnt_rst = gcd_rst_monitor::type_id::create("mnt_rst", this);
             scb = gcd_scoreboard::type_id::create("scb", this);
-            cov = gcd_cov_controller::type_id::create("cov", this);
+            cov_in = gcd_cov_in::type_id::create("cov_in", this);
+            cov_out = gcd_cov_out::type_id::create("cov_out", this);
         endfunction
 
         function void connect_phase(uvm_phase phase);
             super.connect_phase(phase);
             
             input_agent.mnt.exit_port.connect(scb.entry_port_in);
-            input_agent.mnt.exit_port.connect(cov.entry_port_in);
+            input_agent.mnt.exit_port.connect(cov_in.analysis_export);
             
             output_agent.mnt.exit_port.connect(scb.entry_port_out);
-            output_agent.mnt.exit_port.connect(cov.entry_port_out);
+            output_agent.mnt.exit_port.connect(cov_out.analysis_export);
 
             mnt_rst.exit_port.connect(scb.entry_port_rst);
         endfunction
