@@ -3,6 +3,8 @@ VERBOSITY ?= UVM_MEDIUM
 SEED      ?= 0
 TIMEOUT   ?= 1000000ns
 
+FLAGS = -work work -sv -timescale "1ns/1ps" +incdir+.
+
 .PHONY: all comp sim cov formal clean
 
 all: comp sim cov
@@ -10,9 +12,8 @@ all: comp sim cov
 comp:
 	vlib work
 	vmap work work
-	vlog -work work -sv -timescale "1ns/1ps" +incdir+. +cover \
-		gcd.sv \
-		tb_uvm_gcd.sv
+	vlog $(FLAGS) +cover gcd.sv
+	vlog $(FLAGS) tb_uvm_gcd.sv
 
 sim:
 	vsim -voptargs="+acc" -coverage -c -do "coverage save -onexit cov_db.ucdb; run -all; exit" \

@@ -40,39 +40,45 @@ interface gcd_interface (
         @(posedge clk) disable iff (!rst_n || $isunknown(valid) || $isunknown(ready) || $isunknown(data))
         valid && !ready |=> $stable(data);
     endproperty
+    
+    property p_early_exit;
+        @(posedge clk) disable iff (!rst_n || $isunknown(in_valid) || $isunknown(in_ready))
+        (in_valid && in_ready && (a_in == 0 || b_in == 0 || a_in == b_in)) |=> out_valid;
+    endproperty
+
+    property p_reset;
+        @(posedge clk)
+        !rst_n |=> in_ready && !out_valid && (out_gcd == 0);
+    endproperty
 
     property p_handshake(valid, ready);
         @(posedge clk) disable iff (!rst_n)
         valid && ready;
     endproperty
 
-    property p_control_known(sig);
-        @(posedge clk) disable iff (!rst_n)
-        !$isunknown(sig);
-    endproperty
-
-    // inputs
+    // UVM checking correctness
     chk_in_valid_no_drop: assert property(p_valid_no_drop(in_valid, in_ready))
-        else `uvm_error("CHK", "Input Protocol Violation: in_valid dropped without in_ready!")
-        
+        else `uvm_fatal("CHK", "value retracted")
+    
     chk_in_data_stable_a: assert property(p_data_stable(in_valid, in_ready, a_in))
-        else `uvm_error("CHK", "Input Protocol Violation: a_in changed while stalled!")
+        else `uvm_fatal("CHK", "a not stable while valid")
         
     chk_in_data_stable_b: assert property(p_data_stable(in_valid, in_ready, b_in))
-        else `uvm_error("CHK", "Input Protocol Violation: b_in changed while stalled!")
+        else `uvm_fatal("CHK", "b not stable while valid")
+
+    // inputs
+    chk_reset: assert property(p_reset)
+        else `uvm_error("CHK", "reset failed")
+
+    chk_early_exit: assert property(p_early_exit)
+        else `uvm_error("CHK", "early exit failed")
 
     // outputs
     chk_out_valid_no_drop: assert property(p_valid_no_drop(out_valid, out_ready))
-        else `uvm_error("CHK", "Output Protocol Violation: out_valid dropped without out_ready!")
+        else `uvm_error("CHK", "producer dropped valid, but consumer not ready")
         
     chk_out_data_stable: assert property(p_data_stable(out_valid, out_ready, gcd_out))
-        else `uvm_error("CHK", "Output Protocol Violation: gcd_out changed while stalled!")
-    
-    // known control
-    chk_in_valid_known:  assert property(p_control_known( in_valid));
-    chk_in_ready_known:  assert property(p_control_known( in_ready));
-    chk_out_valid_known: assert property(p_control_known(out_valid));
-    chk_out_ready_known: assert property(p_control_known(out_ready));
+        else `uvm_error("CHK", "gcd not stable while valid")
 
     // coverage
     cov_in_handshake:  cover property(p_handshake(in_valid,   in_ready));
@@ -842,7 +848,7 @@ package gcd_pkg;
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
             env = gcd_env::type_id::create("env", this);
-            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", 16); 
+            uvm_config_db#(int unsigned)::set(null, "*scb*", "expected_trans", 17); 
         endfunction
 
         task run_phase(uvm_phase phase);

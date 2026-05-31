@@ -158,6 +158,7 @@ module gcd #(
             (state == IDLE) && 
             (a_reg == '0) && 
             (b_reg == '0) && 
+            (result_reg == '0) &&
             (result_reg == '0)
     );
 
