@@ -23,6 +23,7 @@ The idea is to test both normal execution and edge cases for each group.
 To test these features we will use the following tools:
 \begin{itemize}
     \item \textbf{[F] FORMAL}: here we will verify the logic from inside the dut.
+    We will use a bounded verification tool.
     The analysis will touch the expected control output and the FSM states, hold, and transitions.
     \item \textbf{[U] UVM}: here we will verify the logic as a black box through stimulus.
     Using a golden model we will verify the correctness of the data.
@@ -39,16 +40,16 @@ It is divided in the previously presented features and sub-features accompanied 
     \begin{tabularx}{\textwidth}{|c|c|l|X|c|}
         \toprule
         \textbf{Req ID} & \textbf{Feature}  & \textbf{Sub-Feature}  & \textbf{Description}                                                                      & \textbf{Tool} \\ \midrule
-        REQ\_000        & C                 & Reset                 & Correct init and graceful recover from reset mid-transaction                              & F/U           \\ \midrule
-        REQ\_001        & C                 & Input accept          & Producer \texttt{in\_valid} is high and DUT \texttt{in\_ready} is high accepts input      & F/U           \\ \midrule
-        REQ\_002        & C                 & Input stall           & DUT \texttt{in\_ready} is low and producer \texttt{in\_valid} is high                     & H/F           \\ \midrule
-        REQ\_003        & C                 & Output accept         & Consumer \texttt{out\_ready} is high and DUT \texttt{out\_valid} is high accepts output   & H/F           \\ \midrule
-        REQ\_004        & C                 & Output stall          & Consumer \texttt{out\_ready} is low and DUT \texttt{out\_valid} is high                   & H/F           \\ \midrule
-        REQ\_005        & C                 & Output stability      & \texttt{gcd\_out} is stable while \texttt{out\_valid} is high                             & H/F           \\ \bottomrule \toprule
+        REQ\_000        & C                 & Reset                 & Correct init and graceful recover from reset mid-transaction                              & F/H/U         \\ \midrule
+        REQ\_001        & C                 & Input accept          & Producer \texttt{in\_valid} is high and DUT \texttt{in\_ready} is high accepts input      & F             \\ \midrule
+        REQ\_002        & C                 & Input stall           & DUT \texttt{in\_ready} is low and producer \texttt{in\_valid} is high                     & F             \\ \midrule
+        REQ\_003        & C                 & Output accept         & Consumer \texttt{out\_ready} is high and DUT \texttt{out\_valid} is high accepts output   & F             \\ \midrule
+        REQ\_004        & C                 & Output stall          & Consumer \texttt{out\_ready} is low and DUT \texttt{out\_valid} is high                   & F/H           \\ \midrule
+        REQ\_005        & C                 & Output stability      & \texttt{gcd\_out} is stable while \texttt{out\_valid} is high                             & F/H           \\ \bottomrule \toprule
         REQ\_006        & D                 & All operands          & Correct \texttt{gcd\_out} for general operands                                            & U             \\ \midrule
         REQ\_007        & D                 & Edge cases            & Correct \texttt{gcd\_out} for primes/coprimes, multiples, and min/max values              & U             \\ \midrule
-        REQ\_008        & D                 & Zero operands         & Correct \texttt{gcd\_out} for $a=0$ and/or $b=0$, early exit                              & U             \\ \midrule
-        REQ\_009        & D                 & Equal operands        & Correct \texttt{gcd\_out} for $a=b$, early exit                                           & U             \\ \bottomrule \toprule
+        REQ\_008        & D                 & Zero operands         & Correct \texttt{gcd\_out} for $a=0$ and/or $b=0$, early exit                              & F/H/U         \\ \midrule
+        REQ\_009        & D                 & Equal operands        & Correct \texttt{gcd\_out} for $a=b$, early exit                                           & F/H/U         \\ \bottomrule \toprule
         REQ\_010        & S                 & States                & FSM state is either \texttt{IDLE}, \texttt{RUN}, or \texttt{DONE}                         & F             \\ \midrule
         REQ\_011        & S                 & State hold            & FSM holds its state strictly for the necessary duration                                   & F             \\ \midrule
         REQ\_012        & S                 & Transitions           & FSM transitions following the specification                                               & F             \\ \midrule
@@ -62,20 +63,20 @@ A description explains what the test is actually looking for.
     \centering
     \begin{tabularx}{\textwidth}{|c|p{3.9cm}|X|p{1.7cm}|}
         \toprule
-        \textbf{Tool}   & \textbf{Test name}                                                                & \textbf{Description}                                                                                                      & \textbf{REQ ID}                           \\ \midrule
-        F               & \texttt{inputs}                                                                   & Assume a compliant producer that holds \texttt{in\_valid} and data stable during stalls                                   & REQ\_002                                  \\ \midrule
-        F               & \texttt{\_reset}                                                                  & Prove DUT initializes to \texttt{IDLE} and clears all registers on reset                                                  & REQ\_000                                  \\ \midrule
-        F               & \texttt{\_state}                                                                  & Prove FSM strictly operates within valid, mutually exclusive states                                                       & REQ\_010                                  \\ \midrule
-        F               & \texttt{idle\_idle}, \texttt{run\_run}, \texttt{done\_done}                       & Prove FSM correctly holds current state when transition conditions are not met, including output stalls                   & REQ\_004, REQ\_011                        \\ \midrule
-        F               & \texttt{idle\_done}, \texttt{idle\_run}, \texttt{run\_done}, \texttt{done\_idle}  & Prove FSM accurately transitions between states based on handshakes and data path evaluations                             & REQ\_001, REQ\_003, REQ\_012              \\ \midrule
-        F               & \texttt{\_in\_ready}, \texttt{\_out\_valid}                                       & Prove control output signals are strictly tied to their respective FSM states                                             & REQ\_013                                  \\ \midrule
-        F               & \texttt{outputs}                                                                  & Prove \texttt{gcd\_out} stability while \texttt{out\_valid} is asserted                                                   & REQ\_005                                  \\ \bottomrule \toprule
-        H               & \texttt{chk\_out\_valid\_no\_drop}                                                & Check that the DUT does not drop \texttt{out\_valid} while waiting for the consumer \texttt{out\_ready} to assert         & REQ\_004                                  \\ \midrule
-        H               & \texttt{chk\_out\_data\_stable}                                                   & Check that the DUT holds \texttt{gcd\_out} stable while \texttt{out\_valid} is asserted                                   & REQ\_005                                  \\ \midrule
-        H               & \texttt{chk\_reset}                                                               & Check that in case of reset the DUT clear all of its outputs                                                              & REQ\_000                                  \\ \midrule
-        H               & \texttt{chk\_early\_exit}                                                         & Check that the DUT skips to the \texttt{DONE} state in case of early exit                                                 & REQ\_008, REQ\_009                        \\ \bottomrule \toprule
-        U               & \texttt{scb.write\_rst}                                                           & Verify that the golden model resets its internal state mid-transaction                                                    & REQ\_000                                  \\ \midrule
-        U               & \texttt{scb.write\_in}, \texttt{scb.write\_out}                                   & Verify that the golden model output is equal to the DUT \texttt{gcd\_out}                                                 & REQ\_006, REQ\_007, REQ\_008, REQ\_009    \\ \bottomrule
+        \textbf{Tool}   & \textbf{Test name}                                                                & \textbf{Description}                                                                                                      & \textbf{REQ ID}                                   \\ \midrule
+        F               & \texttt{inputs}                                                                   & Assume a compliant producer that holds \texttt{in\_valid} and data stable during stalls                                   & REQ\_002                                          \\ \midrule
+        F               & \texttt{\_reset}                                                                  & Prove DUT initializes to \texttt{IDLE} and clears all registers on reset                                                  & REQ\_000                                          \\ \midrule
+        F               & \texttt{\_state}                                                                  & Prove FSM strictly operates within valid, mutually exclusive states                                                       & REQ\_010                                          \\ \midrule
+        F               & \texttt{idle\_idle}, \texttt{run\_run}, \texttt{done\_done}                       & Prove FSM correctly holds current state when transition conditions are not met, including output stalls                   & REQ\_004, REQ\_011                                \\ \midrule
+        F               & \texttt{idle\_done}, \texttt{idle\_run}, \texttt{run\_done}, \texttt{done\_idle}  & Prove FSM accurately transitions between states based on handshakes and data path evaluations                             & REQ\_001, REQ\_003, REQ\_008, REQ\_009, REQ\_012  \\ \midrule
+        F               & \texttt{\_in\_ready}, \texttt{\_out\_valid}                                       & Prove control output signals are strictly tied to their respective FSM states                                             & REQ\_013                                          \\ \midrule
+        F               & \texttt{outputs}                                                                  & Prove \texttt{gcd\_out} stability while \texttt{out\_valid} is asserted                                                   & REQ\_005                                          \\ \bottomrule \toprule
+        H               & \texttt{chk\_out\_valid\_no\_drop}                                                & Check that the DUT does not drop \texttt{out\_valid} while waiting for the consumer \texttt{out\_ready} to assert         & REQ\_004                                          \\ \midrule
+        H               & \texttt{chk\_out\_data\_stable}                                                   & Check that the DUT holds \texttt{gcd\_out} stable while \texttt{out\_valid} is asserted                                   & REQ\_005                                          \\ \midrule
+        H               & \texttt{chk\_reset}                                                               & Check that in case of reset the DUT clear all of its outputs                                                              & REQ\_000                                          \\ \midrule
+        H               & \texttt{chk\_early\_exit}                                                         & Check that the DUT skips to the \texttt{DONE} state in case of early exit                                                 & REQ\_008, REQ\_009                                \\ \bottomrule \toprule
+        U               & \texttt{scb.write\_rst}                                                           & Verify that the golden model resets its internal state mid-transaction                                                    & REQ\_000                                          \\ \midrule
+        U               & \texttt{scb.write\_in}, \texttt{scb.write\_out}                                   & Verify that the golden model output is equal to the DUT \texttt{gcd\_out}                                                 & REQ\_006, REQ\_007, REQ\_008, REQ\_009            \\ \bottomrule
     \end{tabularx}
 \end{table}
         
