@@ -932,6 +932,8 @@ module gcd_top;
     
     logic rst_n;
     initial begin
+        rst_n = 1;
+        @(posedge clk)
         rst_n = 0;
         repeat(2) @(posedge clk);
         rst_n = 1;
