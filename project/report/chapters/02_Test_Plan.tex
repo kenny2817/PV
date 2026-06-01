@@ -93,4 +93,11 @@ The stimulus is divided into multiple tests that tackle different scenarios.
 \end{itemize}
 
 \section{Diagrams}
-This section will introduce the FSM in form of a diagram and the plan for the UVM architecture.
+This section will introduce the FSM in form of a diagram.
+Every nameless arrow implies that all inputs that have not been specified translate in that state.
+The plan for the UVM architecture is displayed in the Implementation chapter \ref{cha:implementation}
+\begin{figure}[htbp]
+  \centering
+  \includesvg[width=0.5\textwidth, inkscapelatex=false]{FSM.svg}
+  \caption{Finite State machine of the DUT}
+\end{figure}

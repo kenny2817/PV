@@ -5,11 +5,9 @@
 \label{cha:implementation}
 
 \section{FORMAL}
-
 EBMC tool has been used to perform the bounded verification of this module.
 Here the assumptions are the initial \texttt{rst\_n} low and the stability of inputs while \texttt{in\_valid} is high.
 The assertions are as follows:
-
 \begin{description}
     \item[\texttt{\_reset}]
         Verify that asserting a reset unconditionally forces the FSM back to the \texttt{IDLE} state on the next cycle with all registers cleared.
@@ -32,7 +30,7 @@ The assertions are as follows:
             linerange={172 - 188}, 
             firstnumber=172
         ]{gcd/gcd.sv}
-    \item[State Progression] \texttt{idle\_done}, (\texttt{idle\_run}, \texttt{run\_done}, \texttt{done\_idle}):
+    \item[State Progression] (\texttt{idle\_done}, \texttt{idle\_run}, \texttt{run\_done}, \texttt{done\_idle}):
         Prove that the FSM correctly transitions to the next expected state when the appropriate progression flag is asserted.
         \lstinputlisting[
             style=svlog, 
@@ -56,5 +54,31 @@ The assertions are as follows:
 \end{description}
 
 \section{HARDWARE}
+The hardware checking happens inside the DUT interface and acts as a raw signal controller.
+To do so, 5 properties with arguments to reuse them if necessary were created.
+\lstinputlisting[
+    style=svlog, 
+    linerange={34 - 72}, 
+    firstnumber=34
+]{gcd/tb_uvm_gcd.sv}
+These properties were used to make 7 assertions and 2 covers.
+3 assertions are only used to control UVM drivers correctness.
+\begin{description}
+    \item[\texttt{chk\_reset}]
+    Checks that in case of reset the DUT clear all of its outputs.
+    \item[\texttt{chk\_early\_exit}]
+    Checks that the DUT skips to the \texttt{RUN} state in case of early exit.
+    \item[\texttt{chk\_out\_valid\_no\_drop}]
+    Checks that \texttt{out\_valid} is not dropped unless a handshake happens.
+    \item[\texttt{chk\_out\_data\_stable}]
+    Checks that \texttt{gcd\_out} is stable while \texttt{out\_valid} is asserted.
+\end{description}
+The 2 covers simply make sure the handshakes, both input and output are covered.
 
 \section{UVM}
+The UVM architecture is organized as shown in the following diagram.
+\begin{figure}[htbp]
+  \centering
+  \includesvg[width=\textwidth, inkscapelatex=false]{UVM.svg}
+  \caption{UVM architecture of the DUT}
+\end{figure}

@@ -32,23 +32,38 @@ interface gcd_interface (
 
     // protocol checking
     property p_valid_no_drop(valid, ready);
-        @(posedge clk) disable iff (!rst_n || $isunknown(valid) || $isunknown(ready))
-        valid && !ready |=> valid;
+        @(posedge clk) disable iff (
+            !rst_n || 
+            $isunknown(valid) ||
+            $isunknown(ready))
+        valid && !ready
+            |=> valid;
     endproperty
 
     property p_data_stable(valid, ready, data);
-        @(posedge clk) disable iff (!rst_n || $isunknown(valid) || $isunknown(ready) || $isunknown(data))
-        valid && !ready |=> $stable(data);
+        @(posedge clk) disable iff (
+            !rst_n || 
+            $isunknown(valid) || 
+            $isunknown(ready) || 
+            $isunknown(data))
+        valid && !ready
+            |=> $stable(data);
     endproperty
     
     property p_early_exit;
-        @(posedge clk) disable iff (!rst_n || $isunknown(in_valid) || $isunknown(in_ready))
-        (in_valid && in_ready && (a_in == 0 || b_in == 0 || a_in == b_in)) |=> out_valid;
+        @(posedge clk) disable iff (
+            !rst_n || 
+            $isunknown(in_valid) || 
+            $isunknown(in_ready))
+        (in_valid && in_ready) && 
+        (a_in == 0 || b_in == 0 || a_in == b_in)
+            |=> out_valid;
     endproperty
 
     property p_reset;
         @(posedge clk)
-        !rst_n |=> in_ready && !out_valid && (out_gcd == 0);
+        !rst_n
+            |=> in_ready && !out_valid && (out_gcd == 0);
     endproperty
 
     property p_handshake(valid, ready);
@@ -940,7 +955,7 @@ module gcd_top;
         .gcd_out    (gcd_if.gcd_out)
     );
 
-    initial run_test("gcd_bringup_test");
+    initial run_test();
 
     initial begin
         $dumpfile("waves.vcd"); 
