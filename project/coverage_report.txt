@@ -1,0 +1,502 @@
+Coverage Report by instance with details
+
+=================================================================================
+=== Instance: /gcd_top/gcd_if
+=== Design Unit: work.gcd_interface
+=================================================================================
+
+Assertion Coverage:
+    Assertions                       7         7         0   100.00%
+--------------------------------------------------------------------
+Name                 File(Line)                   Failure      Pass 
+                                                  Count        Count
+--------------------------------------------------------------------
+/gcd_top/gcd_if/chk_in_valid_no_drop
+                     tb_uvm_gcd.sv(75)                  0          1
+/gcd_top/gcd_if/chk_in_data_stable_a
+                     tb_uvm_gcd.sv(78)                  0          1
+/gcd_top/gcd_if/chk_in_data_stable_b
+                     tb_uvm_gcd.sv(81)                  0          1
+/gcd_top/gcd_if/chk_reset
+                     tb_uvm_gcd.sv(85)                  0          1
+/gcd_top/gcd_if/chk_early_exit
+                     tb_uvm_gcd.sv(88)                  0          1
+/gcd_top/gcd_if/chk_out_valid_no_drop
+                     tb_uvm_gcd.sv(92)                  0          1
+/gcd_top/gcd_if/chk_out_data_stable
+                     tb_uvm_gcd.sv(95)                  0          1
+
+Directive Coverage:
+    Directives                       2         2         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                     
+--------------------------------------------------------------------------------------------
+/gcd_top/gcd_if/cov_in_handshake         gcd_interface Verilog  SVA  tb_uvm_gcd.sv(99)
+                                                                                17 Covered   
+/gcd_top/gcd_if/cov_out_handshake        gcd_interface Verilog  SVA  tb_uvm_gcd.sv(100)
+                                                                                17 Covered   
+
+=================================================================================
+=== Instance: /gcd_top/dut
+=== Design Unit: work.gcd
+=================================================================================
+Branch Coverage:
+    Enabled Coverage              Bins      Hits    Misses  Coverage
+    ----------------              ----      ----    ------  --------
+    Branches                        22        20         2    90.90%
+
+================================Branch Details================================
+
+Branch Coverage for instance /gcd_top/dut
+
+    Line         Item                      Count     Source 
+    ----         ----                      -----     ------ 
+  File gcd.sv
+------------------------------------IF Branch------------------------------------
+    50                                        50     Count coming in to IF
+    50              1                         14     
+                                              36     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    51                                        14     Count coming in to IF
+    51              1                          9     
+    53              1                          5     
+                                         ***0***     All False Count
+Branch totals: 2 hits of 3 branches = 66.66%
+
+------------------------------------IF Branch------------------------------------
+    62                                        64     Count coming in to IF
+    62              1                          2     
+    67              1                         62     
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------CASE Branch------------------------------------
+    68                                        62     Count coming in to CASE
+    73              1                         23     
+    95              1                         14     
+    110             1                         25     
+    118             1                    ***0***     
+Branch totals: 3 hits of 4 branches = 75.00%
+
+------------------------------------IF Branch------------------------------------
+    75                                        23     Count coming in to IF
+    75              1                         17     
+                                               6     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    80                                        17     Count coming in to IF
+    80              1                          3     
+    83              1                         10     
+    86              1                          4     
+Branch totals: 3 hits of 3 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    81                                         3     Count coming in to IF
+    81              1                          2     
+    81              2                          1     
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    101                                       14     Count coming in to IF
+    101             1                          4     
+                                              10     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    111                                       25     Count coming in to IF
+    111             1                         17     
+                                               8     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage              Bins   Covered    Misses  Coverage
+    ----------------              ----      ----    ------  --------
+    Conditions                       7         5         2    71.42%
+
+================================Condition Details================================
+
+Condition Coverage for instance /gcd_top/dut --
+
+  File gcd.sv
+----------------Focused Condition View-------------------
+Line       50 Item    1  (state == RUN)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       51 Item    1  (a_reg > b_reg)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       53 Item    1  (b_reg > a_reg)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+       Input Term   Covered  Reason for no coverage   Hint
+      -----------  --------  -----------------------  --------------
+  (b_reg > a_reg)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (b_reg > a_reg)_0     -                             
+  Row   2:          1  (b_reg > a_reg)_1     -                             
+
+----------------Focused Condition View-------------------
+Line       75 Item    1  (in_valid && in_ready)
+Condition totals: 1 of 2 input terms covered = 50.00%
+
+  Input Term   Covered  Reason for no coverage   Hint
+ -----------  --------  -----------------------  --------------
+    in_valid         Y
+    in_ready         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  in_valid_0            -                             
+  Row   2:          1  in_valid_1            in_ready                      
+  Row   3:    ***0***  in_ready_0            in_valid                      
+  Row   4:          1  in_ready_1            in_valid                      
+
+----------------Focused Condition View-------------------
+Line       83 Item    1  (a_in == b_in)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       101 Item    1  (a_next == b_next)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+
+Expression Coverage:
+    Enabled Coverage              Bins   Covered    Misses  Coverage
+    ----------------              ----      ----    ------  --------
+    Expressions                      2         2         0   100.00%
+
+================================Expression Details================================
+
+Expression Coverage for instance /gcd_top/dut --
+
+  File gcd.sv
+----------------Focused Expression View-----------------
+Line       129 Item    1  (state == IDLE)
+Expression totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Expression View-----------------
+Line       132 Item    1  (state == DONE)
+Expression totals: 1 of 1 input term covered = 100.00%
+
+
+FSM Coverage:
+    Enabled Coverage              Bins      Hits    Misses  Coverage
+    ----------------              ----      ----    ------  --------
+    FSM States                       3         3         0   100.00%
+    FSM Transitions                  5         4         1    80.00%
+
+================================FSM Details================================
+
+FSM Coverage for instance /gcd_top/dut --
+
+FSM_ID: state
+    Current State Object : state
+    ----------------------
+    State Value MapInfo :
+    ---------------------
+Line          State Name               Value
+----          ----------               -----
+  73                IDLE                   0
+  95                 RUN                   1
+ 110                DONE                   2
+    Covered States :
+    ----------------
+                   State           Hit_count
+                   -----           ---------
+                    IDLE                  19          
+                     RUN                   4          
+                    DONE                  17          
+    Covered Transitions :
+    ---------------------
+Line            Trans_ID           Hit_count          Transition          
+----            --------           ---------          ----------          
+  87                   0                   4          IDLE -> RUN                   
+  85                   1                  13          IDLE -> DONE                  
+ 103                   2                   4          RUN -> DONE                   
+ 112                   4                  17          DONE -> IDLE                  
+    Uncovered Transitions :
+    -----------------------
+Line            Trans_ID          Transition          
+----            --------          ----------          
+  63                   3          RUN -> IDLE         
+
+
+    Summary                       Bins      Hits    Misses  Coverage
+    -------                       ----      ----    ------  --------
+        FSM States                   3         3         0   100.00%
+        FSM Transitions              5         4         1    80.00%
+Statement Coverage:
+    Enabled Coverage              Bins      Hits    Misses  Coverage
+    ----------------              ----      ----    ------  --------
+    Statements                      25        24         1    96.00%
+
+================================Statement Details================================
+
+Statement Coverage for instance /gcd_top/dut --
+
+    Line         Item                      Count     Source 
+    ----         ----                      -----     ------ 
+  File gcd.sv
+    47              1                         50     
+    48              1                         50     
+    49              1                         50     
+    52              1                          9     
+    54              1                          5     
+    61              1                         64     
+    63              1                          2     
+    64              1                          2     
+    65              1                          2     
+    66              1                          2     
+    76              1                         17     
+    77              1                         17     
+    81              1                          3     
+    82              1                          3     
+    84              1                         10     
+    85              1                         10     
+    87              1                          4     
+    97              1                         14     
+    98              1                         14     
+    102             1                          4     
+    103             1                          4     
+    112             1                         17     
+    118             1                    ***0***     
+    129             1                         40     
+    132             1                         40     
+Toggle Coverage:
+    Enabled Coverage              Bins      Hits    Misses  Coverage
+    ----------------              ----      ----    ------  --------
+    Toggles                        527       526         1    99.81%
+
+================================Toggle Details================================
+
+Toggle Coverage for instance /gcd_top/dut --
+
+                                              Node      1H->0L      0L->1H                          "Coverage"
+                                              ---------------------------------------------------------------
+                                             rst_n           0           1                               50.00 
+
+Total Node Count     =        265 
+Toggled Node Count   =        264 
+Untoggled Node Count =          1 
+
+Toggle Coverage      =      99.81% (526 of 527 bins)
+
+=================================================================================
+=== Instance: /gcd_pkg
+=== Design Unit: work.gcd_pkg
+=================================================================================
+
+Covergroup Coverage:
+    Covergroups                      2        na        na   100.00%
+        Coverpoints/Crosses          7        na        na        na
+            Covergroup Bins         14        14         0   100.00%
+----------------------------------------------------------------------------------------------------------
+Covergroup                                             Metric       Goal       Bins    Status               
+                                                                                                         
+----------------------------------------------------------------------------------------------------------
+ TYPE /gcd_pkg/gcd_cov_in/cov_in                      100.00%        100          -    Covered              
+    covered/total bins:                                    12         12          -                      
+    missing/total bins:                                     0         12          -                      
+    % Hit:                                            100.00%        100          -                      
+    Coverpoint cp_equal                               100.00%        100          -    Covered              
+        covered/total bins:                                 1          1          -                      
+        missing/total bins:                                 0          1          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin hit                                            10          1          -    Covered              
+    Coverpoint cp_a_gt_b                              100.00%        100          -    Covered              
+        covered/total bins:                                 1          1          -                      
+        missing/total bins:                                 0          1          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin hit                                             3          1          -    Covered              
+    Coverpoint cp_b_gt_a                              100.00%        100          -    Covered              
+        covered/total bins:                                 1          1          -                      
+        missing/total bins:                                 0          1          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin hit                                             3          1          -    Covered              
+    Coverpoint cp_a                                   100.00%        100          -    Covered              
+        covered/total bins:                                 3          3          -                      
+        missing/total bins:                                 0          3          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin zero                                            2          1          -    Covered              
+        bin full                                            1          1          -    Covered              
+        bin other                                          14          1          -    Covered              
+    Coverpoint cp_b                                   100.00%        100          -    Covered              
+        covered/total bins:                                 3          3          -                      
+        missing/total bins:                                 0          3          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin zero                                            2          1          -    Covered              
+        bin full                                            1          1          -    Covered              
+        bin other                                          14          1          -    Covered              
+    Cross cross_a_b                                   100.00%        100          -    Covered              
+        covered/total bins:                                 3          3          -                      
+        missing/total bins:                                 0          3          -                      
+        % Hit:                                        100.00%        100          -                      
+        Auto, Default and User Defined Bins:
+            bin zero                                        1          1          -    Covered              
+            bin full                                        1          1          -    Covered              
+            bin other                                      13          1          -    Covered              
+ TYPE /gcd_pkg/gcd_cov_out/cov_out                    100.00%        100          -    Covered              
+    covered/total bins:                                     2          2          -                      
+    missing/total bins:                                     0          2          -                      
+    % Hit:                                            100.00%        100          -                      
+    Coverpoint cp_gcd                                 100.00%        100          -    Covered              
+        covered/total bins:                                 2          2          -                      
+        missing/total bins:                                 0          2          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin zero                                            1          1          -    Covered              
+        bin prime                                           8          1          -    Covered              
+        default bin other                                   8                     -    Occurred             
+
+COVERGROUP COVERAGE:
+----------------------------------------------------------------------------------------------------------
+Covergroup                                             Metric       Goal       Bins    Status               
+                                                                                                         
+----------------------------------------------------------------------------------------------------------
+ TYPE /gcd_pkg/gcd_cov_in/cov_in                      100.00%        100          -    Covered              
+    covered/total bins:                                    12         12          -                      
+    missing/total bins:                                     0         12          -                      
+    % Hit:                                            100.00%        100          -                      
+    Coverpoint cp_equal                               100.00%        100          -    Covered              
+        covered/total bins:                                 1          1          -                      
+        missing/total bins:                                 0          1          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin hit                                            10          1          -    Covered              
+    Coverpoint cp_a_gt_b                              100.00%        100          -    Covered              
+        covered/total bins:                                 1          1          -                      
+        missing/total bins:                                 0          1          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin hit                                             3          1          -    Covered              
+    Coverpoint cp_b_gt_a                              100.00%        100          -    Covered              
+        covered/total bins:                                 1          1          -                      
+        missing/total bins:                                 0          1          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin hit                                             3          1          -    Covered              
+    Coverpoint cp_a                                   100.00%        100          -    Covered              
+        covered/total bins:                                 3          3          -                      
+        missing/total bins:                                 0          3          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin zero                                            2          1          -    Covered              
+        bin full                                            1          1          -    Covered              
+        bin other                                          14          1          -    Covered              
+    Coverpoint cp_b                                   100.00%        100          -    Covered              
+        covered/total bins:                                 3          3          -                      
+        missing/total bins:                                 0          3          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin zero                                            2          1          -    Covered              
+        bin full                                            1          1          -    Covered              
+        bin other                                          14          1          -    Covered              
+    Cross cross_a_b                                   100.00%        100          -    Covered              
+        covered/total bins:                                 3          3          -                      
+        missing/total bins:                                 0          3          -                      
+        % Hit:                                        100.00%        100          -                      
+        Auto, Default and User Defined Bins:
+            bin zero                                        1          1          -    Covered              
+            bin full                                        1          1          -    Covered              
+            bin other                                      13          1          -    Covered              
+ TYPE /gcd_pkg/gcd_cov_out/cov_out                    100.00%        100          -    Covered              
+    covered/total bins:                                     2          2          -                      
+    missing/total bins:                                     0          2          -                      
+    % Hit:                                            100.00%        100          -                      
+    Coverpoint cp_gcd                                 100.00%        100          -    Covered              
+        covered/total bins:                                 2          2          -                      
+        missing/total bins:                                 0          2          -                      
+        % Hit:                                        100.00%        100          -                      
+        bin zero                                            1          1          -    Covered              
+        bin prime                                           8          1          -    Covered              
+        default bin other                                   8                     -    Occurred             
+
+TOTAL COVERGROUP COVERAGE: 100.00%  COVERGROUP TYPES: 2
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                     
+--------------------------------------------------------------------------------------------
+/gcd_top/gcd_if/cov_in_handshake         gcd_interface Verilog  SVA  tb_uvm_gcd.sv(99)
+                                                                                17 Covered   
+/gcd_top/gcd_if/cov_out_handshake        gcd_interface Verilog  SVA  tb_uvm_gcd.sv(100)
+                                                                                17 Covered   
+
+TOTAL DIRECTIVE COVERAGE: 100.00%  COVERS: 2
+
+ASSERTION RESULTS:
+--------------------------------------------------------------------
+Name                 File(Line)                   Failure      Pass 
+                                                  Count        Count
+--------------------------------------------------------------------
+/gcd_top/gcd_if/chk_in_valid_no_drop
+                     tb_uvm_gcd.sv(75)                  0          1
+/gcd_top/gcd_if/chk_in_data_stable_a
+                     tb_uvm_gcd.sv(78)                  0          1
+/gcd_top/gcd_if/chk_in_data_stable_b
+                     tb_uvm_gcd.sv(81)                  0          1
+/gcd_top/gcd_if/chk_reset
+                     tb_uvm_gcd.sv(85)                  0          1
+/gcd_top/gcd_if/chk_early_exit
+                     tb_uvm_gcd.sv(88)                  0          1
+/gcd_top/gcd_if/chk_out_valid_no_drop
+                     tb_uvm_gcd.sv(92)                  0          1
+/gcd_top/gcd_if/chk_out_data_stable
+                     tb_uvm_gcd.sv(95)                  0          1
+
+Total Coverage By Instance (filtered view): 93.81%
+
+QuestaSim vcover 2025.1_1 Coverage Utility 2025.02 Feb 13 2025
+Start time: 15:00:39 on Jun 01,2026
+vcover report cov_db.ucdb 
+Coverage Report Summary Data by instance
+
+=================================================================================
+=== Instance: /gcd_top/gcd_if
+=== Design Unit: work.gcd_interface
+=================================================================================
+    Enabled Coverage              Bins      Hits    Misses  Coverage
+    ----------------              ----      ----    ------  --------
+    Assertions                       7         7         0   100.00%
+    Directives                       2         2         0   100.00%
+
+=================================================================================
+=== Instance: /gcd_top/dut
+=== Design Unit: work.gcd
+=================================================================================
+    Enabled Coverage              Bins      Hits    Misses  Coverage
+    ----------------              ----      ----    ------  --------
+    Branches                        22        20         2    90.90%
+    Conditions                       7         5         2    71.42%
+    Expressions                      2         2         0   100.00%
+    FSM States                       3         3         0   100.00%
+    FSM Transitions                  5         4         1    80.00%
+    Statements                      25        24         1    96.00%
+    Toggles                        527       526         1    99.81%
+
+=================================================================================
+=== Instance: /gcd_pkg
+=== Design Unit: work.gcd_pkg
+=================================================================================
+    Enabled Coverage              Bins      Hits    Misses  Coverage
+    ----------------              ----      ----    ------  --------
+    Covergroups                      2        na        na   100.00%
+        Coverpoints/Crosses          7        na        na        na
+            Covergroup Bins         14        14         0   100.00%
+
+
+TOTAL COVERGROUP COVERAGE: 100.00%  COVERGROUP TYPES: 2
+
+TOTAL DIRECTIVE COVERAGE: 100.00%  COVERS: 2
+
+TOTAL ASSERTION COVERAGE: 100.00%  ASSERTIONS: 7
+
+Total Coverage By Instance (filtered view): 93.81%
+
+End time: 15:00:39 on Jun 01,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

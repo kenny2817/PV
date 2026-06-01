@@ -1,0 +1,73 @@
+% ------------------------------------------------------------------------------
+% Chapter 4
+% ------------------------------------------------------------------------------
+\chapter{Results} 
+\label{cha:results}
+
+Overall, the DUT was verified to be functionally correct.
+Both the formal verification tool and the UVM architecture confirm this result.
+However, the code coverage analysis revealed some minor structural inefficiencies in the implementation.
+While these do not endanger the functionality of the DUT, they might lead to unoptimized results upon synthesis.
+
+\section{Coverage Analysis}
+
+From the coverage report, we can observe that the deterministic test vectors completely cover the functional specification (100\%).
+To clarify the functional metrics:
+\begin{itemize}
+    \item \texttt{COVERGROUP} refers to the UVM coverage blocks.
+    \item \texttt{DIRECTIVE} refers to the two cover properties in the Hardware coverage.
+    \item \texttt{ASSERTION} refers to the Hardware-based assertions.
+\end{itemize}
+
+The Total Coverage score calculates the average of these three functional coverage categories along with the seven code coverage points (detailed below in Table \ref{tab:code_coverage}).
+
+\begin{verbatim}
+TOTAL COVERGROUP COVERAGE: 100.00%  COVERGROUP TYPES: 2
+TOTAL DIRECTIVE COVERAGE: 100.00%  COVERS: 2
+TOTAL ASSERTION COVERAGE: 100.00%  ASSERTIONS: 7
+Total Coverage By Instance (filtered view): 94.68%
+\end{verbatim}
+
+The Total Coverage score is slightly reduced by a few specific structural loopholes identified during the code coverage extraction:
+
+\begin{itemize}
+    \item \textbf{Branch [95.45\%]}: Contains 1 uncovered bin.
+    \begin{itemize}
+        \item \textit{Line 53}: A branch is never evaluated as false.
+        This is the consequence of a concatenation of conditions that makes the false outcome logically unreachable.
+        The \texttt{if} statement could theoretically be removed.
+    \end{itemize}
+    
+    \item \textbf{Condition [71.42\%]}: Contains 2 uncovered bins.
+    \begin{itemize}
+        \item \textit{Line 53}: The condition is never false.
+        Similar to the branch issue, previous conditions make the false outcome unreachable, making the statement redundant.
+        \item \textit{Line 75}: Part of the condition (\texttt{in\_ready}) is never false.
+        This happens because a preceding condition (\texttt{state == IDLE}) already forces this signal high, making the false evaluation unreachable.
+    \end{itemize}
+    
+    \item \textbf{FSM Transitions [80.00\%]}: Contains 1 uncovered bin.
+    \begin{itemize}
+        \item \textit{Line 63}: The state machine never transitions directly from \texttt{RUN} to \texttt{IDLE}.
+        This occurs because the reset signal was only exercised during the initial initialization of the DUT, and an active reset is the only mechanism capable of producing this specific mid-transaction transition.
+    \end{itemize}
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|}
+        \toprule
+        \textbf{Enabled Coverage} & \textbf{Bins} & \textbf{Hits} & \textbf{Misses} & \textbf{Coverage} \\ \midrule
+        Branches        & 22  & 21  & 1 & 95.45\%  \\ 
+        Conditions      & 7   & 5   & 2 & 71.42\%  \\ 
+        Expressions     & 2   & 2   & 0 & 100.00\% \\ 
+        FSM States      & 3   & 3   & 0 & 100.00\% \\ 
+        FSM Transitions & 5   & 4   & 1 & 80.00\%  \\ 
+        Statements      & 25  & 25  & 0 & 100.00\% \\ 
+        Toggles         & 527 & 527 & 0 & 100.00\% \\ \bottomrule
+    \end{tabular}
+    \caption{Structural Code Coverage Summary}
+    \label{tab:code_coverage}
+\end{table}
+
+In the end we consider the code coverage complete as FSM transitions are completely covered by the Formal verification and the other uncovered bins are unreachable conditions.

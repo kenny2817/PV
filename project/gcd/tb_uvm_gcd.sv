@@ -63,7 +63,7 @@ interface gcd_interface (
     property p_reset;
         @(posedge clk)
         !rst_n
-            |=> in_ready && !out_valid && (out_gcd == 0);
+            |=> in_ready && !out_valid && (gcd_out == 0);
     endproperty
 
     property p_handshake(valid, ready);
