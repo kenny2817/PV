@@ -77,8 +77,53 @@ The 2 covers simply make sure the handshakes, both input and output are covered.
 
 \section{UVM}
 The UVM architecture is organized as shown in the following diagram.
+Details of salient components are explained in the following subsections.
 \begin{figure}[htbp]
   \centering
-  \includesvg[width=\textwidth, inkscapelatex=false]{UVM.svg}
+  \includesvg[width=0.9\textwidth, inkscapelatex=false]{UVM.svg}
   \caption{UVM architecture of the DUT}
 \end{figure}
+
+\subsection*{Transactions}
+3 transaction types have been defined: input, output, and reset.
+The transactions are used both by the driver and the monitor, this leads to a less modular but easier to modify code with minimal overhead.
+The transactions are stripped of any unnecessary information like the handshake flags which are completely handled by the driver.
+The variable \texttt{delay\_cycles} is added to both input and output transactions to enable the test with some timing controls.
+
+\subsection*{Drivers}
+Each I/O driver need to:
+\begin{enumerate}
+    \item handle the handshake protocol
+    \item apply the cycles delay
+    \item apply the signals (if any)
+    \item release handshake
+\end{enumerate}
+They are also enabled to handle the initial reset as well as mid-transaction reset.
+
+\subsection*{Scoreboard}
+The scoreboard keep track of each input and wait for the output to confront it with an internal calculation.
+In case of reset mid-transaction the transaction is considered a success and the simulation continues.
+The calculation uses a different model for the calculation of the gcd, modulo instead of subtraction, for simplicity of implementation and performance.
+\lstinputlisting[
+    style=svlog, 
+    linerange={474 - 484}, 
+    firstnumber=474
+]{gcd/tb_uvm_gcd.sv}
+
+\subsection*{Coverage}
+Apart from the code coverage that is already handled by Questa, some functional coverage was added to complete the coverage of the DUT.
+They can be divided into two groups:
+\begin{itemize}
+    \item \textbf{CONTROL} this is tackled by Hardware assertions and coverage of the successful handshake protocols.
+    It is important to note that Assertions are used as coverage to remove a repetition in the final report (assertion + coverage).
+    \item \textbf{DATA} this is tackled by the UVM and further divided into 2 component that analyze inputs and output.
+    \begin{itemize}
+        \item \textbf{Input} here we verify the edge cases and combination of them.
+        \item \textbf{Output} here we verify the edge cases but from the output perspective.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Tests}
+Although the architecture is mostly modular, and it's possible to build whatever test we might need, 3 tests have been implemented.
+(Described in the Test Plan \ref{cha:test_plan})
+Each test sequence is wrapped into a virtual sequence that contains both driver's information.
