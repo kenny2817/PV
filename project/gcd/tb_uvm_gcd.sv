@@ -100,8 +100,9 @@ interface gcd_interface (
     cov_out_handshake: cover property(p_handshake(out_valid, out_ready));
     
     property p_run_eventually_finishes;
-        @(posedge clk)
-        state == RUN |-> ##[1:$] state == DONE;
+    @(posedge clk) disable iff (!rst_n)
+        (in_valid && in_ready)
+            |-> ##[1:$] out_valid;
     endproperty
 
     eventual_finish: assert property(p_run_eventually_finishes)
