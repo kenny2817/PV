@@ -4,6 +4,7 @@
 
 package gcd_const_pkg;
     localparam int unsigned DATA_WIDTH = 32;
+    localparam int unsigned MARGIN_TIMEOUT = 5;
 endpackage
 
 import gcd_const_pkg::*;
@@ -100,7 +101,7 @@ interface gcd_interface (
     cov_out_handshake: cover property(p_handshake(out_valid, out_ready));
     
     // timeout
-    function int unsigned exp_cycles(
+    function automatic int unsigned exp_cycles(
         bit [DATA_WIDTH-1:0] a,
         bit [DATA_WIDTH-1:0] b
     );
@@ -118,20 +119,20 @@ interface gcd_interface (
             end
         end
         
-        return cycles + 5; // margin
+        return cycles;
     endfunction
 
     task automatic p_eventual_end(bit [DATA_WIDTH-1:0] a, bit [DATA_WIDTH-1:0] b);
         int unsigned max_cycles = exp_cycles(a, b);
         int unsigned count = 0;
         
-        while (count <= max_cycles) begin
+        while (count <= max_cycles + MARGIN_TIMEOUT) begin
             @(posedge clk);
             if (out_valid || !rst_n) return;
             count++;
         end
         
-        `uvm_error("CHK", $sformatf("[TIMEOUT] [A] %0d [B] %0d [EXPECTED CYCLES] %0d", a, b, max_cycles))
+        `uvm_error("CHK", $sformatf("[TIMEOUT] [A] %0d [B] %0d [EXPECTED_CYCLES] %0d [WAITED_CYCLES] %d", a, b, max_cycles, max_cycles + MARGIN_TIMEOUT))
     endtask
 
     always @(posedge clk) begin
