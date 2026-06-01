@@ -99,14 +99,48 @@ interface gcd_interface (
     cov_in_handshake:  cover property(p_handshake(in_valid,   in_ready));
     cov_out_handshake: cover property(p_handshake(out_valid, out_ready));
     
-    property p_run_eventually_finishes;
-    @(posedge clk) disable iff (!rst_n)
-        (in_valid && in_ready)
-            |-> ##[1:$] out_valid;
-    endproperty
+    // timeout
+    function int unsigned exp_cycles(
+        bit [DATA_WIDTH-1:0] a,
+        bit [DATA_WIDTH-1:0] b
+    );
+        int unsigned cycles = 0;
+        
+        if (a == 0 || b == 0 || a == b) return 2; 
+        
+        while (a != 0 && b != 0 && a != b) begin
+            if (a > b) begin
+                cycles += (a / b);
+                a = a % b;
+            end else begin
+                cycles += (b / a);
+                b = b % a;
+            end
+        end
+        
+        return cycles + 5; // margin
+    endfunction
 
-    eventual_finish: assert property(p_run_eventually_finishes)
-        else `uvm_error("CHK", "ECCOLOOOO")
+    task automatic p_eventual_end(bit [DATA_WIDTH-1:0] a, bit [DATA_WIDTH-1:0] b);
+        int unsigned max_cycles = exp_cycles(a, b);
+        int unsigned count = 0;
+        
+        while (count <= max_cycles) begin
+            @(posedge clk);
+            if (out_valid || !rst_n) return;
+            count++;
+        end
+        
+        `uvm_error("CHK", $sformatf("[TIMEOUT] [A] %0d [B] %0d [EXPECTED CYCLES] %0d", a, b, max_cycles))
+    endtask
+
+    always @(posedge clk) begin
+        if (rst_n && in_valid && in_ready) begin
+            fork
+                p_eventual_end(a_in, b_in);
+            join_none
+        end
+    end
 endinterface
 
 package gcd_pkg;
