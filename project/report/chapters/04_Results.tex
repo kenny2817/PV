@@ -70,4 +70,27 @@ The Total Coverage score is slightly reduced by a few specific structural loopho
     \label{tab:code_coverage}
 \end{table}
 
-In the end we consider the code coverage complete as FSM transitions are completely covered by the Formal verification and the other uncovered bins are unreachable conditions.
+In the end we consider the code coverage complete as FSM transitions are completely covered by the Formal verification and the other uncovered bins are unreachable code.
+
+\section{Bug}
+
+I introduced a bug in the DUT that should give wrong results as the formula is completely wrong.
+We expect the DUT to give wrong gcd for operands that do not fall in the early exit conditions.
+Here is the code diff: 
+\begin{lstlisting}[language=Verilog, escapeinside={(*}{*)}]
+always_comb begin
+    a_next = a_reg;
+    b_next = b_reg;
+    if (state == RUN) begin
+(*\textcolor{red}{- \quad\quad\quad\quad if (a\_reg \textgreater b\_reg)}*)
+(*\textcolor{green!60!black}{+ \quad\quad\quad\quad if (a\_reg \textless b\_reg)}*)
+            a\_next = a\_reg - b\_reg
+(*\textcolor{red}{- \quad\quad\quad\quad else if (b\_reg \textgreater a\_reg)}*)
+(*\textcolor{green!60!black}{+ \quad\quad\quad\quad else if (b\_reg \textless a\_reg)}*)
+           b\_next = b\_reg - a\_reg;
+    end
+end
+\end{lstlisting}
+
+\subsection*{Analysis}
+

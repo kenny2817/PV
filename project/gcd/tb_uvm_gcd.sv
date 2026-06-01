@@ -99,6 +99,13 @@ interface gcd_interface (
     cov_in_handshake:  cover property(p_handshake(in_valid,   in_ready));
     cov_out_handshake: cover property(p_handshake(out_valid, out_ready));
     
+    property p_run_eventually_finishes;
+        @(posedge clk)
+        state == RUN |-> ##[1:$] state == DONE;
+    endproperty
+
+    eventual_finish: assert property(p_run_eventually_finishes)
+        else `uvm_error("CHK", "ECCOLOOOO")
 endinterface
 
 package gcd_pkg;
