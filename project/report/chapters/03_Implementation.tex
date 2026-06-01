@@ -4,3 +4,57 @@
 \chapter{Implementation} 
 \label{cha:implementation}
 
+\section{FORMAL}
+
+EBMC tool has been used to perform the bounded verification of this module.
+Here the assumptions are the initial \texttt{rst\_n} low and the stability of inputs while \texttt{in\_valid} is high.
+The assertions are as follows:
+
+\begin{description}
+    \item[\texttt{\_reset}]
+        Verify that asserting a reset unconditionally forces the FSM back to the \texttt{IDLE} state on the next cycle with all registers cleared.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={155 - 163}, 
+            firstnumber=155
+        ]{gcd/gcd.sv}
+    \item[\texttt{\_state}]
+        Guarantees the FSM is mathematically restricted to the five valid encoded states, proving no illegal states can be reached.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={165 - 170}, 
+            firstnumber=165
+        ]{gcd/gcd.sv}
+    \item[State Hold] (\texttt{idle\_idle}, \texttt{run\_run}, \texttt{done\_done}):
+        Guarantee that the FSM retains its current state when no progression signal or abort is asserted.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={172 - 188}, 
+            firstnumber=172
+        ]{gcd/gcd.sv}
+    \item[State Progression] \texttt{idle\_done}, (\texttt{idle\_run}, \texttt{run\_done}, \texttt{done\_idle}):
+        Prove that the FSM correctly transitions to the next expected state when the appropriate progression flag is asserted.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={190 - 214}, 
+            firstnumber=190
+        ]{gcd/gcd.sv}
+    \item[Output stability] (\texttt{outputs}):
+        Verify that the results remain stable until the handshake happens.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={226 - 230}, 
+            firstnumber=226
+        ]{gcd/gcd.sv}
+    \item[Handshakes] (\texttt{\_out\_valid}, \texttt{\_in\_ready}):
+        Prove that the flags are never asserted spuriously and that they follow the FSM transitions.
+        \lstinputlisting[
+            style=svlog, 
+            linerange={216 - 224}, 
+            firstnumber=216
+        ]{gcd/gcd.sv}
+\end{description}
+
+\section{HARDWARE}
+
+\section{UVM}

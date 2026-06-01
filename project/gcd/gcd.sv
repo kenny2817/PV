@@ -175,6 +175,18 @@ module gcd #(
             (state == IDLE)
     );
 
+    run_run: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == RUN) && !(a_next == b_next) |=>
+            (state == RUN)
+    );
+    
+    done_done: assert property (
+        @(posedge clk) disable iff(!rst_n)
+        (state == DONE) && !(out_ready && out_valid) |=>
+            (state == DONE)
+    );
+
     idle_done: assert property (
         @(posedge clk) disable iff(!rst_n)
         (state == IDLE) && in_ready && in_valid && 
@@ -188,22 +200,10 @@ module gcd #(
         !(a_in == 0 || b_in == 0 || a_in == b_in) |=>
             (state == RUN)
     );
-    
-    run_run: assert property (
-        @(posedge clk) disable iff(!rst_n)
-        (state == RUN) && !(a_next == b_next) |=>
-            (state == RUN)
-    );
 
     run_done: assert property (
         @(posedge clk) disable iff(!rst_n)
         (state == RUN) && (a_next == b_next) |=>
-            (state == DONE)
-    );
-    
-    done_done: assert property (
-        @(posedge clk) disable iff(!rst_n)
-        (state == DONE) && !(out_ready && out_valid) |=>
             (state == DONE)
     );
 
@@ -215,14 +215,12 @@ module gcd #(
 
     _out_valid: assert property (
         @(posedge clk) disable iff(!rst_n)
-        (state == DONE) |-> 
-            out_valid
+        (state == DONE) == out_valid
     );
 
     _in_ready: assert property (
         @(posedge clk) disable iff(!rst_n)
-        (state == IDLE) |-> 
-            in_ready
+        (state == IDLE) == in_ready
     );
 
     outputs: assert property (

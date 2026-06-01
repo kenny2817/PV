@@ -4,11 +4,11 @@
 \chapter{Test Plan}
 \label{cha:test_plan}
 
-\section{Features Under Test}
+\section{Overview}
 
+\subsection*{Features Under Test}
 The features to be tested are divided into tree groups.
 The idea is to test both normal execution and edge cases for each group.
-
 \begin{itemize}
     \item \textbf{[C] Control dependent (Consumer/Producer)}
     Reset behavior, Input ready/valid handshake/stall, Output ready/valid handshake/stall.
@@ -18,8 +18,7 @@ The idea is to test both normal execution and edge cases for each group.
     Transitions between \texttt{IDLE}, \texttt{RUN}, and \texttt{DONE}, along with their cycle timings.
 \end{itemize}
 
-\section{Tool for Testing}
-
+\subsection*{Tool for Testing}
 To test these features we will use the following tools:
 \begin{itemize}
     \item \textbf{[F] FORMAL}: here we will verify the logic from inside the dut.
@@ -31,8 +30,7 @@ To test these features we will use the following tools:
     Assertions based approach is used in a formal model.
 \end{itemize}
 
-\section{Traceability Matrix}
-
+\section{Traceability Matrices}
 Here we introduce all the requirements extracted from the specification.
 It is divided in the previously presented features and sub-features accompanied by the tool used to verify it.
 \begin{table}[H]
@@ -56,7 +54,6 @@ It is divided in the previously presented features and sub-features accompanied 
         REQ\_013        & S                 & Assigned signal       & FSM determines output signals (\texttt{in\_valid}, \texttt{out\_ready})                   & F             \\ \bottomrule
     \end{tabularx}
 \end{table}
-
 This second table is meant to associate each tool and relative test to the requirement it tries to verify.
 A description explains what the test is actually looking for.
 \begin{table}[H]
@@ -79,19 +76,21 @@ A description explains what the test is actually looking for.
         U               & \texttt{scb.write\_in}, \texttt{scb.write\_out}                                   & Verify that the golden model output is equal to the DUT \texttt{gcd\_out}                                                 & REQ\_006, REQ\_007, REQ\_008, REQ\_009            \\ \bottomrule
     \end{tabularx}
 \end{table}
-        
 
-\section{Coverage}
+\section{Target}
 
+\subsection*{Coverage}
 The target coverage is just a measure of what we would like to tackle in this test plan for each area of the dut.
 In practice the objectives are a complete (100\%) coverage of the functional description and possibly a high (\textless 90\%) code coverage.
 This excludes toggle as it is dependant of the width of the data.
 
-\section{Stimulus}
-
+\subsection*{Stimulus}
 The stimulus is divided into multiple tests that tackle different scenarios.
 \begin{itemize}
     \item \textbf{gcd\_bringup\_test}: Test the basic functionality of the verification system as a whole
     \item \textbf{gcd\_det\_test}: Test the edge cases and tries to obtain the maximum coverage with the minimal number of tests
     \item \textbf{gcd\_rnd\_test}: Test the DUT with random instructions to find edge cases that have not been tested otherwise
 \end{itemize}
+
+\section{Diagrams}
+This section will introduce the FSM in form of a diagram and the plan for the UVM architecture.
