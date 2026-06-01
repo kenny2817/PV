@@ -58,8 +58,8 @@ The hardware checking happens inside the DUT interface and acts as a raw signal 
 To do so, 5 properties with arguments to reuse them if necessary were created.
 \lstinputlisting[
     style=svlog, 
-    linerange={34 - 72}, 
-    firstnumber=34
+    linerange={35 - 73}, 
+    firstnumber=35
 ]{gcd/tb_uvm_gcd.sv}
 These properties were used to make 7 assertions and 2 covers.
 3 assertions are only used to control UVM drivers correctness.
@@ -75,10 +75,40 @@ These properties were used to make 7 assertions and 2 covers.
 \end{description}
 The 2 covers simply make sure the handshakes, both input and output are covered.
 
+\subsection*{Eventual Finish}
+To Guarantee that a transaction finish in reasonable time every time an input is accepted a timer is used.
+This timer count how many cycles that input takes to be processed and if it values it to be too many returns an error.
+The idea is to assure that a transaction always ends.
+The System Verilog sequence \texttt{\#\#[1:\$]} was unusable since the UVM timeout would have destroyed its usefulness.
+And using a fixed maximum would make this test very limited and somewhat inefficient.
+
+To do so we made 3 components and added them to the interface:
+\begin{itemize}
+    \item \textbf{Estimation} a function that make an estimation of the execution time
+    \lstinputlisting[
+        style=svlog,
+        linerange={104 - 123},
+        firstnumber=104
+    ]{gcd/tb_uvm_gcd.sv}
+    \newpage
+    \item \textbf{Timer} a thread function that time the execution
+    \lstinputlisting[
+        style=svlog, 
+        linerange={125 - 141}, 
+        firstnumber=125
+    ]{gcd/tb_uvm_gcd.sv}
+    \item \textbf{Spawner} a thread spawner for each accepted input
+    \lstinputlisting[
+        style=svlog, 
+        linerange={143 - 149}, 
+        firstnumber=143
+    ]{gcd/tb_uvm_gcd.sv}
+\end{itemize}
+
 \section{UVM}
 The UVM architecture is organized as shown in the following diagram.
 Details of salient components are explained in the following subsections.
-\begin{figure}[htbp]
+\begin{figure}[h]
   \centering
   \includesvg[width=0.9\textwidth, inkscapelatex=false]{UVM.svg}
   \caption{UVM architecture of the DUT}
@@ -90,6 +120,7 @@ The transactions are used both by the driver and the monitor, this leads to a le
 The transactions are stripped of any unnecessary information like the handshake flags which are completely handled by the driver.
 The variable \texttt{delay\_cycles} is added to both input and output transactions to enable the test with some timing controls.
 
+\newpage
 \subsection*{Drivers}
 Each I/O driver need to:
 \begin{enumerate}
@@ -106,8 +137,8 @@ In case of reset mid-transaction the transaction is considered a success and the
 The calculation uses a different model for the calculation of the gcd, modulo instead of subtraction, for simplicity of implementation and performance.
 \lstinputlisting[
     style=svlog, 
-    linerange={474 - 484}, 
-    firstnumber=474
+    linerange={523 - 536}, 
+    firstnumber=523
 ]{gcd/tb_uvm_gcd.sv}
 
 \subsection*{Coverage}

@@ -122,7 +122,10 @@ interface gcd_interface (
         return cycles;
     endfunction
 
-    task automatic p_eventual_end(bit [DATA_WIDTH-1:0] a, bit [DATA_WIDTH-1:0] b);
+    task automatic timer(
+        bit [DATA_WIDTH-1:0] a,
+        bit [DATA_WIDTH-1:0] b
+    );
         int unsigned max_cycles = exp_cycles(a, b);
         int unsigned count = 0;
         
@@ -132,16 +135,19 @@ interface gcd_interface (
             count++;
         end
         
-        `uvm_error("CHK", $sformatf("[TIMEOUT] [A] %0d [B] %0d [EXPECTED_CYCLES] %0d [WAITED_CYCLES] %d", a, b, max_cycles, max_cycles + MARGIN_TIMEOUT))
+        `uvm_error("CHK", $sformatf(
+            "[TIMEOUT] [A] %0d [B] %0d [EXPECTED_CYCLES] %0d [WAITED_CYCLES] %d",
+            a, b, max_cycles, max_cycles + MARGIN_TIMEOUT))
     endtask
 
     always @(posedge clk) begin
         if (rst_n && in_valid && in_ready) begin
             fork
-                p_eventual_end(a_in, b_in);
+                timer(a_in, b_in);
             join_none
         end
     end
+
 endinterface
 
 package gcd_pkg;
@@ -514,7 +520,10 @@ package gcd_pkg;
             `uvm_info("SCB", $sformatf("Test Complete! Success: %0d, Fail: %0d", success, fail), UVM_NONE)
         endfunction
 
-        function bit [DATA_WIDTH-1:0] compute_gcd(bit [DATA_WIDTH-1:0] a, bit [DATA_WIDTH-1:0] b);
+        function bit [DATA_WIDTH-1:0] compute_gcd(
+            bit [DATA_WIDTH-1:0] a,
+            bit [DATA_WIDTH-1:0] b
+        );
             if (a == 0 || b == 0) return (a == 0) ? b : a; 
 
             while (b != 0) begin
