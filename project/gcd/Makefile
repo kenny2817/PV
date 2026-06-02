@@ -16,8 +16,7 @@ comp:
 	vlog $(FLAGS) tb_uvm_gcd.sv
 
 sim:
-	vsim -voptargs="+acc" -coverage -c -do "coverage save -onexit cov_db.ucdb; run -all; exit" \
-		-sv_seed $(SEED) \
+	vsim -voptargs="+acc" -coverage -c -do "coverage save -onexit cov_db.ucdb; run -all; exit" -sv_seed $(SEED) \
 		+UVM_TESTNAME=$(TEST) \
 		+UVM_VERBOSITY=$(VERBOSITY) \
 		+UVM_TIMEOUT=$(TIMEOUT) \

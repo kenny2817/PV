@@ -99,6 +99,21 @@
     frame=single,
     tabsize=2,
 }
+\lstdefinestyle{mkfile}{
+	inputpath={../},
+    backgroundcolor=\color{gray!10},   
+    commentstyle=\color{green!50!black},
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{magenta},
+    basicstyle=\linespread{1}\footnotesize\ttfamily, % ttfamily is better for code
+    numberstyle=\tiny\color{gray},
+    numbers=left,                    
+    breaklines=true,                 
+    language=Verilog,                 % Base language
+    morekeywords={vlib, vmap, vlog, vsim, do},
+    frame=single,
+    tabsize=2,
+}
 % usage
 % \lstinputlisting[
 %     style=svlog, 

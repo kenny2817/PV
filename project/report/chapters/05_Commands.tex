@@ -1,0 +1,72 @@
+% ------------------------------------------------------------------------------
+% Chapter 5
+% ------------------------------------------------------------------------------
+\chapter{Commands} 
+\label{cha:commands}
+
+A Makefile has been used to make the compilation and execution of the testbench.
+Changing the parameter \texttt{TEST} it is possible to run 3 different tests as per request.
+
+\section*{Compilation}
+
+\texttt{comp} was used to make the compilation.
+Important to note that, while the compilation flags are equal, the cover flag is used only for the dut.
+This change remove the code coverage form the testbench.
+
+\lstinputlisting[
+    style=mkfile, 
+    linerange={6-6}, 
+    firstnumber=6
+]{gcd/Makefile}
+
+\lstinputlisting[
+    style=mkfile, 
+    linerange={12-16}, 
+    firstnumber=12
+]{gcd/Makefile}
+
+\vspace{-2mm}
+\section*{UVM Run}
+
+\texttt{sim} was used to make the simulation and was configured using 4 parameters.
+This snippet is also responsible for the creation of the waveforms as well as the coverage database.
+
+
+\begin{itemize}
+    \item \texttt{TEST} the name of the test to perform [ctrl\_brigup\_test, ctrl\_det\_test, ctrl\_rnd\_test]
+    \item \texttt{VERBOSITY} the verbosity level of the log [UVM\_LOW, UVM\_MEDIUM, UVM\_HIGH]
+    \item \texttt{SEED} the seed of the simulation [random, seed]
+    \item \texttt{TIMEOUT} max simulation time allowed, units are required [example: 10000ns]
+\end{itemize}
+
+\lstinputlisting[
+    style=mkfile, 
+    linerange={0 - 4}, 
+    firstnumber=0
+]{gcd/Makefile}
+
+\lstinputlisting[
+    style=mkfile, 
+    linerange={18 - 23}, 
+    firstnumber=18
+]{gcd/Makefile}
+
+\section{Coverage Report}
+
+\texttt{cov} was used to make the coverage report.
+
+\lstinputlisting[
+    style=mkfile, 
+    linerange={26 - 28}, 
+    firstnumber=26
+]{gcd/Makefile}
+
+\section*{FORMAL Run}
+
+\texttt{formal} was used to execute the formal verification.
+
+\lstinputlisting[
+    style=mkfile, 
+    linerange={30 - 31}, 
+    firstnumber=30
+]{gcd/Makefile}

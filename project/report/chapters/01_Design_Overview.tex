@@ -4,8 +4,6 @@
 \chapter{Design Overview} 
 \label{cha:design_overview}
 
-\section{Overview}
-
 The \texttt{gcd} module computes the Greatest Common Divisor of two unsigned integers using the subtractive Euclidean algorithm. It processes one input pair at a time and communicates through two independent ready/valid handshake channels.
 
 \subsection*{Mathematical Definition}
@@ -40,7 +38,7 @@ For unsigned operands $A$ and $B$:
     \caption{Module Parameters}
 \end{table}
 
-\section{Top-Level Interface}
+\section{Interface}
 
 \subsection*{Clock and Reset}
 \begin{table}[H]
