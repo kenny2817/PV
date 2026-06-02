@@ -76,6 +76,7 @@ In the end we consider the code coverage complete as FSM transitions are complet
 
 I introduced a bug in the DUT that should give wrong results as the formula is completely wrong.
 We expect the DUT to give wrong gcd for operands that do not fall in the early exit conditions.
+If the DUT does not return a valid result within the time limit it is also considered an error.
 Here is the code diff: 
 \begin{lstlisting}[language=Verilog, escapeinside={(*}{*)}]
 always_comb begin
@@ -93,5 +94,26 @@ end
 \end{lstlisting}
 
 \subsection*{Analysis}
+Technically, at some point, the execution will halt.
+The result will be returned, but the time it take is way larger than what is expected, and the result is inevitably wrong in most cases.
+The structure to capture the eventual finish of an input revealed the mismatch and revealed it correctly (\ref{fig:bug}).
+If equipped with a \texttt{fatal} instead of \texttt{error} it would halt the execution and reduce execution time of the test as well.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{bug.png}
+    \caption{UVM log of Bug in the DUT}
+    \label{fig:bug}
+\end{figure}
+
+Following the waveform we can see that early exit computations happen without a problem whatsoever.
+Numbers are represented into unsigned decimals for ease of read.
+As soon as the \texttt{RUN} (01) state kicks in, at sim-time 105ns, the computation start to go wrong: first an underflow make \texttt{ a = max value -1}, then the wrong algorithm does \texttt{b = b - a} until \texttt{a == b} ideally. 
+Truth is the execution is halted much earlier, for context to get to \texttt{b == max value -1} with steps of 1 (overflow) it would need $4294967295 - 6 = 4294967289$ cycles.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{wave.png}
+    \caption{Wave of Bug in the DUT}
+    \label{fig:bug}
+\end{figure}
 
 

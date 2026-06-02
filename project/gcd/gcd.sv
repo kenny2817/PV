@@ -48,9 +48,9 @@ module gcd #(
         a_next = a_reg;
         b_next = b_reg;
         if (state == RUN) begin
-            if (a_reg < b_reg)
+            if (a_reg > b_reg)
                 a_next = a_reg - b_reg;
-            else if (b_reg < a_reg)
+            else if (b_reg > a_reg)
                 b_next = b_reg - a_reg;
         end
     end
